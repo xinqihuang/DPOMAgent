@@ -1,0 +1,30 @@
+schema: spec-driven
+
+context: |
+  项目名称：DPOMAgent
+  定位：研发侧单实例 Java Web 故障调查 Agent。
+  核心：症状驱动 + 假设驱动 + 运行时证据 + 代码证据 + 动态诊断脚本。
+  本期明确不建设 Knowledge/RAG/Embedding/Vector DB。
+  外部能力：
+  - DPOMBaseMCPServer：APM/AOM/CES/LTS 等运行时只读证据。
+  - DPOMCodeGraphService：Release/commit Snapshot、CodeGraphContext 调用关系、Git 事实源码。
+  - MySQL：Incident/Investigation/Observation/Hypothesis/Conclusion/ScriptArtifact/Audit 元数据。
+  部署：研发环境单实例 Java Web；不做 Docker/K8s/Helm/Kafka/高可用；Redis 已允许（用于缓存）。
+  技术栈：JDK21、Maven3.9+、Spring Boot3.4.5、Spring MVC+Virtual Threads、
+  Spring AI 1.0.4、Spring RestClient、MySQL+Flyway+JdbcClient、Jackson、JUnit5/Mockito/AssertJ。
+  关键原则：
+  - LLM 负责理解、规划、假设和综合。
+  - CodeGraph 负责导航，Snapshot Workspace 负责读代码。
+  - Agent 可在受控 Snapshot 根目录搜索/阅读源码，不提供任意 shell 工具。
+  - 证据不足时可生成 Shell/Python/只读 SQL 给 SRE 执行。
+  - 修复脚本可生成但必须 MITIGATION + REQUIRES_APPROVAL；DPOMAgent 不自动执行生产操作。
+  - 所有 ToolCall、Observation、Hypothesis、ScriptArtifact、Conclusion 可审计。
+
+rules:
+  specs:
+    - "Requirement 使用 SHALL/MUST，每项至少一个 GIVEN/WHEN/THEN Scenario。"
+  design:
+    - "简单、可替换、可测试；Provider/Runtime/CodeGraph 均通过 Adapter 隔离。"
+    - "不引入 Knowledge/RAG 和额外基础设施。"
+  tasks:
+    - "每张 docs/tasks/TNN-*.md 可独立交给 Claude Code，先测试后实现，并有 Acceptance。"

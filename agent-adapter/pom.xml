@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.dpom.agent</groupId>
+        <artifactId>dpom-agent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>agent-adapter</artifactId>
+    <packaging>pom</packaging>
+    <name>agent-adapter</name>
+    <description>DPOMAgent 外部能力适配层：LLM / Runtime / CodeGraph，三者互不依赖</description>
+
+    <modules>
+        <module>agent-adapter-llm</module>
+        <module>agent-adapter-runtime</module>
+        <module>agent-adapter-codegraph</module>
+    </modules>
+</project>
