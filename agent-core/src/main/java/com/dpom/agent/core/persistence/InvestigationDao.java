@@ -94,6 +94,17 @@ public class InvestigationDao {
     }
 
     /**
+     * 查询非终态调查（用于启动 reconciliation）。
+     *
+     * @return 非终态调查列表
+     */
+    public List<Investigation> findNonTerminal() {
+        return jdbcClient.sql("SELECT * FROM investigation WHERE status NOT IN"
+                        + " ('COMPLETED','INCONCLUSIVE','FAILED','CANCELLED','WAITING_FOR_HUMAN')")
+                .query(MAPPER).list();
+    }
+
+    /**
      * 更新调查状态。
      *
      * @param id     主键
@@ -101,6 +112,25 @@ public class InvestigationDao {
      */
     public void updateStatus(long id, InvestigationStatus status) {
         jdbcClient.sql("UPDATE investigation SET status = :status, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+                .param("status", status.name())
+                .param("id", id)
+                .update();
+    }
+
+    /**
+     * 仅当调查仍处于活动状态（非终态且非 WAITING_FOR_HUMAN）时更新为指定状态，返回受影响行数（0 或 1）。
+     *
+     * <p>活动态集合与 {@link #findNonTerminal()} 及状态机一致；WAITING_FOR_HUMAN 为暂停态，
+     * 不得被 reject/异步异常补偿/reconciliation 覆盖为 FAILED。本方法仲裁 reject/异常补偿/reconciliation，
+     * 不仲裁 coordinator 成功终态（成功终态由状态机迁移写入）。</p>
+     *
+     * @param id     主键
+     * @param status 新状态
+     * @return 实际发生状态迁移时为 1，否则 0
+     */
+    public int updateStatusIfActive(long id, InvestigationStatus status) {
+        return jdbcClient.sql("UPDATE investigation SET status = :status, updated_at = CURRENT_TIMESTAMP WHERE id = :id"
+                        + " AND status NOT IN ('COMPLETED','INCONCLUSIVE','FAILED','CANCELLED','WAITING_FOR_HUMAN')")
                 .param("status", status.name())
                 .param("id", id)
                 .update();

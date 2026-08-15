@@ -1,0 +1,14 @@
+{
+  "rootCauseId": "AssetRepository.insert",
+  "expectedSymbols": [
+    "AssetRepository.insert",
+    "AssetService.create"
+  ],
+  "requiredEvidenceTypes": [
+    "LOG",
+    "SOURCE"
+  ],
+  "forbiddenConclusions": [
+    "ROOT_CAUSE_FOUND_WITHOUT_SOURCE"
+  ]
+}

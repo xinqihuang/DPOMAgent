@@ -1,9 +1,11 @@
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   datasource:
-    url: jdbc:mysql://localhost:3306/dpom_agent?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
-    username: root
-    password: ${DPOM_DB_PASSWORD:}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:mem:dpom_agent;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -11,3 +13,44 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+server:
+  shutdown: graceful
+
+management:
+  health:
+    probes:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-components: always
+      show-details: never
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db,executorCapacity
+      status:
+        http-mapping:
+          DOWN: 503
+          OUT_OF_SERVICE: 503
+
+logging:
+  level:
+    com.dpom.agent: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{correlationId:-}] %logger{39} - %msg%n"
+
+dpom:
+  api:
+    adapter-health-ttl: 5m
+  executor:
+    await-termination-seconds: 30

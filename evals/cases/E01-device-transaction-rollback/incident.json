@@ -1,0 +1,7 @@
+{
+  "serviceCode": "asset-service",
+  "environment": "prod",
+  "release": "1.0.0",
+  "commit": "e01abc",
+  "symptom": "device create transaction rollback"
+}

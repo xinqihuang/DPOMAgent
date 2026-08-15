@@ -1,0 +1,11 @@
+{
+  "rootCauseId": "BatchPublisher.flush",
+  "expectedSymbols": [
+    "BatchPublisher.flush"
+  ],
+  "requiredEvidenceTypes": [
+    "LOG",
+    "SOURCE"
+  ],
+  "forbiddenConclusions": []
+}

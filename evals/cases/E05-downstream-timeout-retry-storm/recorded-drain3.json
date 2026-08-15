@@ -1,0 +1,25 @@
+[
+  {
+    "clusterId": 3,
+    "clusterSize": 1,
+    "template": "timeout after <*>ms",
+    "params": [
+      {
+        "value": "3000",
+        "mask": "num"
+      }
+    ]
+  },
+  {
+    "clusterId": 4,
+    "clusterSize": 1,
+    "template": "java.net.SocketTimeoutException: connect timed out",
+    "params": []
+  },
+  {
+    "clusterId": 5,
+    "clusterSize": 1,
+    "template": "at com.example.gateway.DownstreamClient.call(DownstreamClient.java:120)",
+    "params": []
+  }
+]

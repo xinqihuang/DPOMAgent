@@ -1,0 +1,42 @@
+[
+  {
+    "clusterId": 7,
+    "clusterSize": 2,
+    "template": "device <*> insert failed",
+    "params": [
+      {
+        "value": "1001",
+        "mask": "deviceId"
+      }
+    ]
+  },
+  {
+    "clusterId": 7,
+    "clusterSize": 2,
+    "template": "device <*> insert failed",
+    "params": [
+      {
+        "value": "1002",
+        "mask": "deviceId"
+      }
+    ]
+  },
+  {
+    "clusterId": 8,
+    "clusterSize": 1,
+    "template": "java.lang.IllegalStateException: insert failed",
+    "params": []
+  },
+  {
+    "clusterId": 9,
+    "clusterSize": 1,
+    "template": "at com.example.asset.AssetRepository.insert(AssetRepository.java:42)",
+    "params": []
+  },
+  {
+    "clusterId": 10,
+    "clusterSize": 1,
+    "template": "calling com.example.asset.AssetService.create(AssetService.java:13)",
+    "params": []
+  }
+]

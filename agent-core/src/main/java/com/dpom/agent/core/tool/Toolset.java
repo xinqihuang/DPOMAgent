@@ -37,7 +37,10 @@ public final class Toolset {
                 tool("query_trace", "查询 APM 调用链", "traceId"),
                 tool("query_alerts", "查询告警/事件摘要", "timeRange"),
                 tool("query_metrics", "查询指标", "metric"),
-                tool("mine_log_templates", "把应用日志聚类为模板并抽取参数", "lines")
+                new ToolDefinition("mine_log_templates",
+                        "把应用日志聚类为模板并抽取参数。lines 为应用日志行数组（每条一行）",
+                        "{\"type\":\"object\",\"properties\":{\"lines\":{\"type\":\"array\","
+                                + "\"items\":{\"type\":\"string\"}}},\"required\":[\"lines\"]}")
         );
     }
 

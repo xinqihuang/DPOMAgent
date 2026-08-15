@@ -1,0 +1,5 @@
+ERROR com.example.asset.AssetRepository - device 1001 insert failed
+ERROR com.example.asset.AssetRepository - device 1002 insert failed
+ERROR com.example.asset.AssetRepository - java.lang.IllegalStateException: insert failed
+ERROR com.example.asset.AssetRepository -     at com.example.asset.AssetRepository.insert(AssetRepository.java:42)
+ERROR com.example.asset.AssetService - calling com.example.asset.AssetService.create(AssetService.java:13)

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "AssetRepository.insert",
+    "filePath": "AssetRepository.java",
+    "lineNumber": 42
+  },
+  {
+    "name": "AssetService.create",
+    "filePath": "AssetService.java",
+    "lineNumber": 20
+  }
+]
