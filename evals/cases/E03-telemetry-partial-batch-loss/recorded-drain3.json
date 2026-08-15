@@ -1,0 +1,19 @@
+[
+  {
+    "clusterId": 1,
+    "clusterSize": 1,
+    "template": "batch lost <*> records",
+    "params": [
+      {
+        "value": "5",
+        "mask": "num"
+      }
+    ]
+  },
+  {
+    "clusterId": 2,
+    "clusterSize": 1,
+    "template": "at com.example.telemetry.BatchPublisher.flush(BatchPublisher.java:88)",
+    "params": []
+  }
+]

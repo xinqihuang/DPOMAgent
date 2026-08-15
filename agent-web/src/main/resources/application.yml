@@ -4,6 +4,8 @@ spring:
   threads:
     virtual:
       enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   datasource:
     url: ${DPOM_DB_URL:jdbc:mysql://localhost:3306/dpom_agent?useSSL=false&serverTimezone=UTC&characterEncoding=utf8}
     username: ${DPOM_DB_USER:dpom}
@@ -20,12 +22,46 @@ spring:
 
 server:
   port: 8080
+  shutdown: graceful
+
+management:
+  health:
+    probes:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-components: always
+      show-details: never
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db,executorCapacity
+      status:
+        http-mapping:
+          DOWN: 503
+          OUT_OF_SERVICE: 503
 
 logging:
   level:
     com.dpom.agent: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{correlationId:-}] %logger{39} - %msg%n"
+
 # 外部能力接入配置（默认值见各适配器的 @Value 注解）
 dpom:
+  api:
+    # 调查提交请求体总量上限（1.1 MiB），超限在反序列化前拒绝为 413
+    max-body-bytes: ${DPOM_API_MAX_BODY_BYTES:1153434}
+    # 被动适配器健康状态过期窗口
+    adapter-health-ttl: ${DPOM_ADAPTER_HEALTH_TTL:5m}
+  executor:
+    # 优雅停机时有界等待在途任务的秒数（禁止无限等待）
+    await-termination-seconds: ${DPOM_EXECUTOR_AWAIT_TERMINATION_SECONDS:30}
   llm:
     base-url: ${DPOM_LLM_BASE_URL:https://api.deepseek.com}
     api-key: ${DEEPSEEK_API_KEY:}

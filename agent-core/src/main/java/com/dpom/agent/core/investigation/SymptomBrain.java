@@ -7,6 +7,9 @@ import com.dpom.agent.common.llm.ModelTurnResult;
 import com.dpom.agent.common.llm.ToolInvocation;
 import com.dpom.agent.core.hypothesis.Hypothesis;
 import com.dpom.agent.core.hypothesis.HypothesisStatus;
+import com.dpom.agent.core.logevidence.CodeEvidence;
+import com.dpom.agent.core.logevidence.EvidenceBundle;
+import com.dpom.agent.core.logevidence.LogEvidence;
 import com.dpom.agent.core.observation.Observation;
 import com.dpom.agent.core.tool.Toolset;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -50,11 +53,16 @@ public class SymptomBrain implements Brain {
               （resultType=ROOT_CAUSE_FOUND）；只有证据真正不足时才 INCONCLUSIVE，不要略过分析就 INSUFFICIENT_EVIDENCE。
             - 有明确证据后，输出 conclude，resultType 用 ROOT_CAUSE_FOUND，并在 rootCause 里给出
               具体的根因类/方法/触发条件，summary 里给出可复述的因果链条。
+            - 若上下文有【日志到代码证据束】：ROOT_CAUSE_FOUND 的 evidenceIds 必须引用至少一条日志证据 id
+              和至少一条 VERIFIED 源码证据 id；没有 VERIFIED 源码证据时只能 INCONCLUSIVE 或 wait，不得 ROOT_CAUSE_FOUND。
+            - rootCauseId 必须取「异常实际抛出点」对应的类.方法（即堆栈最深帧 / 源码证据中真正抛出异常的那一处），
+              不要取上游调用方或业务触发点。例如堆栈含 at AssetRepository.insert(...) 且其方法体抛出异常时，
+              rootCauseId 应填 AssetRepository.insert，而不是上层 AssetService.create。
 
             【JSON 决策格式（每轮只输出一种）】
             {"type":"update","newHypotheses":["..."],"updates":[{"id":1,"status":"INVALIDATED"}]}
             {"type":"wait","reason":"..."}
-            {"type":"conclude","resultType":"ROOT_CAUSE_FOUND","rootCause":"...","summary":"...","evidenceIds":"1,2"}
+            {"type":"conclude","resultType":"ROOT_CAUSE_FOUND","rootCauseId":"类.方法","rootCause":"...","summary":"...","evidenceIds":"1,2"}
             """;
 
     private final ModelClient modelClient;
@@ -115,7 +123,51 @@ public class SymptomBrain implements Brain {
                     .append(" ---\n");
             sb.append(observation.summary() == null ? "" : observation.summary()).append("\n");
         }
+        if (context.evidenceBundle() != null) {
+            sb.append(renderBundle(context.evidenceBundle()));
+        }
         return sb.toString();
+    }
+
+    /**
+     * 把证据束渲染为有界、可读、带 provenance 的文本。
+     */
+    private String renderBundle(EvidenceBundle bundle) {
+        StringBuilder sb = new StringBuilder("\n【日志到代码证据束】\n");
+        for (LogEvidence e : bundle.logEvidences()) {
+            sb.append("- 日志证据 ").append(e.evidenceId()).append(" [")
+                    .append(e.summary().severityDistribution().keySet()).append(" x").append(e.summary().count())
+                    .append("] ").append(e.summary().template()).append(" (commit=").append(e.commit())
+                    .append(", miner=").append(e.minerVersion()).append(")\n");
+        }
+        for (CodeEvidence e : bundle.codeEvidences()) {
+            boolean throwSite = e.anchorValue() != null && e.anchorValue().startsWith("at ");
+            sb.append("- 源码证据 ").append(e.evidenceId()).append(" [").append(e.status()).append("] ")
+                    .append(e.symbol()).append(" @ ").append(e.filePath()).append(":").append(e.lineNumber())
+                    .append(" (commit=").append(e.commit()).append(")");
+            if (throwSite) {
+                sb.append(" 【异常抛出点】");
+            }
+            sb.append("\n");
+            if (e.excerpt() != null && !e.excerpt().isBlank()) {
+                sb.append("    片段: ").append(truncate(e.excerpt(), 200)).append("\n");
+            }
+        }
+        if (!bundle.degradations().isEmpty()) {
+            sb.append("- 降级: ").append(String.join(",", bundle.degradations())).append("\n");
+        }
+        if (bundle.truncated()) {
+            sb.append("- 截断: true\n");
+        }
+        sb.append("结论护栏：ROOT_CAUSE_FOUND 的 evidenceIds 必须引用至少一条日志证据 id 和至少一条 VERIFIED 源码证据 id。\n");
+        return sb.toString();
+    }
+
+    /**
+     * 截断长文本。
+     */
+    private String truncate(String text, int max) {
+        return text.length() <= max ? text : text.substring(0, max) + "...";
     }
 
     /**
@@ -130,8 +182,9 @@ public class SymptomBrain implements Brain {
                         strings(node.path("newHypotheses")), updates(node.path("updates")));
                 case "wait" -> new InvestigationDecision.WaitForHuman(node.path("reason").asText("需要人工"));
                 case "conclude" -> new InvestigationDecision.Conclude(
-                        node.path("resultType").asText(), node.path("rootCause").asText(),
-                        node.path("summary").asText(), node.path("evidenceIds").asText());
+                        node.path("resultType").asText(), node.path("rootCauseId").asText(),
+                        node.path("rootCause").asText(), node.path("summary").asText(),
+                        node.path("evidenceIds").asText());
                 default -> throw new IllegalStateException("未知决策类型：" + type);
             };
         } catch (JsonProcessingException e) {

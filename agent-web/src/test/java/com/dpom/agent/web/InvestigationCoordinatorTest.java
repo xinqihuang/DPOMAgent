@@ -61,7 +61,7 @@ class InvestigationCoordinatorTest {
                 context -> context.hypotheses().isEmpty()
                         ? new InvestigationDecision.Act(new ToolAction("read_source", "{}", "读取源码"))
                         : new InvestigationDecision.Conclude(
-                                InvestigationCoordinator.RESULT_ROOT_CAUSE, "事务回滚", "根因是事务回滚", "1"),
+                                InvestigationCoordinator.RESULT_ROOT_CAUSE, null, "事务回滚", "根因是事务回滚", "1"),
                 action -> new ToolExecutionResult("codegraph", "AssetRepository.java", "insert 被调用",
                         null, null, List.of("INSERT 后事务回滚"), List.of()));
 
@@ -111,7 +111,7 @@ class InvestigationCoordinatorTest {
                 context -> context.hypotheses().isEmpty()
                         ? new InvestigationDecision.Act(new ToolAction("read_source", "{}", "读源码"))
                         : new InvestigationDecision.Conclude(
-                                InvestigationCoordinator.RESULT_ROOT_CAUSE, "根因", "摘要", "1"),
+                                InvestigationCoordinator.RESULT_ROOT_CAUSE, null, "根因", "摘要", "1"),
                 action -> new ToolExecutionResult("codegraph", "A.java", "证据",
                         null, null, List.of("H1"), List.of()));
 
@@ -132,7 +132,7 @@ class InvestigationCoordinatorTest {
                         return new InvestigationDecision.Act(new ToolAction("check_logs", "{}", "查日志"));
                     }
                     return new InvestigationDecision.Conclude(
-                            InvestigationCoordinator.RESULT_ROOT_CAUSE, "无回滚", "commit 成功", null);
+                            InvestigationCoordinator.RESULT_ROOT_CAUSE, null, "无回滚", "commit 成功", null);
                 },
                 action -> new ToolExecutionResult("runtime", null, "日志显示 commit 成功",
                         null, String.valueOf(hypothesisId.get()), List.of(),

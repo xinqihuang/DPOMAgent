@@ -48,8 +48,8 @@ DPOMAgent/
 ```
 
 ## 3. Dependency
-`agent-web -> agent-core -> adapter.{llm,runtime,codegraph} -> agent-common`
-adapters 互不依赖；web 不直接调外部系统；Provider/remote DTO 不泄漏。
+`agent-web -> {agent-core, adapter.{llm,runtime,codegraph}} -> agent-common`
+agent-core 不依赖 adapter；agent-web 作为 composition root 组装 Core 与 Adapter；adapters 互不依赖；Provider/remote DTO 不泄漏。
 
 ## 4. Core Model
 - Incident: serviceCode/environment/releaseVersion/commitSha/symptom
@@ -133,4 +133,4 @@ M3 runtime evidence+无堆栈场景；M4 diagnostic script feedback；M5 mitigat
 ## 14. DoD
 单 Java Web；MySQL 可恢复；LLM/Runtime/CodeGraph Adapter；Workspace 安全；
 Hypothesis/Observation 可追踪；两类 Case 跑通；脚本分级；无 Knowledge/RAG；
-无 Docker/K8s/Redis/Kafka；`mvn clean verify` 通过。
+无 Docker/K8s/Kafka；Redis 仅用于缓存（SnapshotCache）；`mvn clean verify` 通过。

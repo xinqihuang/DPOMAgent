@@ -28,6 +28,7 @@ public final class InvestigationStateMachine {
                 EnumSet.of(InvestigationStatus.SCOPING));
         transitions.put(InvestigationStatus.SCOPING,
                 EnumSet.of(InvestigationStatus.RESEARCHING, InvestigationStatus.WAITING_FOR_HUMAN,
+                        InvestigationStatus.SYNTHESIZING, InvestigationStatus.INCONCLUSIVE,
                         InvestigationStatus.CANCELLED, InvestigationStatus.FAILED));
         transitions.put(InvestigationStatus.RESEARCHING,
                 EnumSet.of(InvestigationStatus.FORMING_HYPOTHESES, InvestigationStatus.WAITING_FOR_HUMAN,

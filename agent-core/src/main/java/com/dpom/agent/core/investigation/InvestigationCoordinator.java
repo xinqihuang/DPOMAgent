@@ -3,9 +3,12 @@ package com.dpom.agent.core.investigation;
 import com.dpom.agent.core.conclusion.Conclusion;
 import com.dpom.agent.core.hypothesis.Hypothesis;
 import com.dpom.agent.core.hypothesis.HypothesisService;
+import com.dpom.agent.core.logevidence.EvidenceBundle;
+import com.dpom.agent.core.logevidence.EvidenceConclusionGuard;
 import com.dpom.agent.core.observation.Observation;
 import com.dpom.agent.core.observation.ObservationService;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.HypothesisDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.InvestigationRunDao;
@@ -40,6 +43,7 @@ public class InvestigationCoordinator {
     private final ObservationDao observationDao;
     private final HypothesisDao hypothesisDao;
     private final ConclusionDao conclusionDao;
+    private final EvidenceBundleDao evidenceBundleDao;
     private final StepRecorder stepRecorder;
     private final HypothesisService hypothesisService;
     private final ObservationService observationService;
@@ -62,6 +66,7 @@ public class InvestigationCoordinator {
     public InvestigationCoordinator(InvestigationDao investigationDao, InvestigationRunDao runDao,
                                     InvestigationStepDao stepDao, ObservationDao observationDao,
                                     HypothesisDao hypothesisDao, ConclusionDao conclusionDao,
+                                    EvidenceBundleDao evidenceBundleDao,
                                     StepRecorder stepRecorder, HypothesisService hypothesisService,
                                     ObservationService observationService, InvestigationStateMachine stateMachine) {
         this.investigationDao = investigationDao;
@@ -70,6 +75,7 @@ public class InvestigationCoordinator {
         this.observationDao = observationDao;
         this.hypothesisDao = hypothesisDao;
         this.conclusionDao = conclusionDao;
+        this.evidenceBundleDao = evidenceBundleDao;
         this.stepRecorder = stepRecorder;
         this.hypothesisService = hypothesisService;
         this.observationService = observationService;
@@ -116,7 +122,7 @@ public class InvestigationCoordinator {
             InvestigationStatus status = investigation.status();
 
             if (budget.isExceeded(LocalDateTime.now())) {
-                finalize(investigationId, runId, RESULT_INSUFFICIENT_EVIDENCE, null, "预算耗尽", null);
+                finalize(investigationId, runId, RESULT_INSUFFICIENT_EVIDENCE, null, null, "预算耗尽", null);
                 return;
             }
             if (status == InvestigationStatus.FORMING_HYPOTHESES) {
@@ -135,8 +141,8 @@ public class InvestigationCoordinator {
             } else if (decision instanceof InvestigationDecision.UpdateHypotheses update) {
                 handleUpdate(investigationId, runId, update, budget);
             } else if (decision instanceof InvestigationDecision.Conclude conclude) {
-                finalize(investigationId, runId, conclude.resultType(), conclude.rootCause(),
-                        conclude.summary(), conclude.evidenceIds());
+                finalize(investigationId, runId, conclude.resultType(), conclude.rootCauseId(),
+                        conclude.rootCause(), conclude.summary(), conclude.evidenceIds());
                 return;
             }
         }
@@ -207,10 +213,14 @@ public class InvestigationCoordinator {
     /**
      * 综合结论并转移到终态。
      */
-    private void finalize(long investigationId, long runId, String resultType, String rootCause,
-                          String summary, String evidenceIds) {
+    private void finalize(long investigationId, long runId, String resultType, String rootCauseId,
+                          String rootCause, String summary, String evidenceIds) {
+        EvidenceBundle bundle = evidenceBundleDao.findByInvestigationId(investigationId).orElse(null);
+        String effective = EvidenceConclusionGuard.validate(bundle, resultType, evidenceIds);
+        String effectiveRootCauseId = RESULT_ROOT_CAUSE.equals(effective) ? rootCauseId : null;
+        String effectiveRootCause = RESULT_ROOT_CAUSE.equals(effective) ? rootCause : null;
         InvestigationStatus status = load(investigationId).status();
-        InvestigationStatus terminal = RESULT_ROOT_CAUSE.equals(resultType)
+        InvestigationStatus terminal = RESULT_ROOT_CAUSE.equals(effective)
                 ? InvestigationStatus.COMPLETED : InvestigationStatus.INCONCLUSIVE;
 
         if (stateMachine.canTransition(status, InvestigationStatus.SYNTHESIZING)) {
@@ -223,8 +233,8 @@ public class InvestigationCoordinator {
             terminal = InvestigationStatus.FAILED;
         }
 
-        conclusionDao.insert(new Conclusion(null, investigationId, resultType, rootCause, evidenceIds, null,
-                summary, null));
+        conclusionDao.insert(new Conclusion(null, investigationId, effective, effectiveRootCauseId,
+                effectiveRootCause, evidenceIds, null, summary, null));
         runDao.finish(runId, LocalDateTime.now());
         LOG.info("调查 {} 终结：{}", investigationId, terminal);
     }
@@ -244,7 +254,8 @@ public class InvestigationCoordinator {
         List<InvestigationStep> steps = stepDao.findByInvestigationId(investigationId);
         List<Observation> observations = observationDao.findByInvestigationId(investigationId);
         List<Hypothesis> hypotheses = hypothesisDao.findByInvestigationId(investigationId);
-        return new InvestigationContext(load(investigationId), steps, observations, hypotheses);
+        EvidenceBundle bundle = evidenceBundleDao.findByInvestigationId(investigationId).orElse(null);
+        return new InvestigationContext(load(investigationId), steps, observations, hypotheses, bundle);
     }
 
     /**

@@ -27,11 +27,12 @@ public sealed interface InvestigationDecision {
      * 给出结论。
      *
      * @param resultType 结论类型
-     * @param rootCause  根因
+     * @param rootCauseId 稳定根因标识（类.方法，可为空）
+     * @param rootCause  根因自然语言描述
      * @param summary    摘要
      * @param evidenceIds 证据 id（逗号分隔，可为空）
      */
-    record Conclude(String resultType, String rootCause, String summary, String evidenceIds)
+    record Conclude(String resultType, String rootCauseId, String rootCause, String summary, String evidenceIds)
             implements InvestigationDecision {
     }
 

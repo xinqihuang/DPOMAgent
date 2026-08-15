@@ -1,0 +1,7 @@
+{
+  "serviceCode": "gateway-service",
+  "environment": "prod",
+  "release": "3.0.0",
+  "commit": "e05abc",
+  "symptom": "downstream timeout retry storm"
+}

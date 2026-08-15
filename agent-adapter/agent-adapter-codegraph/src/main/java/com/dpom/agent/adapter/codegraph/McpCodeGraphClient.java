@@ -83,8 +83,8 @@ public class McpCodeGraphClient implements CodeGraphClient {
     @Override
     public List<Symbol> findSymbol(String snapshotId, String name) {
         JsonNode resp = callTool("find_code", Map.of("query", name, "repo_path", snapshotId));
-        JsonNode results = resp.path("results");
-        return parseSymbols(results.isArray() ? results : resp.path("data").path("results"));
+        JsonNode ranked = resp.path("results").path("ranked_results");
+        return parseSymbols(ranked.isArray() ? ranked : resp.path("data").path("results"));
     }
 
     @Override
@@ -161,7 +161,7 @@ public class McpCodeGraphClient implements CodeGraphClient {
         if (node.isArray()) {
             for (JsonNode item : node) {
                 symbols.add(new Symbol(textOrEmpty(item, "name", "function", "symbol", "function_name", "method"),
-                        textOf(item, "kind", "type"), textOf(item, "file_path", "file", "path", "target_file_path"),
+                        textOf(item, "kind", "type", "search_type"), textOf(item, "file_path", "file", "path", "target_file_path"),
                         intOf(item, "line", "line_number", "lineNumber")));
             }
         }

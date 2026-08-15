@@ -22,6 +22,7 @@ public class ConclusionDao {
             rs.getLong("id"),
             rs.getLong("investigation_id"),
             rs.getString("result_type"),
+            rs.getString("root_cause_id"),
             rs.getString("root_cause"),
             rs.getString("evidence_ids"),
             rs.getString("unresolved_questions"),
@@ -48,12 +49,14 @@ public class ConclusionDao {
     public long insert(Conclusion conclusion) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcClient.sql("""
-                INSERT INTO conclusion (investigation_id, result_type, root_cause, evidence_ids,
+                INSERT INTO conclusion (investigation_id, result_type, root_cause_id, root_cause, evidence_ids,
                                          unresolved_questions, summary)
-                VALUES (:investigationId, :resultType, :rootCause, :evidenceIds, :unresolvedQuestions, :summary)
+                VALUES (:investigationId, :resultType, :rootCauseId, :rootCause, :evidenceIds,
+                        :unresolvedQuestions, :summary)
                 """)
                 .param("investigationId", conclusion.investigationId())
                 .param("resultType", conclusion.resultType())
+                .param("rootCauseId", conclusion.rootCauseId())
                 .param("rootCause", conclusion.rootCause())
                 .param("evidenceIds", conclusion.evidenceIds())
                 .param("unresolvedQuestions", conclusion.unresolvedQuestions())

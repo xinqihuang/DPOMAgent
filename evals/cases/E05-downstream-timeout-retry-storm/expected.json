@@ -1,0 +1,13 @@
+{
+  "rootCauseId": "DownstreamClient.call",
+  "expectedSymbols": [
+    "DownstreamClient.call"
+  ],
+  "requiredEvidenceTypes": [
+    "LOG",
+    "SOURCE"
+  ],
+  "forbiddenConclusions": [
+    "ROOT_CAUSE_FOUND_WITHOUT_SOURCE"
+  ]
+}

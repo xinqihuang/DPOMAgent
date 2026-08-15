@@ -1,0 +1,2 @@
+WARN com.example.telemetry.BatchPublisher - batch lost 5 records
+WARN com.example.telemetry.BatchPublisher -     at com.example.telemetry.BatchPublisher.flush(BatchPublisher.java:88)

@@ -1,0 +1,7 @@
+{
+  "serviceCode": "telemetry-service",
+  "environment": "prod",
+  "release": "2.0.0",
+  "commit": "e03abc",
+  "symptom": "telemetry partial batch loss"
+}

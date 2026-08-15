@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * 工具集与工具执行器验收测试：12 个工具、无 execute_shell、代码/运行时/工作区分发。
+ * 工具集与工具执行器验收测试：13 个工具、无 execute_shell、代码/运行时/工作区分发。
  */
 class InvestigationToolExecutorTest {
 
@@ -38,6 +38,23 @@ class InvestigationToolExecutorTest {
                 "list_files", "search_text", "read_source", "find_symbol", "find_callers", "find_callees",
                 "find_call_chain", "find_class_hierarchy", "search_logs", "query_trace", "query_alerts",
                 "query_metrics", "mine_log_templates");
+    }
+
+    /**
+     * mine_log_templates 的 lines 必须是 string array，而非 string。
+     */
+    @Test
+    void mineLogTemplatesLinesIsStringArray() {
+        ToolDefinition tool = Toolset.definitions().stream()
+                .filter(t -> t.name().equals("mine_log_templates"))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(tool.parametersJson())
+                .contains("\"lines\"")
+                .contains("\"array\"")
+                .contains("\"items\"")
+                .contains("\"string\"");
     }
 
     /**
