@@ -5,9 +5,6 @@ import com.dpom.agent.common.codegraph.CodeSnapshot;
 import com.dpom.agent.common.codegraph.SnapshotStatus;
 import com.dpom.agent.common.logtemplate.LogParseResult;
 import com.dpom.agent.common.logtemplate.LogTemplateMinerClient;
-import com.dpom.agent.core.conclusion.Conclusion;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.logevidence.CodeEvidence;
 import com.dpom.agent.core.logevidence.EvidenceBundle;
@@ -20,9 +17,14 @@ import com.dpom.agent.core.logevidence.LogEvidenceService;
 import com.dpom.agent.core.logevidence.LogTemplateSummary;
 import com.dpom.agent.core.logevidence.ParameterDistribution;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.command.ConclusionInsert;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.workspace.CodeWorkspace;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,8 +75,12 @@ class EvidenceTimelinePersistenceTest {
                 "abc123", "throw new IllegalStateException()", "VERIFIED");
         EvidenceBundle bundle = new EvidenceBundle("svc", "prod", "1.0.0", "abc123", "1h", List.of(log), List.of(),
                 List.of(code), List.of("LOG_MINER_UNAVAILABLE"), List.of(), false);
-        bundleDao.save(id, bundle);
-        conclusionDao.insert(new Conclusion(null, id, "ROOT_CAUSE_FOUND", "AssetRepository.insert", "r", "ev-1,code-1", null, "s", null));
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(id, bundle.service(), bundle.commit(),
+                EvidenceBundleCodec.encode(bundle));
+        bundleDao.insert(bundleCommand);
+        ConclusionInsert conclusionCommand = new ConclusionInsert(id, "ROOT_CAUSE_FOUND", "AssetRepository.insert",
+                "r", "ev-1,code-1", null, "s");
+        conclusionDao.insert(conclusionCommand);
 
         EvidenceTimeline timeline = timelineService.timeline(id);
 
@@ -115,17 +121,22 @@ class EvidenceTimelinePersistenceTest {
         CodeSnapshot snapshot = new CodeSnapshot("s1", "svc", "c", "/x", SnapshotStatus.READY);
         EvidenceBundle bundle = service.run("svc", "prod", "1.0.0", "c", "1h", "drain3-0.9", snapshot,
                 List.of("ERROR svc - password=secret123 device 1 insert failed"));
-        bundleDao.save(id, bundle);
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(id, bundle.service(), bundle.commit(),
+                EvidenceBundleCodec.encode(bundle));
+        bundleDao.insert(bundleCommand);
 
-        EvidenceBundle recovered = bundleDao.findByInvestigationId(id).orElseThrow();
+        EvidenceBundle recovered = bundleDao.findBundleJson(id).map(EvidenceBundleCodec::decode).orElseThrow();
         String sample = recovered.logEvidences().get(0).summary().representativeSamples().get(0);
         assertThat(sample).doesNotContain("secret123");
         assertThat(sample).contains("h:");
     }
 
     private long createInvestigation() {
-        long incidentId = incidentDao.insert(new Incident(null, "svc", "prod", "1.0.0", "c", "symptom", null));
-        return investigationDao.insert(new Investigation(null, incidentId, InvestigationStatus.CREATED, null, 30, 60,
-                1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert("svc", "prod", "1.0.0", "c", "symptom");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 }

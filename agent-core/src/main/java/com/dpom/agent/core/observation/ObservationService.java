@@ -1,6 +1,7 @@
 package com.dpom.agent.core.observation;
 
 import com.dpom.agent.core.persistence.ObservationDao;
+import com.dpom.agent.core.persistence.command.ObservationInsert;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,8 +41,10 @@ public class ObservationService {
     public long record(long investigationId, Long runId, String source, String artifactRef, String location,
                        String supportsHypothesisIds, String contradictsHypothesisIds, String summary,
                        String payloadJson) {
-        return observationDao.insert(new Observation(null, investigationId, runId, source, artifactRef, location,
-                supportsHypothesisIds, contradictsHypothesisIds, summary, payloadJson, null));
+        ObservationInsert command = new ObservationInsert(investigationId, runId, source, artifactRef, location,
+                supportsHypothesisIds, contradictsHypothesisIds, summary, payloadJson);
+        observationDao.insert(command);
+        return command.getId();
     }
 
     /**

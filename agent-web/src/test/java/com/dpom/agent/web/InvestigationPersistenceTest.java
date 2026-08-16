@@ -2,9 +2,7 @@ package com.dpom.agent.web;
 
 import com.dpom.agent.core.hypothesis.Hypothesis;
 import com.dpom.agent.core.hypothesis.HypothesisStatus;
-import com.dpom.agent.core.incident.Incident;
 import com.dpom.agent.core.investigation.Investigation;
-import com.dpom.agent.core.investigation.InvestigationRun;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.investigation.InvestigationStep;
 import com.dpom.agent.core.observation.Observation;
@@ -14,6 +12,12 @@ import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.InvestigationRunDao;
 import com.dpom.agent.core.persistence.InvestigationStepDao;
 import com.dpom.agent.core.persistence.ObservationDao;
+import com.dpom.agent.core.persistence.command.HypothesisInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
+import com.dpom.agent.core.persistence.command.InvestigationRunInsert;
+import com.dpom.agent.core.persistence.command.InvestigationStepInsert;
+import com.dpom.agent.core.persistence.command.ObservationInsert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,29 +67,40 @@ class InvestigationPersistenceTest {
         assertThat(applied).isGreaterThanOrEqualTo(1);
 
         // 2) 创建 Incident → Investigation → Run → Step → Hypothesis → Observation。
-        long incidentId = incidentDao.insert(new Incident(
-                null, "asset-service", "prod", "1.2.3", "abc123def456", "创建设备成功但数据库无记录", null));
+        IncidentInsert incidentCommand = new IncidentInsert("asset-service", "prod", "1.2.3", "abc123def456",
+                "创建设备成功但数据库无记录");
+        incidentDao.insert(incidentCommand);
+        long incidentId = incidentCommand.getId();
         assertThat(incidentId).isGreaterThan(0);
 
-        long investigationId = investigationDao.insert(new Investigation(
-                null, incidentId, InvestigationStatus.CREATED, null, 50, 100, 1800, 5, null, null));
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentId, InvestigationStatus.CREATED,
+                null, 50, 100, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        long investigationId = investigationCommand.getId();
         assertThat(investigationId).isGreaterThan(0);
 
-        long runId = runDao.insert(new InvestigationRun(
-                null, investigationId, "gpt-4.1", "v1", "v1", null, null));
+        InvestigationRunInsert runCommand = new InvestigationRunInsert(investigationId, "gpt-4.1", "v1", "v1");
+        runDao.insert(runCommand);
+        long runId = runCommand.getId();
         assertThat(runId).isGreaterThan(0);
 
-        stepDao.append(new InvestigationStep(null, investigationId, runId, 1, "RESEARCHING", "定位到 Repository", null, null));
-        stepDao.append(new InvestigationStep(null, investigationId, runId, 2, "VALIDATING", "读取插入方法源码", null, null));
+        InvestigationStepInsert step1 = new InvestigationStepInsert(investigationId, runId, 1, "RESEARCHING",
+                "定位到 Repository", null);
+        stepDao.append(step1);
+        InvestigationStepInsert step2 = new InvestigationStepInsert(investigationId, runId, 2, "VALIDATING",
+                "读取插入方法源码", null);
+        stepDao.append(step2);
 
-        long hypothesisId = hypothesisDao.insert(new Hypothesis(
-                null, investigationId, null, "INSERT 后事务回滚", HypothesisStatus.PROPOSED, "需要日志证据", null, null));
+        HypothesisInsert hypothesisCommand = new HypothesisInsert(investigationId, null, "INSERT 后事务回滚",
+                HypothesisStatus.PROPOSED, "需要日志证据");
+        hypothesisDao.insert(hypothesisCommand);
+        long hypothesisId = hypothesisCommand.getId();
         assertThat(hypothesisId).isGreaterThan(0);
 
-        observationDao.insert(new Observation(
-                null, investigationId, runId, "codegraph", "src/AssetRepository.java",
-                "AssetRepository.insert", String.valueOf(hypothesisId), null,
-                "insert 方法存在且被 Service 调用", null, null));
+        ObservationInsert observationCommand = new ObservationInsert(investigationId, runId, "codegraph",
+                "src/AssetRepository.java", "AssetRepository.insert", String.valueOf(hypothesisId), null,
+                "insert 方法存在且被 Service 调用", null);
+        observationDao.insert(observationCommand);
 
         // 3) 校验回读。
         Investigation investigation = investigationDao.findById(investigationId).orElseThrow();

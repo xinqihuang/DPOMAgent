@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.IncidentDao">
+    <resultMap id="incidentResult" type="com.dpom.agent.core.incident.Incident">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="service_code" javaType="string"/>
+            <arg column="environment" javaType="string"/>
+            <arg column="release_version" javaType="string"/>
+            <arg column="commit_sha" javaType="string"/>
+            <arg column="symptom" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="incidentResult">
+        SELECT id, service_code, environment, release_version, commit_sha, symptom, created_at
+        FROM incident WHERE id = #{id}
+    </select>
+
+    <select id="findByServiceCodeAndEnvironment" resultMap="incidentResult">
+        SELECT id, service_code, environment, release_version, commit_sha, symptom, created_at
+        FROM incident WHERE service_code = #{serviceCode} AND environment = #{environment} ORDER BY id DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO incident (service_code, environment, release_version, commit_sha, symptom)
+        VALUES (#{serviceCode}, #{environment}, #{releaseVersion}, #{commitSha}, #{symptom})
+    </insert>
+</mapper>

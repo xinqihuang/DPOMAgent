@@ -1,6 +1,5 @@
 package com.dpom.agent.core.investigation;
 
-import com.dpom.agent.core.conclusion.Conclusion;
 import com.dpom.agent.core.hypothesis.Hypothesis;
 import com.dpom.agent.core.hypothesis.HypothesisService;
 import com.dpom.agent.core.logevidence.EvidenceBundle;
@@ -8,12 +7,15 @@ import com.dpom.agent.core.logevidence.EvidenceConclusionGuard;
 import com.dpom.agent.core.observation.Observation;
 import com.dpom.agent.core.observation.ObservationService;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.HypothesisDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.InvestigationRunDao;
 import com.dpom.agent.core.persistence.InvestigationStepDao;
 import com.dpom.agent.core.persistence.ObservationDao;
+import com.dpom.agent.core.persistence.command.ConclusionInsert;
+import com.dpom.agent.core.persistence.command.InvestigationRunInsert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -96,8 +98,9 @@ public class InvestigationCoordinator {
             throw new IllegalStateException("调查已终结：" + status);
         }
 
-        long runId = runDao.insert(new InvestigationRun(
-                null, investigationId, null, null, null, null, null));
+        InvestigationRunInsert runCommand = new InvestigationRunInsert(investigationId, null, null, null);
+        runDao.insert(runCommand);
+        long runId = runCommand.getId();
         investigationDao.updateCurrentRun(investigationId, runId);
 
         if (status == InvestigationStatus.CREATED) {
@@ -215,7 +218,8 @@ public class InvestigationCoordinator {
      */
     private void finalize(long investigationId, long runId, String resultType, String rootCauseId,
                           String rootCause, String summary, String evidenceIds) {
-        EvidenceBundle bundle = evidenceBundleDao.findByInvestigationId(investigationId).orElse(null);
+        EvidenceBundle bundle = evidenceBundleDao.findBundleJson(investigationId)
+                .map(EvidenceBundleCodec::decode).orElse(null);
         String effective = EvidenceConclusionGuard.validate(bundle, resultType, evidenceIds);
         String effectiveRootCauseId = RESULT_ROOT_CAUSE.equals(effective) ? rootCauseId : null;
         String effectiveRootCause = RESULT_ROOT_CAUSE.equals(effective) ? rootCause : null;
@@ -233,8 +237,9 @@ public class InvestigationCoordinator {
             terminal = InvestigationStatus.FAILED;
         }
 
-        conclusionDao.insert(new Conclusion(null, investigationId, effective, effectiveRootCauseId,
-                effectiveRootCause, evidenceIds, null, summary, null));
+        ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, effective,
+                effectiveRootCauseId, effectiveRootCause, evidenceIds, null, summary);
+        conclusionDao.insert(conclusionCommand);
         runDao.finish(runId, LocalDateTime.now());
         LOG.info("调查 {} 终结：{}", investigationId, terminal);
     }
@@ -254,7 +259,8 @@ public class InvestigationCoordinator {
         List<InvestigationStep> steps = stepDao.findByInvestigationId(investigationId);
         List<Observation> observations = observationDao.findByInvestigationId(investigationId);
         List<Hypothesis> hypotheses = hypothesisDao.findByInvestigationId(investigationId);
-        EvidenceBundle bundle = evidenceBundleDao.findByInvestigationId(investigationId).orElse(null);
+        EvidenceBundle bundle = evidenceBundleDao.findBundleJson(investigationId)
+                .map(EvidenceBundleCodec::decode).orElse(null);
         return new InvestigationContext(load(investigationId), steps, observations, hypotheses, bundle);
     }
 

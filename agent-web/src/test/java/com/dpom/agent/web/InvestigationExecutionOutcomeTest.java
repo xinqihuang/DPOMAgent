@@ -7,7 +7,7 @@ import com.dpom.agent.common.codegraph.Symbol;
 import com.dpom.agent.common.llm.ModelClient;
 import com.dpom.agent.common.logtemplate.LogParseResult;
 import com.dpom.agent.common.logtemplate.LogTemplateMinerClient;
-import com.dpom.agent.core.conclusion.Conclusion;
+import com.dpom.agent.core.persistence.command.ConclusionInsert;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.ConclusionDao;
@@ -166,7 +166,9 @@ class InvestigationExecutionOutcomeTest {
             long id = inv.getArgument(0);
             investigationDao.updateStatus(id, status);
             if (resultType != null) {
-                conclusionDao.insert(new Conclusion(null, id, resultType, null, null, null, null, "s", null));
+                ConclusionInsert conclusionCommand = new ConclusionInsert(id, resultType, null, null, null, null,
+                        "s");
+                conclusionDao.insert(conclusionCommand);
             }
             if (throwAfter) {
                 throw new RuntimeException("after-terminal");

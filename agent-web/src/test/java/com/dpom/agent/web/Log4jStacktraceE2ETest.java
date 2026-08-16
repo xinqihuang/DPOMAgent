@@ -8,8 +8,8 @@ import com.dpom.agent.common.llm.ModelClient;
 import com.dpom.agent.common.logtemplate.LogTemplateMinerClient;
 import com.dpom.agent.common.runtime.RuntimeEvidenceClient;
 import com.dpom.agent.core.hypothesis.Hypothesis;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.investigation.SymptomBrain;
@@ -117,9 +117,11 @@ class Log4jStacktraceE2ETest {
      * 创建事件与调查。
      */
     private long createInvestigation(String symptom) {
-        long incidentId = incidentDao.insert(new Incident(
-                null, "log4j-core", "prod", "2.25.x", "7cab23ba", symptom, null));
-        return investigationDao.insert(new Investigation(
-                null, incidentId, InvestigationStatus.CREATED, null, 30, 60, 1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert("log4j-core", "prod", "2.25.x", "7cab23ba", symptom);
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 }

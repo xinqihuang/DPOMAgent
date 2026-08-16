@@ -6,13 +6,15 @@ import com.dpom.agent.core.handoff.BuiltPackage;
 import com.dpom.agent.core.handoff.EvidenceHandoffService;
 import com.dpom.agent.core.handoff.HandoffErrorCode;
 import com.dpom.agent.core.handoff.HandoffException;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.logevidence.EvidenceBundle;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -90,14 +92,18 @@ class HandoffAuditTest {
     }
 
     private long createInvestigation() {
-        long incidentId = incidentDao.insert(
-                new Incident(null, "asset-service", "prod", "1.0.0", "abc123", "device create not persisted", null));
-        long investigationId = investigationDao.insert(new Investigation(null, incidentId, InvestigationStatus.INCONCLUSIVE,
-                null, 30, 60, 1800, 5, null, null));
-        evidenceBundleDao.save(investigationId, new EvidenceBundle("asset-service", "prod", "1.0.0", "abc123", "1h",
-                java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of(),
-                false));
-        return investigationId;
+        IncidentInsert incidentCommand = new IncidentInsert("asset-service", "prod", "1.0.0", "abc123",
+                "device create not persisted");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.INCONCLUSIVE, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(investigationCommand.getId(), "asset-service",
+                "abc123", EvidenceBundleCodec.encode(new EvidenceBundle("asset-service", "prod", "1.0.0", "abc123",
+                "1h", java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of(),
+                java.util.List.of(), false)));
+        evidenceBundleDao.insert(bundleCommand);
+        return investigationCommand.getId();
     }
 
     @TestConfiguration

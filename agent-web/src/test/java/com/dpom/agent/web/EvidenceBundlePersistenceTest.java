@@ -1,7 +1,5 @@
 package com.dpom.agent.web;
 
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.logevidence.CodeAnchor;
 import com.dpom.agent.core.logevidence.CodeEvidence;
@@ -10,9 +8,13 @@ import com.dpom.agent.core.logevidence.EvidenceProvenance;
 import com.dpom.agent.core.logevidence.LogEvidence;
 import com.dpom.agent.core.logevidence.LogTemplateSummary;
 import com.dpom.agent.core.logevidence.ParameterDistribution;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,10 +58,14 @@ class EvidenceBundlePersistenceTest {
                 List.of(new CodeAnchor("CLASS_METHOD", "com.example.AssetRepository.insert", "ev-1", 0.9, "v1")),
                 List.of(code), List.of("LOG_MINER_UNAVAILABLE"), List.of(), false);
 
-        long id = evidenceBundleDao.save(investigationId, bundle);
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(investigationId, bundle.service(),
+                bundle.commit(), EvidenceBundleCodec.encode(bundle));
+        evidenceBundleDao.insert(bundleCommand);
+        long id = bundleCommand.getId();
         assertThat(id).isPositive();
 
-        EvidenceBundle recovered = evidenceBundleDao.findByInvestigationId(investigationId).orElseThrow();
+        EvidenceBundle recovered = evidenceBundleDao.findBundleJson(investigationId)
+                .map(EvidenceBundleCodec::decode).orElseThrow();
         assertThat(recovered.service()).isEqualTo("asset-service");
         assertThat(recovered.commit()).isEqualTo("abc123");
         assertThat(recovered.logEvidences()).hasSize(1);
@@ -73,9 +79,12 @@ class EvidenceBundlePersistenceTest {
      * 创建调查。
      */
     private long createInvestigation() {
-        long incidentId = incidentDao.insert(
-                new Incident(null, "asset-service", "prod", "1.0.0", "abc123", "device create not persisted", null));
-        return investigationDao.insert(
-                new Investigation(null, incidentId, InvestigationStatus.CREATED, null, 30, 60, 1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert("asset-service", "prod", "1.0.0", "abc123",
+                "device create not persisted");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 }

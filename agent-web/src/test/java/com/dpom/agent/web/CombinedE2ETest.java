@@ -13,8 +13,6 @@ import com.dpom.agent.core.eval.ConclusionEvaluation;
 import com.dpom.agent.core.eval.ConclusionEvaluator;
 import com.dpom.agent.core.eval.EvalCase;
 import com.dpom.agent.core.eval.EvalFixtureLoader;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.investigation.SymptomBrain;
@@ -22,10 +20,14 @@ import com.dpom.agent.core.logevidence.EvidenceBundle;
 import com.dpom.agent.core.logevidence.EvidenceBundleBuilder;
 import com.dpom.agent.core.logevidence.LogEvidenceService;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.InvestigationStepDao;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.tool.InvestigationToolExecutor;
 import com.dpom.agent.core.workspace.CodeWorkspace;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -104,7 +106,9 @@ class CombinedE2ETest {
         assertThat(bundle.hasVerifiedSource()).as("需要真实 VERIFIED 源码证据").isTrue();
 
         long investigationId = createInvestigation(e01);
-        bundleDao.save(investigationId, bundle);
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(investigationId, bundle.service(),
+                bundle.commit(), EvidenceBundleCodec.encode(bundle));
+        bundleDao.insert(bundleCommand);
 
         ModelClient llm = new DeepSeekModelClient(RestClient.builder().baseUrl("https://api.deepseek.com")
                 .defaultHeader("Authorization", "Bearer " + apiKey).build(), "deepseek-v4-pro");
@@ -134,10 +138,13 @@ class CombinedE2ETest {
     }
 
     private long createInvestigation(EvalCase c) {
-        long incidentId = incidentDao.insert(new Incident(null, c.serviceCode(), c.environment(), c.release(),
-                c.commit(), c.symptom(), null));
-        return investigationDao.insert(new Investigation(null, incidentId, InvestigationStatus.CREATED, null, 30, 60,
-                1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert(c.serviceCode(), c.environment(), c.release(),
+                c.commit(), c.symptom());
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 
     private void writeResult(EvalCase c, Conclusion conclusion, InvestigationStatus status,

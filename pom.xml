@@ -32,6 +32,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-ai.version>1.0.4</spring-ai.version>
+        <mybatis.version>3.0.4</mybatis.version>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     </properties>
 
@@ -44,6 +45,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -55,7 +61,6 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
                         <release>${java.version}</release>
-                        <parameters>true</parameters>
                     </configuration>
                 </plugin>
                 <plugin>

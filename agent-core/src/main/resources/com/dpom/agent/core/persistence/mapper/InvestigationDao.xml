@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.InvestigationDao">
+    <resultMap id="investigationResult" type="com.dpom.agent.core.investigation.Investigation">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="incident_id" javaType="long"/>
+            <arg column="status" javaType="com.dpom.agent.core.investigation.InvestigationStatus"/>
+            <arg column="current_run_id" javaType="long"/>
+            <arg column="max_steps" javaType="_int"/>
+            <arg column="max_tool_calls" javaType="_int"/>
+            <arg column="max_duration_seconds" javaType="_int"/>
+            <arg column="max_no_progress_rounds" javaType="_int"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="investigationResult">
+        SELECT id, incident_id, status, current_run_id, max_steps, max_tool_calls, max_duration_seconds,
+               max_no_progress_rounds, created_at, updated_at
+        FROM investigation WHERE id = #{id}
+    </select>
+
+    <select id="findByIncidentId" resultMap="investigationResult">
+        SELECT id, incident_id, status, current_run_id, max_steps, max_tool_calls, max_duration_seconds,
+               max_no_progress_rounds, created_at, updated_at
+        FROM investigation WHERE incident_id = #{incidentId} ORDER BY id
+    </select>
+
+    <select id="findNonTerminal" resultMap="investigationResult">
+        SELECT id, incident_id, status, current_run_id, max_steps, max_tool_calls, max_duration_seconds,
+               max_no_progress_rounds, created_at, updated_at
+        FROM investigation WHERE status NOT IN ('COMPLETED','INCONCLUSIVE','FAILED','CANCELLED','WAITING_FOR_HUMAN')
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO investigation (incident_id, status, current_run_id, max_steps, max_tool_calls,
+                                   max_duration_seconds, max_no_progress_rounds)
+        VALUES (#{incidentId}, #{status}, #{currentRunId}, #{maxSteps}, #{maxToolCalls},
+                #{maxDurationSeconds}, #{maxNoProgressRounds})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE investigation SET status = #{status}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id}
+    </update>
+
+    <update id="updateStatusIfActive">
+        UPDATE investigation SET status = #{status}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id}
+        AND status NOT IN ('COMPLETED','INCONCLUSIVE','FAILED','CANCELLED','WAITING_FOR_HUMAN')
+    </update>
+
+    <update id="updateCurrentRun">
+        UPDATE investigation SET current_run_id = #{currentRunId}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id}
+    </update>
+</mapper>

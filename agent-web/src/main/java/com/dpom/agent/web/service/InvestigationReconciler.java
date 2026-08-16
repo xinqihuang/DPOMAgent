@@ -1,11 +1,11 @@
 package com.dpom.agent.web.service;
 
-import com.dpom.agent.core.conclusion.Conclusion;
 import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.ConclusionDao;
 import com.dpom.agent.core.persistence.InvestigationApiRequestDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.command.ConclusionInsert;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -42,8 +42,9 @@ public class InvestigationReconciler {
                 continue;
             }
             if (conclusionDao.findByInvestigationId(inv.id()).isEmpty()) {
-                conclusionDao.insert(new Conclusion(null, inv.id(), "FAILED", null, null, null, null,
-                        "进程重启，任务标记失败可恢复", null));
+                ConclusionInsert conclusionCommand = new ConclusionInsert(inv.id(), "FAILED", null, null,
+                        null, null, "进程重启，任务标记失败可恢复");
+                conclusionDao.insert(conclusionCommand);
             }
             apiRequestDao.findByInvestigationId(inv.id()).ifPresent(record ->
                     apiRequestDao.updateDone(record.id(), "FAILED", "RECONCILED_AFTER_RESTART"));

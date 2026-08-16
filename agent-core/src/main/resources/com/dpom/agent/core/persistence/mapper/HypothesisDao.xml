@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.HypothesisDao">
+    <resultMap id="hypothesisResult" type="com.dpom.agent.core.hypothesis.Hypothesis">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="parent_id" javaType="long"/>
+            <arg column="description" javaType="string"/>
+            <arg column="status" javaType="com.dpom.agent.core.hypothesis.HypothesisStatus"/>
+            <arg column="missing_checks" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="hypothesisResult">
+        SELECT id, investigation_id, parent_id, description, status, missing_checks, created_at, updated_at
+        FROM hypothesis WHERE id = #{id}
+    </select>
+
+    <select id="findByInvestigationId" resultMap="hypothesisResult">
+        SELECT id, investigation_id, parent_id, description, status, missing_checks, created_at, updated_at
+        FROM hypothesis WHERE investigation_id = #{investigationId} ORDER BY id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO hypothesis (investigation_id, parent_id, description, status, missing_checks)
+        VALUES (#{investigationId}, #{parentId}, #{description}, #{status}, #{missingChecks})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE hypothesis SET status = #{status}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id}
+    </update>
+</mapper>

@@ -7,7 +7,7 @@ import com.dpom.agent.common.codegraph.Symbol;
 import com.dpom.agent.common.llm.ModelClient;
 import com.dpom.agent.common.logtemplate.LogParseResult;
 import com.dpom.agent.common.logtemplate.LogTemplateMinerClient;
-import com.dpom.agent.core.conclusion.Conclusion;
+import com.dpom.agent.core.persistence.command.ConclusionInsert;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.ApiRequestRecord;
@@ -115,8 +115,9 @@ class InvestigationClosureEdgeTest {
         doAnswer(inv -> {
             long investigationId = inv.getArgument(0);
             investigationDao.updateStatus(investigationId, InvestigationStatus.COMPLETED);
-            conclusionDao.insert(new Conclusion(null, investigationId, "ROOT_CAUSE_FOUND", null, null, null, null,
-                    "s", null));
+            ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, "ROOT_CAUSE_FOUND",
+                    null, null, null, null, "s");
+            conclusionDao.insert(conclusionCommand);
             return null;
         }).when(coordinator).run(anyLong(), any(), any());
         doThrow(new RuntimeException("metrics-boom")).when(metrics).stopExecution(any(), anyString(), anyString(),
@@ -167,8 +168,9 @@ class InvestigationClosureEdgeTest {
             }
             long investigationId = inv.getArgument(0);
             investigationDao.updateStatus(investigationId, InvestigationStatus.COMPLETED);
-            conclusionDao.insert(new Conclusion(null, investigationId, "ROOT_CAUSE_FOUND", null, null, null, null,
-                    "s", null));
+            ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, "ROOT_CAUSE_FOUND",
+                    null, null, null, null, "s");
+            conclusionDao.insert(conclusionCommand);
             return null;
         }).when(coordinator).run(anyLong(), any(), any());
 
@@ -187,8 +189,9 @@ class InvestigationClosureEdgeTest {
         doAnswer(inv -> {
             long investigationId = inv.getArgument(0);
             investigationDao.updateStatus(investigationId, InvestigationStatus.COMPLETED);
-            conclusionDao.insert(new Conclusion(null, investigationId, "ROOT_CAUSE_FOUND", null, null, null, null,
-                    "s", null));
+            ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, "ROOT_CAUSE_FOUND",
+                    null, null, null, null, "s");
+            conclusionDao.insert(conclusionCommand);
             return null;
         }).when(coordinator).run(anyLong(), any(), any());
     }

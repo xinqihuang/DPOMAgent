@@ -1,6 +1,7 @@
 package com.dpom.agent.core.investigation;
 
 import com.dpom.agent.core.persistence.InvestigationStepDao;
+import com.dpom.agent.core.persistence.command.InvestigationStepInsert;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,7 +32,9 @@ public class StepRecorder {
      */
     public long record(long investigationId, Long runId, String stepType, String summary) {
         int order = stepDao.maxStepOrder(investigationId) + 1;
-        return stepDao.append(new InvestigationStep(
-                null, investigationId, runId, order, stepType, summary, null, null));
+        InvestigationStepInsert command = new InvestigationStepInsert(investigationId, runId, order, stepType,
+                summary, null);
+        stepDao.append(command);
+        return command.getId();
     }
 }

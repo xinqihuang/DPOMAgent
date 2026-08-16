@@ -1,5 +1,6 @@
 package com.dpom.agent.web;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>研发侧症状驱动、假设驱动的故障调查 Agent；以 Spring MVC + Virtual Threads 运行。</p>
  */
 @SpringBootApplication(scanBasePackages = "com.dpom.agent")
+@MapperScan("com.dpom.agent.core.persistence")
 public class DpomAgentApplication {
 
     /**

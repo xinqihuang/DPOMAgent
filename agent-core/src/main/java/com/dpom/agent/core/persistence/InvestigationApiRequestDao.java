@@ -1,59 +1,55 @@
 package com.dpom.agent.core.persistence;
 
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Repository;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.dpom.agent.core.persistence.command.ApiRequestInsert;
+
 /**
- * 调查 API 幂等/执行记录 DAO。
+ * 调查 API 幂等/执行记录 Mapper（MyBatis XML）。
  */
-@Repository
-public class InvestigationApiRequestDao {
+@Mapper
+public interface InvestigationApiRequestDao {
 
-    private static final RowMapper<ApiRequestRecord> MAPPER = (rs, rowNum) -> new ApiRequestRecord(
-            rs.getLong("id"), rs.getString("idempotency_key"), rs.getString("payload_hash"),
-            rs.getLong("investigation_id"), rs.getString("status"),
-            rs.getObject("started_at", LocalDateTime.class), rs.getObject("completed_at", LocalDateTime.class),
-            rs.getString("last_error_code"), rs.getObject("created_at", LocalDateTime.class));
+    /**
+     * 按幂等键查询。
+     *
+     * @param idempotencyKey 幂等键
+     * @return 记录（可为空）
+     */
+    Optional<ApiRequestRecord> findByIdempotencyKey(@Param("idempotencyKey") String idempotencyKey);
 
-    private final JdbcClient jdbcClient;
+    /**
+     * 按调查查询最新记录。
+     *
+     * @param investigationId 调查 id
+     * @return 记录（可为空）
+     */
+    Optional<ApiRequestRecord> findByInvestigationId(@Param("investigationId") long investigationId);
 
-    public InvestigationApiRequestDao(JdbcClient jdbcClient) { this.jdbcClient = jdbcClient; }
+    /**
+     * 插入记录，自增主键回填到 {@code command.id}。
+     *
+     * @param command 插入命令
+     * @return 受影响行数
+     */
+    int insert(ApiRequestInsert command);
 
-    public long insert(String idempotencyKey, String payloadHash, long investigationId, String status) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcClient.sql("""
-                INSERT INTO investigation_api_request (idempotency_key, payload_hash, investigation_id, status)
-                VALUES (:key, :hash, :investigationId, :status)
-                """).param("key", idempotencyKey).param("hash", payloadHash)
-                .param("investigationId", investigationId).param("status", status).update(keyHolder);
-        return GeneratedKeys.longValue(keyHolder);
-    }
+    /**
+     * 置为运行中。
+     *
+     * @param id 主键
+     */
+    void updateRunning(@Param("id") long id);
 
-    public Optional<ApiRequestRecord> findByIdempotencyKey(String idempotencyKey) {
-        return jdbcClient.sql("SELECT * FROM investigation_api_request WHERE idempotency_key = :key")
-                .param("key", idempotencyKey).query(MAPPER).optional();
-    }
-
-    public Optional<ApiRequestRecord> findByInvestigationId(long investigationId) {
-        return jdbcClient.sql("SELECT * FROM investigation_api_request WHERE investigation_id = :id ORDER BY id DESC")
-                .param("id", investigationId).query(MAPPER).optional();
-    }
-
-    public void updateRunning(long id) {
-        jdbcClient.sql("UPDATE investigation_api_request SET status = 'RUNNING', started_at = CURRENT_TIMESTAMP WHERE id = :id")
-                .param("id", id).update();
-    }
-
-    public void updateDone(long id, String status, String errorCode) {
-        jdbcClient.sql("""
-                UPDATE investigation_api_request SET status = :status, completed_at = CURRENT_TIMESTAMP,
-                last_error_code = :errorCode WHERE id = :id
-                """).param("status", status).param("errorCode", errorCode).param("id", id).update();
-    }
+    /**
+     * 置为完成/失败。
+     *
+     * @param id        主键
+     * @param status    状态
+     * @param errorCode 错误码
+     */
+    void updateDone(@Param("id") long id, @Param("status") String status, @Param("errorCode") String errorCode);
 }

@@ -1,21 +1,19 @@
 package com.dpom.agent.web;
 
+import com.dpom.agent.core.persistence.HealthCheckMapper;
 import com.dpom.agent.web.controller.HealthController;
 import com.dpom.agent.web.health.AdapterHealthRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,9 +28,9 @@ class HealthControllerTest {
 
     @Test
     void healthDownWhenDbDown() {
-        JdbcClient jdbcClient = mock(JdbcClient.class);
-        when(jdbcClient.sql(anyString())).thenThrow(new RuntimeException("db down"));
-        Map<String, Object> body = new HealthController(jdbcClient, executor(1, 1, 1), registry()).health();
+        HealthCheckMapper mapper = mock(HealthCheckMapper.class);
+        when(mapper.ping()).thenThrow(new RuntimeException("db down"));
+        Map<String, Object> body = new HealthController(mapper, executor(1, 1, 1), registry()).health();
         assertThat(body.get("status")).isEqualTo("DOWN");
         assertThat(body.get("db")).isEqualTo("DOWN");
         assertThat(body.get("external")).isEqualTo(java.util.Map.of(
@@ -41,13 +39,13 @@ class HealthControllerTest {
 
     @Test
     void healthDownWhenExecutorSaturated() throws Exception {
-        JdbcClient jdbcClient = healthyJdbcClient();
+        HealthCheckMapper mapper = healthyMapper();
         ThreadPoolTaskExecutor executor = executor(1, 1, 1);
         CountDownLatch block = new CountDownLatch(1);
         executor.execute(() -> await(block));
         executor.execute(() -> await(block));
         awaitActive(executor, 1);
-        Map<String, Object> body = new HealthController(jdbcClient, executor, registry()).health();
+        Map<String, Object> body = new HealthController(mapper, executor, registry()).health();
         assertThat(body.get("status")).isEqualTo("DOWN");
         assertThat(((Map<?, ?>) body.get("executor")).get("available")).isEqualTo(false);
         block.countDown();
@@ -55,21 +53,16 @@ class HealthControllerTest {
 
     @Test
     void healthUpWhenDbAndCapacityOk() {
-        Map<String, Object> body = new HealthController(healthyJdbcClient(), executor(1, 1, 1), registry()).health();
+        Map<String, Object> body = new HealthController(healthyMapper(), executor(1, 1, 1), registry()).health();
         assertThat(body.get("status")).isEqualTo("UP");
         assertThat(body.get("db")).isEqualTo("UP");
         assertThat(((Map<?, ?>) body.get("executor")).get("available")).isEqualTo(true);
     }
 
-    @SuppressWarnings("unchecked")
-    private JdbcClient healthyJdbcClient() {
-        JdbcClient jdbcClient = mock(JdbcClient.class);
-        JdbcClient.StatementSpec spec = mock(JdbcClient.StatementSpec.class);
-        JdbcClient.MappedQuerySpec<Integer> query = mock(JdbcClient.MappedQuerySpec.class);
-        when(jdbcClient.sql(anyString())).thenReturn(spec);
-        when(spec.query(Integer.class)).thenReturn(query);
-        when(query.optional()).thenReturn(Optional.of(1));
-        return jdbcClient;
+    private HealthCheckMapper healthyMapper() {
+        HealthCheckMapper mapper = mock(HealthCheckMapper.class);
+        when(mapper.ping()).thenReturn(1);
+        return mapper;
     }
 
     private AdapterHealthRegistry registry() {

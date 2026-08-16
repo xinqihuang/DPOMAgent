@@ -18,7 +18,7 @@ context: |
   - escalationEligible 与 OBS 上传批准分离；上传必须有显式 approval gate；allow-list bucket/prefix、服务端加密、不可预测对象名、最小权限、审计、生命周期、checksum。
   外部能力：MySQL（Incident/Investigation/Observation/Hypothesis/Conclusion/ScriptArtifact/Audit 元数据）；Redis（仅缓存）。
   技术栈：JDK21、Maven3.9+、Spring Boot3.4.5、Spring MVC+Virtual Threads、Spring AI 1.0.4、
-  Spring RestClient、MySQL+Flyway+JdbcClient、Jackson、JUnit5/Mockito/AssertJ。
+  Spring RestClient、MySQL+Flyway+MyBatis、Jackson、JUnit5/Mockito/AssertJ。
   关键原则：
   - LLM 负责理解、规划、假设和综合；CodeGraph 负责导航；Snapshot Workspace 负责读代码。
   - Agent 可在受控 Snapshot 根目录搜索/阅读源码，不提供任意 shell 工具。

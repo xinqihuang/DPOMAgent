@@ -1,7 +1,8 @@
 package com.dpom.agent.web;
 
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.ApiRequestInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationApiRequestDao;
@@ -30,11 +31,13 @@ class ReconcilerMetricTest {
 
     @Test
     void recoveredCounterCountsActualRecoveriesOnly() {
-        long incidentId = incidentDao.insert(new Incident(null, "legacy-svc", "prod", "1.0.0", "abc1234",
-                "legacy", null));
-        long investigationId = investigationDao.insert(new Investigation(null, incidentId,
-                InvestigationStatus.RESEARCHING, null, 30, 60, 1800, 5, null, null));
-        apiRequestDao.insert("legacy-" + UUID.randomUUID(), "hash", investigationId, "SUBMITTED");
+        IncidentInsert incidentCommand = new IncidentInsert("legacy-svc", "prod", "1.0.0", "abc1234", "legacy");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.RESEARCHING, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        long investigationId = investigationCommand.getId();
+        apiRequestDao.insert(new ApiRequestInsert("legacy-" + UUID.randomUUID(), "hash", investigationId, "SUBMITTED"));
 
         int nonTerminal = investigationDao.findNonTerminal().size();
         double before = counter();

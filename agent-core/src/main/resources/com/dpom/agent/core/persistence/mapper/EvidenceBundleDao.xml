@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.EvidenceBundleDao">
+    <select id="findBundleJson" resultType="string">
+        SELECT bundle_json FROM evidence_bundle WHERE investigation_id = #{id} ORDER BY id DESC LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO evidence_bundle (investigation_id, service_code, commit_sha, bundle_json)
+        VALUES (#{investigationId}, #{serviceCode}, #{commitSha}, #{bundleJson})
+    </insert>
+</mapper>

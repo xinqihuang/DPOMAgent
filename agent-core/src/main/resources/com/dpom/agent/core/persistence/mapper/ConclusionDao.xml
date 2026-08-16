@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.ConclusionDao">
+    <resultMap id="conclusionResult" type="com.dpom.agent.core.conclusion.Conclusion">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="result_type" javaType="string"/>
+            <arg column="root_cause_id" javaType="string"/>
+            <arg column="root_cause" javaType="string"/>
+            <arg column="evidence_ids" javaType="string"/>
+            <arg column="unresolved_questions" javaType="string"/>
+            <arg column="summary" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="conclusionResult">
+        SELECT id, investigation_id, result_type, root_cause_id, root_cause, evidence_ids,
+               unresolved_questions, summary, created_at
+        FROM conclusion WHERE id = #{id}
+    </select>
+
+    <select id="findByInvestigationId" resultMap="conclusionResult">
+        SELECT id, investigation_id, result_type, root_cause_id, root_cause, evidence_ids,
+               unresolved_questions, summary, created_at
+        FROM conclusion WHERE investigation_id = #{investigationId} ORDER BY id DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO conclusion (investigation_id, result_type, root_cause_id, root_cause, evidence_ids,
+                                unresolved_questions, summary)
+        VALUES (#{investigationId}, #{resultType}, #{rootCauseId}, #{rootCause}, #{evidenceIds},
+                #{unresolvedQuestions}, #{summary})
+    </insert>
+</mapper>

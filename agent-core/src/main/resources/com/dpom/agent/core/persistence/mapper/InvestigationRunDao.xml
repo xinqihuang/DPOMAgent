@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.InvestigationRunDao">
+    <resultMap id="runResult" type="com.dpom.agent.core.investigation.InvestigationRun">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="model_version" javaType="string"/>
+            <arg column="prompt_version" javaType="string"/>
+            <arg column="toolset_version" javaType="string"/>
+            <arg column="started_at" javaType="java.time.LocalDateTime"/>
+            <arg column="ended_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="runResult">
+        SELECT id, investigation_id, model_version, prompt_version, toolset_version, started_at, ended_at
+        FROM investigation_run WHERE id = #{id}
+    </select>
+
+    <select id="findByInvestigationId" resultMap="runResult">
+        SELECT id, investigation_id, model_version, prompt_version, toolset_version, started_at, ended_at
+        FROM investigation_run WHERE investigation_id = #{investigationId} ORDER BY id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO investigation_run (investigation_id, model_version, prompt_version, toolset_version)
+        VALUES (#{investigationId}, #{modelVersion}, #{promptVersion}, #{toolsetVersion})
+    </insert>
+
+    <update id="finish">
+        UPDATE investigation_run SET ended_at = #{endedAt} WHERE id = #{id}
+    </update>
+</mapper>

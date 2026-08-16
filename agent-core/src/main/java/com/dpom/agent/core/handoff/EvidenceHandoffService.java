@@ -12,9 +12,14 @@ import com.dpom.agent.core.logevidence.EvidenceBundle;
 import com.dpom.agent.core.persistence.ConclusionDao;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.EvidenceHandoffDao;
+import com.dpom.agent.core.persistence.EscalationDecisionCodec;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.HypothesisDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.command.EscalationDecisionInsert;
+import com.dpom.agent.core.persistence.command.HandoffImportInsert;
+import com.dpom.agent.core.persistence.command.HandoffUploadInsert;
 import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -87,7 +92,10 @@ public class EvidenceHandoffService {
         try {
             requireInvestigation(investigationId);
             EscalationDecision decision = evaluator.evaluate(buildContext(investigationId), config);
-            handoffDao.saveEscalationDecision(investigationId, decision);
+            EscalationDecisionInsert escalationCmd = new EscalationDecisionInsert(investigationId,
+                    decision.eligible(), EscalationDecisionCodec.encodeReasons(decision.reasons()),
+                    EscalationDecisionCodec.encodeMissing(decision.missingEvidence()), decision.confidence());
+            handoffDao.insertEscalationDecision(escalationCmd);
             audit("ESCALATION", SUCCESS, null, investigationId, null);
             return decision;
         } catch (HandoffException e) {
@@ -110,7 +118,10 @@ public class EvidenceHandoffService {
             Investigation inv = requireInvestigation(investigationId);
             Incident incident = incidentDao.findById(inv.incidentId())
                     .orElseThrow(() -> new HandoffException(HandoffErrorCode.PACKAGE_INVALID, "incident not found"));
-            EscalationDecision decision = handoffDao.findLatestEscalationDecision(investigationId)
+            EscalationDecision decision = handoffDao.findEscalationRow(investigationId)
+                    .map(row -> new EscalationDecision(row.eligible(),
+                            EscalationDecisionCodec.decodeReasons(row.reasons()),
+                            EscalationDecisionCodec.decodeMissing(row.missingEvidence()), row.confidence()))
                     .orElseGet(() -> evaluator.evaluate(buildContext(investigationId), config));
             if (!decision.eligible()) {
                 throw new HandoffException(HandoffErrorCode.NOT_ELIGIBLE, "investigation not eligible for handoff");
@@ -121,7 +132,9 @@ public class EvidenceHandoffService {
                     buildSections(investigationId));
             byte[] zip = serializer.serialize(pkg);
             String checksum = PackageSerializer.sha256(zip);
-            handoffDao.createUpload(investigationId, packageId, pkg.schemaVersion(), checksum, zip.length);
+            HandoffUploadInsert uploadCmd = new HandoffUploadInsert(investigationId, packageId,
+                    pkg.schemaVersion(), checksum, zip.length);
+            handoffDao.insertUpload(uploadCmd);
             packageCache.put(packageId, zip);
             audit("PACKAGE_BUILD", SUCCESS, null, investigationId, packageId);
             return new BuiltPackage(packageId, checksum, zip.length, zip);
@@ -258,7 +271,9 @@ public class EvidenceHandoffService {
      */
     private boolean importPackage(RecoveredEvidencePackage pkg) {
         try {
-            handoffDao.recordImport(pkg.packageId(), pkg.service(), pkg.release(), pkg.commit());
+            HandoffImportInsert importCmd = new HandoffImportInsert(pkg.packageId(), pkg.service(),
+                    pkg.release(), pkg.commit());
+            handoffDao.insertImport(importCmd);
             return false;
         } catch (DataIntegrityViolationException e) {
             return reconcileDuplicate(pkg);
@@ -327,7 +342,8 @@ public class EvidenceHandoffService {
         Investigation inv = requireInvestigation(investigationId);
         Conclusion conclusion = conclusionDao.findByInvestigationId(investigationId).orElse(null);
         List<Hypothesis> hyps = hypothesisDao.findByInvestigationId(investigationId);
-        EvidenceBundle bundle = evidenceBundleDao.findByInvestigationId(investigationId).orElse(null);
+        EvidenceBundle bundle = evidenceBundleDao.findBundleJson(investigationId)
+                .map(EvidenceBundleCodec::decode).orElse(null);
         String resultType = conclusion == null ? null : conclusion.resultType();
         boolean hasVerifiedSource = bundle != null && bundle.hasVerifiedSource();
         List<String> contradictions = bundle == null || bundle.contradictions() == null
@@ -379,7 +395,8 @@ public class EvidenceHandoffService {
     }
 
     private Map<String, List<String>> buildSections(long investigationId) {
-        EvidenceBundle bundle = evidenceBundleDao.findByInvestigationId(investigationId).orElse(null);
+        EvidenceBundle bundle = evidenceBundleDao.findBundleJson(investigationId)
+                .map(EvidenceBundleCodec::decode).orElse(null);
         List<Hypothesis> hyps = hypothesisDao.findByInvestigationId(investigationId);
         Map<String, List<String>> sections = new LinkedHashMap<>();
         sections.put("hypotheses", hyps.stream().map(h -> h.status().name() + ": " + h.description()).toList());
@@ -399,7 +416,8 @@ public class EvidenceHandoffService {
     }
 
     private String timeRange(long investigationId) {
-        return evidenceBundleDao.findByInvestigationId(investigationId).map(EvidenceBundle::timeRange).orElse("");
+        return evidenceBundleDao.findBundleJson(investigationId).map(EvidenceBundleCodec::decode)
+                .map(EvidenceBundle::timeRange).orElse("");
     }
 
     private Investigation requireInvestigation(long investigationId) {

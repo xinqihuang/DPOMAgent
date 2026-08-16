@@ -22,7 +22,13 @@ import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationApiRequestDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.InvestigationStepDao;
+import com.dpom.agent.core.persistence.command.ApiRequestInsert;
+import com.dpom.agent.core.persistence.command.ConclusionInsert;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.tool.InvestigationToolExecutor;
 import com.dpom.agent.core.workspace.CodeWorkspace;
 import com.dpom.agent.web.dto.InvestigationResponse;
@@ -149,7 +155,7 @@ public class InvestigationApplicationService {
         if (investigationDao.findById(investigationId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "investigation not found");
         }
-        return evidenceBundleDao.findByInvestigationId(investigationId);
+        return evidenceBundleDao.findBundleJson(investigationId).map(EvidenceBundleCodec::decode);
     }
 
     public Optional<Conclusion> conclusion(long investigationId) {
@@ -194,11 +200,17 @@ public class InvestigationApplicationService {
     }
 
     private SubmitResult createSubmitted(InvestigationSubmitRequest req, String hash, String key) {
-        long incidentId = incidentDao.insert(new Incident(null, req.serviceCode(), req.environment(),
-                req.release(), req.commit(), req.symptom(), null));
-        long investigationId = investigationDao.insert(new Investigation(null, incidentId,
-                InvestigationStatus.CREATED, null, 30, 60, 1800, 5, null, null));
-        long apiRequestId = apiRequestDao.insert(key, hash, investigationId, "SUBMITTED");
+        IncidentInsert incidentCommand = new IncidentInsert(req.serviceCode(), req.environment(),
+                req.release(), req.commit(), req.symptom());
+        incidentDao.insert(incidentCommand);
+        long incidentId = incidentCommand.getId();
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentId,
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        long investigationId = investigationCommand.getId();
+        ApiRequestInsert apiRequestCommand = new ApiRequestInsert(key, hash, investigationId, "SUBMITTED");
+        apiRequestDao.insert(apiRequestCommand);
+        long apiRequestId = apiRequestCommand.getId();
         return new SubmitResult(investigationId, apiRequestId);
     }
 
@@ -218,8 +230,9 @@ public class InvestigationApplicationService {
         int affected = transactionTemplate.execute(status -> {
             int n = investigationDao.updateStatusIfActive(investigationId, InvestigationStatus.FAILED);
             if (n == 1) {
-                conclusionDao.insert(new Conclusion(null, investigationId, "REJECTED", null, null, null, null,
-                        "执行队列已满，任务被拒绝", null));
+                ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, "REJECTED", null,
+                        null, null, null, "执行队列已满，任务被拒绝");
+                conclusionDao.insert(conclusionCommand);
             }
             apiRequestDao.updateDone(apiRequestId, "REJECTED", "CAPACITY_FULL");
             return n;
@@ -262,7 +275,9 @@ public class InvestigationApplicationService {
                     new EvidenceBundleBuilder(1_000_000));
             EvidenceBundle bundle = pipeline.run(incident.serviceCode(), incident.environment(),
                     incident.releaseVersion(), incident.commitSha(), timeRange, MINER_VERSION, snapshot, logs);
-            evidenceBundleDao.save(investigationId, bundle);
+            EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(investigationId, bundle.service(),
+                    bundle.commit(), EvidenceBundleCodec.encode(bundle));
+            evidenceBundleDao.insert(bundleCommand);
             SymptomBrain brain = new SymptomBrain(modelClient, incident.symptom());
             InvestigationToolExecutor toolExecutor = new InvestigationToolExecutor(snapshot.snapshotId(),
                     Path.of(snapshot.workspacePath()), incident.serviceCode(), incident.environment(),
@@ -277,8 +292,9 @@ public class InvestigationApplicationService {
                 int affected = investigationDao.updateStatusIfActive(investigationId, InvestigationStatus.FAILED);
                 if (affected == 1) {
                     if (conclusionDao.findByInvestigationId(investigationId).isEmpty()) {
-                        conclusionDao.insert(new Conclusion(null, investigationId, "FAILED", null, null, null, null,
-                                "执行失败", null));
+                        ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, "FAILED",
+                                null, null, null, null, "执行失败");
+                        conclusionDao.insert(conclusionCommand);
                     }
                     outcome = InvestigationStatus.FAILED;
                 } else {

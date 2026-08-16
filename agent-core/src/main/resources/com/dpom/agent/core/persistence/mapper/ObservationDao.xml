@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.ObservationDao">
+    <resultMap id="observationResult" type="com.dpom.agent.core.observation.Observation">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="run_id" javaType="long"/>
+            <arg column="source" javaType="string"/>
+            <arg column="artifact_ref" javaType="string"/>
+            <arg column="location" javaType="string"/>
+            <arg column="supports_hypothesis_ids" javaType="string"/>
+            <arg column="contradicts_hypothesis_ids" javaType="string"/>
+            <arg column="summary" javaType="string"/>
+            <arg column="payload_json" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="observationResult">
+        SELECT id, investigation_id, run_id, source, artifact_ref, location, supports_hypothesis_ids,
+               contradicts_hypothesis_ids, summary, payload_json, created_at
+        FROM observation WHERE id = #{id}
+    </select>
+
+    <select id="findByInvestigationId" resultMap="observationResult">
+        SELECT id, investigation_id, run_id, source, artifact_ref, location, supports_hypothesis_ids,
+               contradicts_hypothesis_ids, summary, payload_json, created_at
+        FROM observation WHERE investigation_id = #{investigationId} ORDER BY id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO observation (investigation_id, run_id, source, artifact_ref, location,
+                                 supports_hypothesis_ids, contradicts_hypothesis_ids, summary, payload_json)
+        VALUES (#{investigationId}, #{runId}, #{source}, #{artifactRef}, #{location},
+                #{supportsHypothesisIds}, #{contradictsHypothesisIds}, #{summary}, #{payloadJson})
+    </insert>
+</mapper>

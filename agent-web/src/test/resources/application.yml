@@ -9,6 +9,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-version: 9
   data:
     redis:
       host: localhost
@@ -43,6 +44,9 @@ management:
           DOWN: 503
           OUT_OF_SERVICE: 503
 
+mybatis:
+  mapper-locations: classpath*:com/dpom/agent/core/persistence/mapper/*.xml
+
 logging:
   level:
     com.dpom.agent: INFO
@@ -50,6 +54,10 @@ logging:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{correlationId:-}] %logger{39} - %msg%n"
 
 dpom:
+  flyway:
+    mysql-baseline:
+      enabled: true
+      location: classpath:db/baseline/mysql8_baseline.sql
   api:
     adapter-health-ttl: 5m
   executor:

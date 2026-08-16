@@ -5,8 +5,9 @@ import com.dpom.agent.common.llm.ChatMessage;
 import com.dpom.agent.common.llm.ModelClient;
 import com.dpom.agent.common.llm.ModelTurnResult;
 import com.dpom.agent.core.conclusion.Conclusion;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.investigation.SymptomBrain;
@@ -18,6 +19,7 @@ import com.dpom.agent.core.logevidence.LogEvidence;
 import com.dpom.agent.core.logevidence.LogTemplateSummary;
 import com.dpom.agent.core.logevidence.ParameterDistribution;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
@@ -75,10 +77,12 @@ class LogEvidenceInvestigationGuardTest {
     }
 
     private long createInvestigation() {
-        long incidentId = incidentDao.insert(
-                new Incident(null, "svc", "prod", "1.0.0", "c", "symptom", null));
-        return investigationDao.insert(
-                new Investigation(null, incidentId, InvestigationStatus.CREATED, null, 30, 60, 1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert("svc", "prod", "1.0.0", "c", "symptom");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 
     /**
@@ -87,7 +91,9 @@ class LogEvidenceInvestigationGuardTest {
     @Test
     void rootCauseAllowedWithLogAndSource() {
         long id = createInvestigation();
-        evidenceBundleDao.save(id, bundle(List.of(log("ev-1")), List.of(source("code-1"))));
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(id, "svc", "c",
+                EvidenceBundleCodec.encode(bundle(List.of(log("ev-1")), List.of(source("code-1")))));
+        evidenceBundleDao.insert(bundleCommand);
         coordinator.run(id, new SymptomBrain(concludingLlm("ev-1,code-1"), "symptom"), mock(ToolExecutor.class));
 
         Conclusion c = conclusionDao.findByInvestigationId(id).orElseThrow();
@@ -101,7 +107,9 @@ class LogEvidenceInvestigationGuardTest {
     @Test
     void rootCauseDowngradedWhenOnlyLog() {
         long id = createInvestigation();
-        evidenceBundleDao.save(id, bundle(List.of(log("ev-1")), List.of()));
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(id, "svc", "c",
+                EvidenceBundleCodec.encode(bundle(List.of(log("ev-1")), List.of())));
+        evidenceBundleDao.insert(bundleCommand);
         coordinator.run(id, new SymptomBrain(concludingLlm("ev-1"), "symptom"), mock(ToolExecutor.class));
 
         assertThat(conclusionDao.findByInvestigationId(id).orElseThrow().resultType()).isEqualTo("INCONCLUSIVE");
@@ -114,7 +122,9 @@ class LogEvidenceInvestigationGuardTest {
     @Test
     void rootCauseDowngradedOnDanglingReference() {
         long id = createInvestigation();
-        evidenceBundleDao.save(id, bundle(List.of(log("ev-1")), List.of(source("code-1"))));
+        EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(id, "svc", "c",
+                EvidenceBundleCodec.encode(bundle(List.of(log("ev-1")), List.of(source("code-1")))));
+        evidenceBundleDao.insert(bundleCommand);
         coordinator.run(id, new SymptomBrain(concludingLlm("ev-1,code-999"), "symptom"), mock(ToolExecutor.class));
 
         assertThat(conclusionDao.findByInvestigationId(id).orElseThrow().resultType()).isEqualTo("INCONCLUSIVE");

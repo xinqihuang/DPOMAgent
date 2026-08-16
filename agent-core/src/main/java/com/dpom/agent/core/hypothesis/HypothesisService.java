@@ -1,6 +1,7 @@
 package com.dpom.agent.core.hypothesis;
 
 import com.dpom.agent.core.persistence.HypothesisDao;
+import com.dpom.agent.core.persistence.command.HypothesisInsert;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,8 +32,10 @@ public class HypothesisService {
      * @return 假设 id
      */
     public long create(long investigationId, String description) {
-        return hypothesisDao.insert(new Hypothesis(
-                null, investigationId, null, description, HypothesisStatus.PROPOSED, null, null, null));
+        HypothesisInsert command = new HypothesisInsert(investigationId, null, description,
+                HypothesisStatus.PROPOSED, null);
+        hypothesisDao.insert(command);
+        return command.getId();
     }
 
     /**

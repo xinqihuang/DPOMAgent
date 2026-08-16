@@ -1,8 +1,8 @@
 package com.dpom.agent.web.controller;
 
+import com.dpom.agent.core.persistence.HealthCheckMapper;
 import com.dpom.agent.web.health.AdapterHealthRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,14 +18,14 @@ import java.util.Map;
 @RequestMapping("/api/v1")
 public class HealthController {
 
-    private final JdbcClient jdbcClient;
+    private final HealthCheckMapper healthCheckMapper;
     private final ThreadPoolTaskExecutor investigationExecutor;
     private final AdapterHealthRegistry adapterHealth;
 
-    public HealthController(JdbcClient jdbcClient,
+    public HealthController(HealthCheckMapper healthCheckMapper,
                             @Qualifier("investigationExecutor") ThreadPoolTaskExecutor investigationExecutor,
                             AdapterHealthRegistry adapterHealth) {
-        this.jdbcClient = jdbcClient;
+        this.healthCheckMapper = healthCheckMapper;
         this.investigationExecutor = investigationExecutor;
         this.adapterHealth = adapterHealth;
     }
@@ -69,7 +69,7 @@ public class HealthController {
 
     private String dbStatus() {
         try {
-            jdbcClient.sql("SELECT 1").query(Integer.class).optional();
+            healthCheckMapper.ping();
             return "UP";
         } catch (Exception e) {
             return "DOWN";

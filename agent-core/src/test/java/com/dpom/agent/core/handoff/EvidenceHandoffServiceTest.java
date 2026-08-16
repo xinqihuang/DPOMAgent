@@ -8,11 +8,16 @@ import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.logevidence.EvidenceBundle;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EscalationDecisionCodec;
+import com.dpom.agent.core.persistence.EscalationRow;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.EvidenceHandoffDao;
 import com.dpom.agent.core.persistence.HypothesisDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.command.EscalationDecisionInsert;
+import com.dpom.agent.core.persistence.command.HandoffImportInsert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,7 +59,7 @@ class EvidenceHandoffServiceTest {
         when(investigationDao.findById(INV)).thenReturn(Optional.of(investigation()));
         when(conclusionDao.findByInvestigationId(INV)).thenReturn(Optional.empty());
         when(hypothesisDao.findByInvestigationId(INV)).thenReturn(List.of());
-        when(evidenceBundleDao.findByInvestigationId(INV)).thenReturn(Optional.empty());
+        when(evidenceBundleDao.findBundleJson(INV)).thenReturn(Optional.empty());
     }
 
     @Test
@@ -62,7 +67,7 @@ class EvidenceHandoffServiceTest {
         EvidenceHandoffService service = service(new InMemoryEvidenceHandoffStore(), HandoffConfig.defaults());
         EscalationDecision decision = service.escalate(INV);
         assertThat(decision.eligible()).isTrue();
-        verify(handoffDao).saveEscalationDecision(eq(INV), any(EscalationDecision.class));
+        verify(handoffDao).insertEscalationDecision(any(EscalationDecisionInsert.class));
         verify(handoffDao).recordAudit(eq("ESCALATION"), eq("SUCCESS"), any(), any(), any(), any());
     }
 
@@ -198,8 +203,7 @@ class EvidenceHandoffServiceTest {
     void importIsIdempotentOnDuplicateKeyWithMatchingIdentity() {
         InMemoryEvidenceHandoffStore store = new InMemoryEvidenceHandoffStore();
         store.store("prefix/p1.zip", new PackageSerializer().serialize(samplePackage()));
-        doThrow(new DataIntegrityViolationException("dup")).when(handoffDao).recordImport(anyString(), anyString(),
-                anyString(), anyString());
+        doThrow(new DataIntegrityViolationException("dup")).when(handoffDao).insertImport(any(HandoffImportInsert.class));
         when(handoffDao.findImportByPackageId("p1"))
                 .thenReturn(Optional.of(new HandoffImport(1L, "p1", "svc", "rel", "commit", null)));
         EvidenceHandoffService service = service(store, configuredConfig());
@@ -212,8 +216,8 @@ class EvidenceHandoffServiceTest {
     void nonUniqueIntegrityViolationIsNotIdempotent() {
         InMemoryEvidenceHandoffStore store = new InMemoryEvidenceHandoffStore();
         store.store("prefix/p1.zip", new PackageSerializer().serialize(samplePackage()));
-        doThrow(new DataIntegrityViolationException("NOT NULL violation")).when(handoffDao).recordImport(anyString(),
-                anyString(), anyString(), anyString());
+        doThrow(new DataIntegrityViolationException("NOT NULL violation")).when(handoffDao)
+                .insertImport(any(HandoffImportInsert.class));
         when(handoffDao.findImportByPackageId("p1")).thenReturn(Optional.empty());
         EvidenceHandoffService service = service(store, configuredConfig());
         assertThatExceptionOfType(HandoffException.class)
@@ -226,8 +230,7 @@ class EvidenceHandoffServiceTest {
     void versionMismatchOnExistingImportFails() {
         InMemoryEvidenceHandoffStore store = new InMemoryEvidenceHandoffStore();
         store.store("prefix/p1.zip", new PackageSerializer().serialize(samplePackage()));
-        doThrow(new DataIntegrityViolationException("dup")).when(handoffDao).recordImport(anyString(), anyString(),
-                anyString(), anyString());
+        doThrow(new DataIntegrityViolationException("dup")).when(handoffDao).insertImport(any(HandoffImportInsert.class));
         when(handoffDao.findImportByPackageId("p1"))
                 .thenReturn(Optional.of(new HandoffImport(1L, "p1", "svc", "OTHER-rel", "commit", null)));
         EvidenceHandoffService service = service(store, configuredConfig());
@@ -248,9 +251,10 @@ class EvidenceHandoffServiceTest {
 
     private String buildPackage(EvidenceHandoffService service) {
         when(incidentDao.findById(anyLong())).thenReturn(Optional.of(incident()));
-        when(evidenceBundleDao.findByInvestigationId(INV)).thenReturn(Optional.of(bundle()));
-        when(handoffDao.findLatestEscalationDecision(INV)).thenReturn(Optional.of(
-                new EscalationDecision(true, List.of(EscalationReason.LOW_CONFIDENCE), List.of(), 10)));
+        when(evidenceBundleDao.findBundleJson(INV)).thenReturn(Optional.of(EvidenceBundleCodec.encode(bundle())));
+        when(handoffDao.findEscalationRow(INV)).thenReturn(Optional.of(new EscalationRow(true,
+                EscalationDecisionCodec.encodeReasons(List.of(EscalationReason.LOW_CONFIDENCE)),
+                EscalationDecisionCodec.encodeMissing(List.of()), 10)));
         return service.buildPackage(INV).packageId();
     }
 

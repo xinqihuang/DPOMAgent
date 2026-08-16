@@ -1,7 +1,7 @@
 package com.dpom.agent.web;
 
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
@@ -65,9 +65,11 @@ class MitigationScriptTest {
      * 创建调查。
      */
     private long createInvestigation() {
-        long incidentId = incidentDao.insert(new Incident(
-                null, "asset-service", "prod", "1.0.0", "abc123", "症状", null));
-        return investigationDao.insert(new Investigation(
-                null, incidentId, InvestigationStatus.CREATED, null, 50, 100, 1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert("asset-service", "prod", "1.0.0", "abc123", "症状");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 50, 100, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 }

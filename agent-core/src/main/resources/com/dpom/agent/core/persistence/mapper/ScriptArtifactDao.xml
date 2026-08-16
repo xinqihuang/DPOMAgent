@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.ScriptArtifactDao">
+    <resultMap id="artifactResult" type="com.dpom.agent.core.script.ScriptArtifact">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="script_type" javaType="string"/>
+            <arg column="language" javaType="string"/>
+            <arg column="purpose" javaType="string"/>
+            <arg column="risk_level" javaType="string"/>
+            <arg column="read_only" javaType="_boolean"/>
+            <arg column="approval_status" javaType="string"/>
+            <arg column="preconditions" javaType="string"/>
+            <arg column="verification" javaType="string"/>
+            <arg column="rollback" javaType="string"/>
+            <arg column="content" javaType="string"/>
+            <arg column="hypotheses_to_validate" javaType="string"/>
+            <arg column="expected_output" javaType="string"/>
+            <arg column="instructions" javaType="string"/>
+            <arg column="root_cause" javaType="string"/>
+            <arg column="evidence_ids" javaType="string"/>
+            <arg column="target" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="artifactResult">
+        SELECT id, investigation_id, script_type, language, purpose, risk_level, read_only, approval_status,
+               preconditions, verification, rollback, content, hypotheses_to_validate, expected_output,
+               instructions, root_cause, evidence_ids, target, created_at
+        FROM script_artifact WHERE id = #{id}
+    </select>
+
+    <select id="findByInvestigationId" resultMap="artifactResult">
+        SELECT id, investigation_id, script_type, language, purpose, risk_level, read_only, approval_status,
+               preconditions, verification, rollback, content, hypotheses_to_validate, expected_output,
+               instructions, root_cause, evidence_ids, target, created_at
+        FROM script_artifact WHERE investigation_id = #{investigationId} ORDER BY id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO script_artifact (investigation_id, script_type, language, purpose, risk_level, read_only,
+                                     approval_status, preconditions, verification, rollback, content,
+                                     hypotheses_to_validate, expected_output, instructions, root_cause,
+                                     evidence_ids, target)
+        VALUES (#{investigationId}, #{type}, #{language}, #{purpose}, #{riskLevel}, #{readOnly},
+                #{approvalStatus}, #{preconditions}, #{verification}, #{rollback}, #{content},
+                #{hypothesesToValidate}, #{expectedOutput}, #{instructions}, #{rootCause},
+                #{evidenceIds}, #{target})
+    </insert>
+</mapper>

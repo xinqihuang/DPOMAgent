@@ -17,8 +17,6 @@ import com.dpom.agent.core.eval.ConclusionEvaluator;
 import com.dpom.agent.core.eval.EvalCase;
 import com.dpom.agent.core.eval.EvalFixtureLoader;
 import com.dpom.agent.core.eval.FixtureValidator;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.investigation.SymptomBrain;
@@ -26,7 +24,11 @@ import com.dpom.agent.core.logevidence.EvidenceBundle;
 import com.dpom.agent.core.logevidence.EvidenceBundleBuilder;
 import com.dpom.agent.core.logevidence.LogEvidenceService;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
+import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.InvestigationStepDao;
@@ -117,7 +119,9 @@ class DiagnosticRegressionE2ETest {
             EvidenceBundle bundle = service.run(c.serviceCode(), c.environment(), c.release(), c.commit(), "1h",
                     "drain3-mcp-0.9", snapshot, c.logs());
             long id = createInvestigation(c);
-            bundleDao.save(id, bundle);
+            EvidenceBundleInsert bundleCommand = new EvidenceBundleInsert(id, bundle.service(),
+                    bundle.commit(), EvidenceBundleCodec.encode(bundle));
+            bundleDao.insert(bundleCommand);
             InvestigationToolExecutor executor = new InvestigationToolExecutor(snapshot.snapshotId(),
                     Path.of(snapshot.workspacePath()), c.serviceCode(), c.environment(), cgc, ws,
                     mock(RuntimeEvidenceClient.class), miner);
@@ -139,10 +143,13 @@ class DiagnosticRegressionE2ETest {
     }
 
     private long createInvestigation(EvalCase c) {
-        long incidentId = incidentDao.insert(new Incident(null, c.serviceCode(), c.environment(), c.release(),
-                c.commit(), c.symptom(), null));
-        return investigationDao.insert(new Investigation(null, incidentId, InvestigationStatus.CREATED, null, 30, 60,
-                1800, 5, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert(c.serviceCode(), c.environment(), c.release(),
+                c.commit(), c.symptom());
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, 30, 60, 1800, 5);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 
     private void writeResult(List<BenchmarkCaseResult> results, BenchmarkMetrics metrics, Path out) throws Exception {

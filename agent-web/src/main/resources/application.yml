@@ -14,6 +14,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-version: ${DPOM_FLYWAY_BASELINE_VERSION:9}
   data:
     redis:
       host: ${DPOM_REDIS_HOST:localhost}
@@ -46,6 +47,9 @@ management:
           DOWN: 503
           OUT_OF_SERVICE: 503
 
+mybatis:
+  mapper-locations: classpath*:com/dpom/agent/core/persistence/mapper/*.xml
+
 logging:
   level:
     com.dpom.agent: INFO
@@ -54,6 +58,10 @@ logging:
 
 # 外部能力接入配置（默认值见各适配器的 @Value 注解）
 dpom:
+  flyway:
+    mysql-baseline:
+      enabled: ${DPOM_FLYWAY_MYSQL_BASELINE_ENABLED:true}
+      location: ${DPOM_FLYWAY_MYSQL_BASELINE_LOCATION:classpath:db/baseline/mysql8_baseline.sql}
   api:
     # 调查提交请求体总量上限（1.1 MiB），超限在反序列化前拒绝为 413
     max-body-bytes: ${DPOM_API_MAX_BODY_BYTES:1153434}

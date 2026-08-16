@@ -38,7 +38,7 @@ DPOMAgent 是**同一套诊断引擎**，通过两种部署 Profile 在**生产�
 ## 技术栈
 
 JDK21、Maven 3.9+、Spring Boot 3.4.5、Spring MVC + Virtual Threads、Spring AI 1.0.4、
-Spring RestClient、MySQL + Flyway + JdbcClient、Jackson、JUnit5/Mockito/AssertJ。
+Spring RestClient、MySQL + Flyway + MyBatis、Jackson、JUnit5/Mockito/AssertJ。
 
 ## 模块
 

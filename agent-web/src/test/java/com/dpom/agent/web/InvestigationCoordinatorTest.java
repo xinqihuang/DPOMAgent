@@ -3,8 +3,8 @@ package com.dpom.agent.web;
 import com.dpom.agent.core.hypothesis.Hypothesis;
 import com.dpom.agent.core.hypothesis.HypothesisService;
 import com.dpom.agent.core.hypothesis.HypothesisStatus;
-import com.dpom.agent.core.incident.Incident;
-import com.dpom.agent.core.investigation.Investigation;
+import com.dpom.agent.core.persistence.command.IncidentInsert;
+import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationDecision;
 import com.dpom.agent.core.investigation.InvestigationStatus;
@@ -147,10 +147,11 @@ class InvestigationCoordinatorTest {
     }
 
     private long createInvestigation(int maxSteps, int maxToolCalls, int maxDuration, int maxNoProgress) {
-        long incidentId = incidentDao.insert(new Incident(
-                null, "asset-service", "prod", "1.0.0", "abc123", "症状", null));
-        return investigationDao.insert(new Investigation(
-                null, incidentId, InvestigationStatus.CREATED, null,
-                maxSteps, maxToolCalls, maxDuration, maxNoProgress, null, null));
+        IncidentInsert incidentCommand = new IncidentInsert("asset-service", "prod", "1.0.0", "abc123", "症状");
+        incidentDao.insert(incidentCommand);
+        InvestigationInsert investigationCommand = new InvestigationInsert(incidentCommand.getId(),
+                InvestigationStatus.CREATED, null, maxSteps, maxToolCalls, maxDuration, maxNoProgress);
+        investigationDao.insert(investigationCommand);
+        return investigationCommand.getId();
     }
 }

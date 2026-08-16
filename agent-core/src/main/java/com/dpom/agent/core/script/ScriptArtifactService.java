@@ -1,6 +1,7 @@
 package com.dpom.agent.core.script;
 
 import com.dpom.agent.core.persistence.ScriptArtifactDao;
+import com.dpom.agent.core.persistence.command.ScriptArtifactInsert;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -50,10 +51,11 @@ public class ScriptArtifactService {
         validator.validate(type, content);
         boolean readOnly = type == ScriptType.READ_ONLY_DIAGNOSTIC;
         String approval = readOnly ? ApprovalStatus.NONE_REQUIRED.name() : ApprovalStatus.REQUIRES_APPROVAL.name();
-        long id = scriptArtifactDao.insert(new ScriptArtifact(null, investigationId, type.name(), language, purpose,
+        ScriptArtifactInsert command = new ScriptArtifactInsert(investigationId, type.name(), language, purpose,
                 riskLevel, readOnly, approval, preconditions, verification, rollback, content,
-                hypothesesToValidate, expectedOutput, instructions, null, null, null, null));
-        return scriptArtifactDao.findById(id).orElseThrow();
+                hypothesesToValidate, expectedOutput, instructions, null, null, null);
+        scriptArtifactDao.insert(command);
+        return scriptArtifactDao.findById(command.getId()).orElseThrow();
     }
 
     /**
@@ -75,11 +77,12 @@ public class ScriptArtifactService {
     public ScriptArtifact createMitigation(long investigationId, String rootCause, String evidenceIds, String target,
                                            String language, String purpose, String riskLevel, String preconditions,
                                            String verification, String rollback, String content) {
-        long id = scriptArtifactDao.insert(new ScriptArtifact(null, investigationId, ScriptType.MITIGATION.name(),
+        ScriptArtifactInsert command = new ScriptArtifactInsert(investigationId, ScriptType.MITIGATION.name(),
                 language, purpose, riskLevel, false, ApprovalStatus.REQUIRES_APPROVAL.name(),
                 preconditions, verification, rollback, content, null, null, null,
-                rootCause, evidenceIds, target, null));
-        return scriptArtifactDao.findById(id).orElseThrow();
+                rootCause, evidenceIds, target);
+        scriptArtifactDao.insert(command);
+        return scriptArtifactDao.findById(command.getId()).orElseThrow();
     }
 
     /**

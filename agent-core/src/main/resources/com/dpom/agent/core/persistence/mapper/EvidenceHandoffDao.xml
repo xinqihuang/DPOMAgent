@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.EvidenceHandoffDao">
+    <resultMap id="uploadResult" type="com.dpom.agent.core.handoff.HandoffUpload">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="package_id" javaType="string"/>
+            <arg column="object_key" javaType="string"/>
+            <arg column="schema_version" javaType="_int"/>
+            <arg column="checksum" javaType="string"/>
+            <arg column="size_bytes" javaType="_long"/>
+            <arg column="approval_status" javaType="com.dpom.agent.core.handoff.UploadApprovalStatus"/>
+            <arg column="approved_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approver_ref" javaType="string"/>
+            <arg column="approval_reason" javaType="string"/>
+            <arg column="approval_expires_at" javaType="java.time.LocalDateTime"/>
+            <arg column="uploaded_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <resultMap id="importResult" type="com.dpom.agent.core.handoff.HandoffImport">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="package_id" javaType="string"/>
+            <arg column="service" javaType="string"/>
+            <arg column="release" javaType="string"/>
+            <arg column="commit" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <resultMap id="escalationRowResult" type="com.dpom.agent.core.persistence.EscalationRow">
+        <constructor>
+            <idArg column="eligible" javaType="_boolean"/>
+            <arg column="reasons" javaType="string"/>
+            <arg column="missing_evidence" javaType="string"/>
+            <arg column="confidence" javaType="_int"/>
+        </constructor>
+    </resultMap>
+
+    <insert id="insertEscalationDecision" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO escalation_decision (investigation_id, eligible, reasons, missing_evidence, confidence)
+        VALUES (#{investigationId}, #{eligible}, #{reasons}, #{missingEvidence}, #{confidence})
+    </insert>
+
+    <select id="findEscalationRow" resultMap="escalationRowResult">
+        SELECT eligible, reasons, missing_evidence, confidence FROM escalation_decision
+        WHERE investigation_id = #{investigationId} ORDER BY id DESC LIMIT 1
+    </select>
+
+    <insert id="insertUpload" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO handoff_upload (investigation_id, package_id, schema_version, checksum, size_bytes,
+                                    approval_status)
+        VALUES (#{investigationId}, #{packageId}, #{schemaVersion}, #{checksum}, #{sizeBytes}, 'NOT_APPROVED')
+    </insert>
+
+    <select id="findUploadByPackageId" resultMap="uploadResult">
+        SELECT id, investigation_id, package_id, object_key, schema_version, checksum, size_bytes,
+               approval_status, approved_at, approver_ref, approval_reason, approval_expires_at,
+               uploaded_at, created_at
+        FROM handoff_upload WHERE package_id = #{packageId}
+    </select>
+
+    <select id="findUploadByInvestigationId" resultMap="uploadResult">
+        SELECT id, investigation_id, package_id, object_key, schema_version, checksum, size_bytes,
+               approval_status, approved_at, approver_ref, approval_reason, approval_expires_at,
+               uploaded_at, created_at
+        FROM handoff_upload WHERE investigation_id = #{investigationId} ORDER BY id DESC
+    </select>
+
+    <update id="approveUpload">
+        UPDATE handoff_upload SET approval_status = 'APPROVED', approved_at = CURRENT_TIMESTAMP,
+            approver_ref = #{approverRef}, approval_reason = #{reason}, approval_expires_at = #{expiresAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="rejectUpload">
+        UPDATE handoff_upload SET approval_status = 'REJECTED', approver_ref = #{approverRef},
+            approval_reason = #{reason} WHERE id = #{id}
+    </update>
+
+    <update id="markUploaded">
+        UPDATE handoff_upload SET object_key = #{objectKey}, uploaded_at = CURRENT_TIMESTAMP WHERE id = #{id}
+    </update>
+
+    <insert id="recordAudit">
+        INSERT INTO handoff_audit (event_type, result, error_code, investigation_id, package_id, correlation_id)
+        VALUES (#{eventType}, #{result}, #{errorCode}, #{investigationId}, #{packageId}, #{correlationId})
+    </insert>
+
+    <select id="findImportByPackageId" resultMap="importResult">
+        SELECT id, package_id, service, `release`, `commit`, created_at
+        FROM handoff_import WHERE package_id = #{packageId}
+    </select>
+
+    <insert id="insertImport" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO handoff_import (package_id, service, `release`, `commit`)
+        VALUES (#{packageId}, #{service}, #{release}, #{commit})
+    </insert>
+</mapper>

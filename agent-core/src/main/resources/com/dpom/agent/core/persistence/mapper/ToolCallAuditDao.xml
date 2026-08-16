@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.ToolCallAuditDao">
+    <resultMap id="auditResult" type="com.dpom.agent.core.tool.ToolCallAudit">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="run_id" javaType="long"/>
+            <arg column="tool_name" javaType="string"/>
+            <arg column="tool_input" javaType="string"/>
+            <arg column="tool_output_summary" javaType="string"/>
+            <arg column="duration_ms" javaType="long"/>
+            <arg column="success" javaType="boolean"/>
+            <arg column="error_message" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findByInvestigationId" resultMap="auditResult">
+        SELECT id, investigation_id, run_id, tool_name, tool_input, tool_output_summary, duration_ms,
+               success, error_message, created_at
+        FROM tool_call_audit WHERE investigation_id = #{investigationId} ORDER BY id
+    </select>
+
+    <insert id="append" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO tool_call_audit (investigation_id, run_id, tool_name, tool_input, tool_output_summary,
+                                     duration_ms, success, error_message)
+        VALUES (#{investigationId}, #{runId}, #{toolName}, #{toolInput}, #{toolOutputSummary},
+                #{durationMs}, #{success}, #{errorMessage})
+    </insert>
+</mapper>

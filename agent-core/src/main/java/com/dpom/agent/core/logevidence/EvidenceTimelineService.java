@@ -2,6 +2,7 @@ package com.dpom.agent.core.logevidence;
 
 import com.dpom.agent.core.conclusion.Conclusion;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,8 @@ public class EvidenceTimelineService {
      * @return 时间线视图（无证据束时为空条目）
      */
     public EvidenceTimeline timeline(long investigationId) {
-        EvidenceBundle bundle = bundleDao.findByInvestigationId(investigationId).orElse(null);
+        EvidenceBundle bundle = bundleDao.findBundleJson(investigationId)
+                .map(EvidenceBundleCodec::decode).orElse(null);
         if (bundle == null) {
             return new EvidenceTimeline(null, List.of(), List.of(), null, null);
         }
