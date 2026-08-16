@@ -2,29 +2,34 @@ schema: spec-driven
 
 context: |
   项目名称：DPOMAgent
-  定位：研发侧单实例 Java Web 故障调查 Agent。
-  核心：症状驱动 + 假设驱动 + 运行时证据 + 代码证据 + 动态诊断脚本。
-  本期明确不建设 Knowledge/RAG/Embedding/Vector DB。
-  外部能力：
-  - DPOMBaseMCPServer：APM/AOM/CES/LTS 等运行时只读证据。
-  - DPOMCodeGraphService：Release/commit Snapshot、CodeGraphContext 调用关系、Git 事实源码。
-  - MySQL：Incident/Investigation/Observation/Hypothesis/Conclusion/ScriptArtifact/Audit 元数据。
-  部署：研发环境单实例 Java Web；不做 Docker/K8s/Helm/Kafka/高可用；Redis 已允许（用于缓存）。
-  技术栈：JDK21、Maven3.9+、Spring Boot3.4.5、Spring MVC+Virtual Threads、
-  Spring AI 1.0.4、Spring RestClient、MySQL+Flyway+JdbcClient、Jackson、JUnit5/Mockito/AssertJ。
+  定位：同一套诊断引擎、两种部署 Profile、双区域闭环（不是两个互不相关的 Agent，也不为每个代码仓部署一个 Agent）。
+  生产区域（production profile）：
+  - DPOMBaseMCPServer 部署在客户/生产华为云环境，是只读华为云证据网关，负责 AOM/CES/APM/LTS/CCE 访问与证据标准化，不做 LLM 推理/RCA 编排/源码分析。
+  - DPOMAgent production profile 负责调查编排、时间线、证据关联、假设与置信度、结论或升级判断。
+  - 不要求原始源码；允许与发布版本匹配、边界裁剪的 CodeGraph 结果。
+  - 禁止 RAG/Embedding/Vector DB、任意 Shell、生产写操作、自动执行修复/生成脚本；只允许人审批后的显式动作。
+  研发区域（development profile）：
+  - 集中部署一套 development profile；配套 Repository Registry、DPOMCodeGraphService/CodeGraph、精确 release/commit 源码快照、研发侧 LLM。
+  - 接收生产侧证据包，校验完整性/版本/脱敏元数据后结合准确源码做最终 RCA。
+  - CodeGraph（colbymchenry/codegraph）是源码导航/结构化上下文，不包装成向量检索或 RAG。
+  跨区域交接：
+  - OBS 是受控证据传输通道，不是知识库；只上传版本化、限量、脱敏的 Diagnostic Evidence Package。
+  - 禁止上传源码、AK/SK、Token、Cookie、原始大批量日志、无边界 dump。
+  - escalationEligible 与 OBS 上传批准分离；上传必须有显式 approval gate；allow-list bucket/prefix、服务端加密、不可预测对象名、最小权限、审计、生命周期、checksum。
+  外部能力：MySQL（Incident/Investigation/Observation/Hypothesis/Conclusion/ScriptArtifact/Audit 元数据）；Redis（仅缓存）。
+  技术栈：JDK21、Maven3.9+、Spring Boot3.4.5、Spring MVC+Virtual Threads、Spring AI 1.0.4、
+  Spring RestClient、MySQL+Flyway+JdbcClient、Jackson、JUnit5/Mockito/AssertJ。
   关键原则：
-  - LLM 负责理解、规划、假设和综合。
-  - CodeGraph 负责导航，Snapshot Workspace 负责读代码。
+  - LLM 负责理解、规划、假设和综合；CodeGraph 负责导航；Snapshot Workspace 负责读代码。
   - Agent 可在受控 Snapshot 根目录搜索/阅读源码，不提供任意 shell 工具。
-  - 证据不足时可生成 Shell/Python/只读 SQL 给 SRE 执行。
-  - 修复脚本可生成但必须 MITIGATION + REQUIRES_APPROVAL；DPOMAgent 不自动执行生产操作。
-  - 所有 ToolCall、Observation、Hypothesis、ScriptArtifact、Conclusion 可审计。
+  - 证据不足时可生成 Shell/Python/只读 SQL 给 SRE 执行；修复脚本必须 MITIGATION + REQUIRES_APPROVAL，DPOMAgent 不自动执行生产操作。
+  - 所有 ToolCall、Observation、Hypothesis、ScriptArtifact、Conclusion、Escalation/Handoff 可审计。
 
 rules:
   specs:
     - "Requirement 使用 SHALL/MUST，每项至少一个 GIVEN/WHEN/THEN Scenario。"
   design:
-    - "简单、可替换、可测试；Provider/Runtime/CodeGraph 均通过 Adapter 隔离。"
+    - "简单、可替换、可测试；Provider/Runtime/CodeGraph/OBS 均通过 Adapter 隔离。"
     - "不引入 Knowledge/RAG 和额外基础设施。"
   tasks:
     - "每张 docs/tasks/TNN-*.md 可独立交给 Claude Code，先测试后实现，并有 Acceptance。"

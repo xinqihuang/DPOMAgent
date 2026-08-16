@@ -83,3 +83,17 @@ dpom:
     base-url: ${DPOM_RUNTIME_URL:http://localhost:8082}
   logtemplate:
     mcp-base-url: ${DPOM_LOGTEMPLATE_MCP_URL:http://localhost:8100}
+  handoff:
+    # production / development 装配边界；production 提供升级判定+打包+审批上传，development 提供校验+恢复
+    mode: ${DPOM_HANDOFF_MODE:development}
+    confidence-threshold: ${DPOM_HANDOFF_CONFIDENCE_THRESHOLD:60}
+    max-package-bytes: ${DPOM_HANDOFF_MAX_PACKAGE_BYTES:1048576}
+    max-package-entries: ${DPOM_HANDOFF_MAX_PACKAGE_ENTRIES:200}
+    schema-version: ${DPOM_HANDOFF_SCHEMA_VERSION:1}
+    approval-ttl-seconds: ${DPOM_HANDOFF_APPROVAL_TTL_SECONDS:3600}
+    obs:
+      # 默认关闭；真实 OBS SDK 集成留待后续独立 Change，测试/本地用 in-memory fake
+      enabled: ${DPOM_HANDOFF_OBS_ENABLED:false}
+      bucket: ${DPOM_HANDOFF_OBS_BUCKET:}
+      prefix: ${DPOM_HANDOFF_OBS_PREFIX:}
+      region: ${DPOM_HANDOFF_OBS_REGION:}

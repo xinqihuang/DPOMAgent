@@ -1,6 +1,6 @@
 # AGENTS.md
 ## Project
-DPOMAgent：研发侧单实例 Java Web Investigation Agent。
+DPOMAgent：同一套诊断引擎、两种部署 Profile（production/development）、双区域闭环。
 ## Before Coding
 先读 openspec/config.yaml、当前 Change、当前 docs/tasks/TNN。
 ## Hard Boundaries
