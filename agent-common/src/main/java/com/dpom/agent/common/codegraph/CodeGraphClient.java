@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * 代码图客户端契约：Core 只依赖本接口，不依赖任何远端 DTO。
  *
- * <p>实现位于 agent-adapter-codegraph，背后对接 DPOMCodeGraphService（含 CodeGraphContext）。</p>
+ * <p>实现位于 agent-adapter-codegraph，背后对接 CodeGraph（colbymchenry/codegraph）官方 stdio MCP。</p>
  */
 public interface CodeGraphClient {
 
@@ -75,4 +75,17 @@ public interface CodeGraphClient {
      * @return 继承层次
      */
     ClassHierarchy findClassHierarchy(String snapshotId, String className);
+
+    /**
+     * 查找受变更影响的符号（有界图摘要）。
+     *
+     * <p>兼容默认实现：不支持影响面分析的实现返回空列表，不破坏现有调用方。</p>
+     *
+     * @param snapshotId 快照 id
+     * @param symbol     符号名
+     * @return 受影响的符号列表（有界）
+     */
+    default List<Symbol> findImpact(String snapshotId, String symbol) {
+        return List.of();
+    }
 }

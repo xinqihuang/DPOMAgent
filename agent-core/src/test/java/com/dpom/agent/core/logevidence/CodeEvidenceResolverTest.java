@@ -34,7 +34,7 @@ class CodeEvidenceResolverTest {
     }
 
     /**
-     * READY 快照：CGC 导航后读取源码，记录 commit/文件/行号。
+     * READY 快照：CodeGraph 导航后读取源码，记录 commit/文件/行号。
      */
     @Test
     void resolvesReadySnapshotAndReadsSource() {

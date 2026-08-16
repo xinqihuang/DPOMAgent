@@ -10,7 +10,7 @@
 
 #### Scenario: Liveness probe
 - **WHEN** 请求 `/actuator/health/liveness`
-- **THEN** 进程存活时 SHALL 返回 200 + UP，且该 group 仅含 livenessState，不因外部 DeepSeek/Drain3/CGC 瞬时不可用而 DOWN
+- **THEN** 进程存活时 SHALL 返回 200 + UP，且该 group 仅含 livenessState，不因外部 DeepSeek/Drain3/CodeGraph 瞬时不可用而 DOWN
 
 #### Scenario: Readiness probe
 - **WHEN** 请求 `/actuator/health/readiness`
@@ -51,7 +51,7 @@
 - **THEN** 计数器 SHALL 计实际被恢复的 investigation 数；空扫描或重复运行 MUST NOT 递增
 
 ### Requirement: Adapter metrics
-系统 SHALL 记录外部适配器（DeepSeek/Drain3/CodeGraphContext）调用的延迟，标签统一为 `adapter` + `errorCode`。
+系统 SHALL 记录外部适配器（DeepSeek/Drain3/CodeGraph）调用的延迟，标签统一为 `adapter` + `errorCode`。
 
 #### Scenario: Adapter call timer
 - **WHEN** 调用外部适配器
@@ -80,7 +80,7 @@
 - **THEN** 日志 SHALL 携带同一 correlationId 与 investigationId（可用时），且不含密钥/原始日志/请求体/异常 message/堆栈
 
 ### Requirement: Passive adapter component status
-外部 DeepSeek/Drain3/CGC 的组件状态 SHALL 为被动观测：来自最近一次真实业务调用结果与时间戳；从未调用 SHALL 为 UNKNOWN；状态 MUST 有过期语义；health endpoint MUST NOT 主动调用外部适配器，MUST NOT 暴露 URL、异常文本、响应或凭据。
+外部 DeepSeek/Drain3/CodeGraph 的组件状态 SHALL 为被动观测：来自最近一次真实业务调用结果与时间戳；从未调用 SHALL 为 UNKNOWN；状态 MUST 有过期语义；health endpoint MUST NOT 主动调用外部适配器，MUST NOT 暴露 URL、异常文本、响应或凭据。
 
 #### Scenario: Never-called adapter
 - **WHEN** 某外部适配器从未被业务调用

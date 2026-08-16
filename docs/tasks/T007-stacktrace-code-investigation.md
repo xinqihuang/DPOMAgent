@@ -6,4 +6,4 @@ stacktrace→提取 class/method/file/line→resolve snapshot→read source→�
 ## Fixture
 Spring fixture：Controller→Service→Repository，并构造明确异常。
 ## Acceptance
-输出 commit、文件/行号；至少 source read；需要时 graph query；RCA 不可只引用 CGC 文本。
+输出 commit、文件/行号；至少 source read；需要时 graph query；RCA 不可只引用 CodeGraph 文本。

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 版本绑定代码证据解析器：CGC 只做候选导航，事实源码必须来自与 Incident 同一 commit 的 Snapshot。
+ * 版本绑定代码证据解析器：CodeGraph 只做候选导航，事实源码必须来自与 Incident 同一 commit 的 Snapshot。
  */
 public class CodeEvidenceResolver {
 
@@ -116,7 +116,7 @@ public class CodeEvidenceResolver {
     }
 
     /**
-     * 把锚点值规约为可精确匹配的短名（CGC find_code 按短名精确匹配）。
+     * 把锚点值规约为可精确匹配的短名（CodeGraph codegraph_search 按短名精确匹配）。
      */
     private String queryFor(CodeAnchor anchor) {
         String v = anchor.value() == null ? "" : anchor.value().strip();

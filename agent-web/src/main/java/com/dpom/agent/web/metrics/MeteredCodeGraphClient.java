@@ -10,7 +10,7 @@ import com.dpom.agent.web.health.AdapterHealthRegistry;
 import java.util.List;
 
 /**
- * 计量装饰器：CodeGraphClient（CodeGraphContext）。
+ * 计量装饰器：CodeGraphClient（CodeGraph）。
  */
 public class MeteredCodeGraphClient implements CodeGraphClient {
 
@@ -55,5 +55,10 @@ public class MeteredCodeGraphClient implements CodeGraphClient {
     @Override public ClassHierarchy findClassHierarchy(String snapshotId, String className) {
         return metrics.record("codegraph", AdapterHealthRegistry.Adapter.CODEGRAPH,
                 () -> delegate.findClassHierarchy(snapshotId, className));
+    }
+
+    @Override public List<Symbol> findImpact(String snapshotId, String symbol) {
+        return metrics.record("codegraph", AdapterHealthRegistry.Adapter.CODEGRAPH,
+                () -> delegate.findImpact(snapshotId, symbol));
     }
 }

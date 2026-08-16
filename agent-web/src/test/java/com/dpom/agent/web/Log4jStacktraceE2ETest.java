@@ -1,6 +1,6 @@
 package com.dpom.agent.web;
 
-import com.dpom.agent.adapter.codegraph.McpCodeGraphClient;
+import com.dpom.agent.web.support.CodeGraphTestSupport;
 import com.dpom.agent.adapter.llm.DeepSeekModelClient;
 import com.dpom.agent.adapter.runtime.McpLogTemplateMinerClient;
 import com.dpom.agent.common.codegraph.CodeGraphClient;
@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClient;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -78,9 +79,9 @@ class Log4jStacktraceE2ETest {
                 McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8100").build()).build());
 
         Path root = Path.of("D:\\code\\log4j2\\log4j-core\\src\\main\\java\\org\\apache\\logging\\log4j\\core\\config");
-        CodeGraphClient codeGraphClient = new McpCodeGraphClient(() ->
-                McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8080")
-                        .sseEndpoint("/api/v1/mcp/sse").build()).build());
+        CodeGraphClient codeGraphClient = CodeGraphTestSupport.stdioClient(
+                System.getenv().getOrDefault("DPOM_CODEGRAPH_EXECUTABLE", "codegraph"),
+                Map.of("log4j-core", root));
         RuntimeEvidenceClient runtimeClient = mock(RuntimeEvidenceClient.class);
         InvestigationToolExecutor executor = new InvestigationToolExecutor(
                 root.toString(), root, "log4j-core", "prod",

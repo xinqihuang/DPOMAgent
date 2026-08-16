@@ -5,7 +5,7 @@ import com.dpom.agent.common.codegraph.Symbol;
 import java.util.List;
 
 /**
- * 代码图证据：来自 CodeGraphContext 的导航结果。
+ * 代码图证据：来自 CodeGraph 的导航结果。
  *
  * @param queryType 查询类型（如 findCallers）
  * @param symbol    查询的符号

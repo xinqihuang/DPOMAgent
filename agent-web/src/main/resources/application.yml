@@ -67,7 +67,18 @@ dpom:
     api-key: ${DEEPSEEK_API_KEY:}
     model: ${DPOM_LLM_MODEL:deepseek-v4-pro}
   codegraph:
-    mcp-base-url: ${DPOM_CODEGRAPH_MCP_URL:http://localhost:8080}
+    # CodeGraph 官方 stdio MCP：仅 development profile 装配（production 缺省 false，不启动子进程/不访问源码）
+    enabled: ${DPOM_CODEGRAPH_ENABLED:false}
+    # 服务端配置的 CodeGraph 可执行文件路径（正式部署为离线安装包，构建/启动不下载）
+    executable-path: ${DPOM_CODEGRAPH_EXECUTABLE_PATH:}
+    # 固定并经校验的 CodeGraph 版本
+    version: ${DPOM_CODEGRAPH_VERSION:1.5.0}
+    # CODEGRAPH_MCP_TOOLS：默认 explore + 显式启用确定性 DTO 工具
+    mcp-tools: ${DPOM_CODEGRAPH_MCP_TOOLS:explore,status,node,search,callers,callees,impact,files}
+  repositories:
+    # Repository Registry：serviceCode → release/commit/path；base-path 用于 real-path containment
+    base-path: ${DPOM_REPOSITORIES_BASE_PATH:}
+    services: {}
   runtime:
     base-url: ${DPOM_RUNTIME_URL:http://localhost:8082}
   logtemplate:

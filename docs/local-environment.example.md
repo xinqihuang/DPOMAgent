@@ -17,7 +17,7 @@
 ## 外部能力（MCP / LLM）
 - LLM：DeepSeek（OpenAI 兼容 /chat/completions），模型 deepseek-v4-pro。
 - API Key：通过环境变量 DEEPSEEK_API_KEY 注入。
-- CodeGraphContext：MCP-over-SSE，\`dpom.codegraph.mcp-base-url\`（默认 http://localhost:8080）。
+- CodeGraph（colbymchenry/codegraph）：stdio MCP（\`codegraph serve --mcp\`），仅 development 装配；\`dpom.codegraph.enabled\` 控制装配，\`dpom.codegraph.executable-path\` 指向离线安装的可执行文件，\`dpom.codegraph.version\` 固定版本，\`dpom.codegraph.mcp-tools\` 显式工具集合。
 - Drain3：MCP Server（drain3-mcp-server），运行 \`drain3-mcp-server --transport sse --port 8100\`；\`dpom.logtemplate.mcp-base-url\` 默认 http://localhost:8100。
 
 ## 本地运行测试

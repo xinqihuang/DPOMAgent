@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 
 /**
- * 症状调查编排服务：把真实 LLM（DeepSeek）与 MCP 客户端（CGC/Drain3）装配进调查循环。
+ * 症状调查编排服务：把真实 LLM（DeepSeek）与 MCP 客户端（CodeGraph/Drain3）装配进调查循环。
  */
 @Service
 public class SymptomInvestigationService {
@@ -35,7 +35,7 @@ public class SymptomInvestigationService {
      * 构造器注入。
      *
      * @param modelClient           模型客户端（DeepSeek）
-     * @param codeGraphClient       代码图客户端（CGC MCP）
+     * @param codeGraphClient       代码图客户端（CodeGraph stdio MCP）
      * @param workspace             代码工作区
      * @param runtimeClient         运行时证据客户端
      * @param logTemplateMinerClient 日志模板挖掘客户端（Drain3 MCP）

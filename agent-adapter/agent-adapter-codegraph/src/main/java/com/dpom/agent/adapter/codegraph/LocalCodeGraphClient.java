@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 /**
  * 本地工作区代码图：在指定源码目录内做文本级符号搜索。
  *
- * <p>当 CodeGraphContext 的图数据库后端不可用时，作为降级实现（真实源码搜索，非图查询）。</p>
+ * <p>当 CodeGraph 的图数据库后端不可用时，作为降级实现（真实源码搜索，非图查询）。</p>
  */
 public class LocalCodeGraphClient implements CodeGraphClient {
 

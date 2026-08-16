@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * 快照解析结果缓存：用 Redis 缓存 CGC 快照解析，避免重复 MCP 调用。
+ * 快照解析结果缓存：用 Redis 缓存 CodeGraph 快照解析，避免重复 MCP 调用。
  */
 @Service
 public class SnapshotCache {

@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 真实外部 HTTP E2E：通过 HTTP API 提交 E01，真实 Drain3/CGC/DeepSeek。由 DPOM_E2E_FULL=true 显式启用。
+ * 真实外部 HTTP E2E：通过 HTTP API 提交 E01，真实 Drain3/CodeGraph/DeepSeek。由 DPOM_E2E_FULL=true 显式启用。
  */
 @EnabledIfEnvironmentVariable(named = "DPOM_E2E_FULL", matches = "true")
 @SpringBootTest

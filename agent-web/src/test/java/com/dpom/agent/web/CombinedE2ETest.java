@@ -1,6 +1,6 @@
 package com.dpom.agent.web;
 
-import com.dpom.agent.adapter.codegraph.McpCodeGraphClient;
+import com.dpom.agent.web.support.CodeGraphTestSupport;
 import com.dpom.agent.adapter.llm.DeepSeekModelClient;
 import com.dpom.agent.adapter.runtime.McpLogTemplateMinerClient;
 import com.dpom.agent.common.codegraph.CodeGraphClient;
@@ -48,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
- * T110 真实联合 E2E：真实 Drain3 → CGC → Snapshot → EvidenceBundle → 真实 DeepSeek → 调查循环 → Conclusion，
+ * T110 真实联合 E2E：真实 Drain3 → CodeGraph → Snapshot → EvidenceBundle → 真实 DeepSeek → 调查循环 → Conclusion，
  * 并对最终 Conclusion + EvidenceBundle 执行 E01 expected.json 断言。
  *
  * <p>由 DPOM_E2E_FULL=true 显式启用，默认跳过。</p>
@@ -88,9 +88,10 @@ class CombinedE2ETest {
 
         LogTemplateMinerClient miner = new McpLogTemplateMinerClient(() ->
                 McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8100").build()).build());
-        CodeGraphClient cgc = new McpCodeGraphClient(() ->
-                McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8080")
-                        .sseEndpoint("/api/v1/mcp/sse").build()).build());
+        CodeGraphClient cgc = CodeGraphTestSupport.stdioClient(
+                System.getenv().getOrDefault("DPOM_CODEGRAPH_EXECUTABLE", "codegraph"),
+                Map.of("asset-service", Path.of("test-fixtures", "energy-platform-demo", "asset-service")
+                        .toAbsolutePath().normalize()));
         CodeWorkspace workspace = new CodeWorkspace();
 
         EvalCase e01 = new EvalFixtureLoader().load(

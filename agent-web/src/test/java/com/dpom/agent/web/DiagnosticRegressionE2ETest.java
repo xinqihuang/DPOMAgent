@@ -1,6 +1,6 @@
 package com.dpom.agent.web;
 
-import com.dpom.agent.adapter.codegraph.McpCodeGraphClient;
+import com.dpom.agent.web.support.CodeGraphTestSupport;
 import com.dpom.agent.adapter.llm.DeepSeekModelClient;
 import com.dpom.agent.adapter.runtime.McpLogTemplateMinerClient;
 import com.dpom.agent.common.codegraph.CodeGraphClient;
@@ -44,12 +44,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
- * 真实诊断回归套件：对 E01/E03/E05 跑真实 Drain3 → CGC → snapshot → EvidenceBundle → DeepSeek → Conclusion，
+ * 真实诊断回归套件：对 E01/E03/E05 跑真实 Drain3 → CodeGraph → snapshot → EvidenceBundle → DeepSeek → Conclusion，
  * 逐案例独立记录并写出 diagnostic-regression.json 指标。由 DPOM_E2E_FULL=true 显式启用，默认跳过。
  */
 @EnabledIfEnvironmentVariable(named = "DPOM_E2E_FULL", matches = "true")
@@ -80,9 +81,14 @@ class DiagnosticRegressionE2ETest {
 
         ModelClient llm = new DeepSeekModelClient(RestClient.builder().baseUrl("https://api.deepseek.com")
                 .defaultHeader("Authorization", "Bearer " + apiKey).build(), "deepseek-v4-pro");
-        CodeGraphClient cgc = new McpCodeGraphClient(() ->
-                McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8080")
-                        .sseEndpoint("/api/v1/mcp/sse").build()).build());
+        CodeGraphClient cgc = CodeGraphTestSupport.stdioClient(
+                System.getenv().getOrDefault("DPOM_CODEGRAPH_EXECUTABLE", "codegraph"),
+                Map.of("asset-service", Path.of("test-fixtures", "energy-platform-demo", "asset-service")
+                                .toAbsolutePath().normalize(),
+                        "telemetry-service", Path.of("test-fixtures", "energy-platform-demo", "telemetry-service")
+                                .toAbsolutePath().normalize(),
+                        "gateway-service", Path.of("test-fixtures", "energy-platform-demo", "gateway-service")
+                                .toAbsolutePath().normalize()));
         CodeWorkspace ws = new CodeWorkspace();
         LogTemplateMinerClient miner = new McpLogTemplateMinerClient(() ->
                 McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8100").build()).build());
