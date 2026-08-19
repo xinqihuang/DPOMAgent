@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
+  <title>华为云告警变更管控 · DPOMAgent</title>
+  <link rel="stylesheet" href="styles.css?v=20260819-3">
+  <script src="config.js?v=20260819-3" defer></script>
+  <script type="module" src="app.js?v=20260819-3"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">DG</span>
+      <div>
+        <p class="eyebrow">DPOMAgent · Change Guard</p>
+        <h1>华为云告警变更管控</h1>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page-shell">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow">受控操作台</p>
+        <h2 id="hero-title">让每一次屏蔽都有边界，每一次恢复都有证据。</h2>
+        <p>精确冻结 AOM、统一 APM 与 CES 规则，经审批后屏蔽，并在实施结束或截止时间到达前恢复原状态。</p>
+      </div>
+      <ol class="stepper" aria-label="操作阶段">
+        <li class="active"><span>1</span>预检</li>
+        <li><span>2</span>审批</li>
+        <li><span>3</span>屏蔽</li>
+        <li><span>4</span>恢复</li>
+      </ol>
+    </section>
+
+    <div id="live-region" class="notice notice-info" role="status" aria-live="polite">
+      填写变更信息和精确规则后运行预检；屏蔽前会再次确认完整范围。
+    </div>
+
+    <div class="workspace-grid">
+      <section class="card" aria-labelledby="request-title">
+        <div class="section-heading">
+          <div><p class="section-kicker">步骤 1</p><h2 id="request-title">创建与预检</h2></div>
+          <span class="badge badge-neutral">零写入</span>
+        </div>
+        <form id="create-form">
+          <div class="form-grid">
+            <label class="field span-2"><span>变更单号</span><input id="change-ticket" required placeholder="例如 CHG-2026-0819"></label>
+            <label class="field"><span>变更开始</span><input id="window-start" type="datetime-local" required></label>
+            <label class="field"><span>变更结束</span><input id="window-end" type="datetime-local" required></label>
+            <label class="field span-2"><span>恢复截止时间</span><input id="restore-deadline" type="datetime-local" required></label>
+          </div>
+
+          <div class="subheading-row">
+            <div><h3>精确规则清单</h3><p>每条引用必须指向唯一上游规则。</p></div>
+            <button id="add-rule" class="button button-secondary" type="button">＋ 添加规则</button>
+          </div>
+          <div id="rule-editor" class="rule-editor"></div>
+          <button class="button button-primary button-wide" type="submit">运行预检并冻结清单</button>
+        </form>
+      </section>
+
+      <aside class="card operation-card" aria-labelledby="operation-title">
+        <div class="section-heading">
+          <div><p class="section-kicker">当前操作</p><h2 id="operation-title">生命周期控制</h2></div>
+          <span id="operation-status" class="badge badge-neutral">未创建</span>
+        </div>
+
+        <form id="lookup-form" class="lookup-form">
+          <label class="field grow"><span>操作 ID</span><input id="operation-id" placeholder="UUID" spellcheck="false"></label>
+          <button class="button button-secondary" type="submit">加载</button>
+        </form>
+
+        <dl class="summary-list">
+          <div><dt>变更单</dt><dd id="summary-ticket">—</dd></div>
+          <div><dt>清单摘要</dt><dd id="summary-digest" class="truncate">—</dd></div>
+          <div><dt>规则范围</dt><dd id="summary-rules">—</dd></div>
+          <div><dt>恢复截止</dt><dd id="summary-deadline">—</dd></div>
+        </dl>
+
+        <div class="approval-box">
+          <label class="field"><span>审批有效至</span><input id="approval-expiry" type="datetime-local"></label>
+          <button id="approve-button" class="button button-secondary button-wide" type="button" disabled>提交审批</button>
+        </div>
+
+        <div class="action-stack">
+          <button id="shield-button" class="button button-danger button-wide" type="button" disabled>确认范围并屏蔽</button>
+          <button id="restore-button" class="button button-restore button-wide" type="button" disabled>实施完成 · 立即恢复</button>
+          <button id="retry-button" class="button button-warning button-wide" type="button" disabled>仅重试未恢复规则</button>
+        </div>
+        <p id="action-hint" class="microcopy">完成预检后，操作会在这里按状态开放。</p>
+      </aside>
+    </div>
+
+    <section class="card data-card" aria-labelledby="rules-title">
+      <div class="section-heading">
+        <div><p class="section-kicker">规则结果</p><h2 id="rules-title">冻结清单与执行状态</h2></div>
+        <div id="rule-stats" class="stats"><span>0 条规则</span></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>来源</th><th>规则</th><th>区域 / 项目</th><th>原状态</th><th>当前状态</th><th>步骤</th><th>Request ID</th></tr></thead>
+          <tbody id="rules-body"><tr><td colspan="7" class="empty-cell">预检后将在这里展示精确规则清单。</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card audit-card" aria-labelledby="audit-title">
+      <div class="section-heading">
+        <div><p class="section-kicker">可追溯</p><h2 id="audit-title">审计时间线</h2></div>
+        <button id="refresh-audit" class="button button-secondary" type="button" disabled>刷新审计</button>
+      </div>
+      <ol id="audit-list" class="timeline"><li class="timeline-empty">加载操作后查看有序生命周期事件。</li></ol>
+    </section>
+  </main>
+
+  <dialog id="shield-dialog" aria-labelledby="dialog-title">
+    <form method="dialog" class="dialog-panel">
+      <div class="dialog-icon" aria-hidden="true">!</div>
+      <p class="section-kicker">高风险写操作</p>
+      <h2 id="dialog-title">确认屏蔽精确范围</h2>
+      <p>只有全部规则经写后读取验证为停用，系统才会允许实施开始。</p>
+      <dl id="dialog-summary" class="summary-list compact"></dl>
+      <label class="field"><span>输入变更单号以确认</span><input id="confirm-ticket" autocomplete="off"></label>
+      <div class="dialog-actions">
+        <button class="button button-quiet" value="cancel">取消</button>
+        <button id="confirm-shield" class="button button-danger" value="default" disabled>执行屏蔽</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="rule-row-template">
+    <div class="rule-row">
+      <label class="field"><span>服务</span><select class="rule-source"><option value="AOM_V4">AOM</option><option value="UNIFIED_APM_AOM_V4">统一 APM</option><option value="CES_V2">CES</option></select></label>
+      <label class="field"><span>Region</span><input class="rule-region" placeholder="cn-north-9" required></label>
+      <label class="field"><span>Project ID</span><input class="rule-project" required></label>
+      <label class="field"><span>规则 ID</span><input class="rule-id" required></label>
+      <label class="field"><span>规则名称（可选）</span><input class="rule-name"></label>
+      <button class="icon-button remove-rule" type="button" aria-label="删除规则">×</button>
+    </div>
+  </template>
+</body>
+</html>

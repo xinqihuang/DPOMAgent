@@ -91,6 +91,10 @@ dpom:
     base-url: ${DPOM_RUNTIME_URL:http://localhost:8082}
   logtemplate:
     mcp-base-url: ${DPOM_LOGTEMPLATE_MCP_URL:http://localhost:8100}
+  change-guard:
+    # 独立 HuaweiCloudAlarmChangeGuard 写控制面地址；DPOMAgent 只做固定 /api/v1/operations 同源转发，
+    # 不持有华为云凭据、不实现业务写逻辑；生产部署必须指向 HTTPS 地址
+    base-url: ${DPOM_CHANGE_GUARD_BASE_URL:http://localhost:8081}
   handoff:
     # production / development 装配边界；production 提供升级判定+打包+审批上传，development 提供校验+恢复
     mode: ${DPOM_HANDOFF_MODE:development}
