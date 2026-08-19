@@ -24,6 +24,17 @@ export function availableActions(operation) {
   });
 }
 
+export function ruleSelector({source, region, projectId, enterpriseProjectId, upstreamRuleId, expectedName}) {
+  return Object.freeze({
+    source: source ?? "",
+    region: (region ?? "").trim(),
+    projectId: (projectId ?? "").trim(),
+    enterpriseProjectId: (enterpriseProjectId ?? "").trim(),
+    upstreamRuleId: (upstreamRuleId ?? "").trim(),
+    expectedName: (expectedName ?? "").trim()
+  });
+}
+
 export function statusTone(status) {
   if (["RESTORED", "SHIELDED", "APPROVED"].includes(status)) return "success";
   if (["PRECHECK_FAILED", "SHIELD_FAILED", "RESTORE_PARTIAL", "COMPENSATION_REQUIRED"].includes(status)) {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {createApiClient, validateBaseUrl} from "../../main/resources/static/change-guard/api-client.js";
-import {auditEntry, availableActions} from "../../main/resources/static/change-guard/state.js";
+import {auditEntry, availableActions, ruleSelector} from "../../main/resources/static/change-guard/state.js";
 
 test("rejects non-https and credential-bearing API targets", () => {
   assert.throws(() => validateBaseUrl("http://change-guard.example.test"), /HTTPS/);
@@ -68,6 +68,24 @@ test("keeps audit rendering safe when optional audit fields are absent", () => {
   assert.equal(entry.time, null);
   assert.equal(entry.detail, "local-requester · DRAFT");
   assert.deepEqual(auditEntry({}), {time: null, type: "UNKNOWN_EVENT", detail: "已记录"});
+});
+
+test("ruleSelector keeps enterprise project id and defaults empty to no-filter", () => {
+  const uuid = "06e1c549-28f1-4a27-9436-cbddfaf485c7";
+  const mapped = ruleSelector({
+    source: "AOM_V4",
+    region: "cn-north-9",
+    projectId: "p-1",
+    enterpriseProjectId: uuid,
+    upstreamRuleId: "1539600734096637953",
+    expectedName: "n"
+  });
+
+  assert.equal(mapped.enterpriseProjectId, uuid);
+  assert.equal(mapped.upstreamRuleId, "1539600734096637953");
+  assert.equal(ruleSelector({source: "AOM_V4"}).enterpriseProjectId, "");
+  assert.equal(ruleSelector({enterpriseProjectId: "0"}).enterpriseProjectId, "0");
+  assert.equal(ruleSelector({enterpriseProjectId: "  "}).enterpriseProjectId, "");
 });
 
 function jsonResponse(status, payload) {

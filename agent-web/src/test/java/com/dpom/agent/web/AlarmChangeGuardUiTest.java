@@ -55,6 +55,15 @@ class AlarmChangeGuardUiTest {
     }
 
     @Test
+    void ruleEditorExposesEnterpriseProjectScope() throws Exception {
+        String html = resource("static/change-guard/index.html");
+        String app = resource("static/change-guard/app.js");
+        assertThat(html).contains("rule-eps", "留空=全部");
+        assertThat(app).contains("ruleSelector");
+        assertThat(app).doesNotContain("enterpriseProjectId: \"0\"");
+    }
+
+    @Test
     void dpomAgentDoesNotExposeUnscopedChangeGuardWriteRoutes() {
         assertThat(mappings.getHandlerMethods().keySet())
                 .allMatch(info -> info.getPatternValues().stream()

@@ -1,5 +1,5 @@
-import {createApiClient} from "./api-client.js?v=20260819-3";
-import {auditEntry, availableActions, sourceLabel, statusTone} from "./state.js?v=20260819-3";
+import {createApiClient} from "./api-client.js?v=20260819-4";
+import {auditEntry, availableActions, ruleSelector, sourceLabel, statusTone} from "./state.js?v=20260819-4";
 
 const elements = Object.fromEntries(Array.from(document.querySelectorAll("[id]")).map(item => [item.id, item]));
 let api = null;
@@ -159,13 +159,13 @@ function addRuleRow(source) {
 function collectRules() {
   const rows = Array.from(elements["rule-editor"].querySelectorAll(".rule-row"));
   if (!rows.length) throw new Error("至少添加一条精确规则引用");
-  return rows.map(row => ({
+  return rows.map(row => ruleSelector({
     source: row.querySelector(".rule-source").value,
-    region: row.querySelector(".rule-region").value.trim(),
-    projectId: row.querySelector(".rule-project").value.trim(),
-    enterpriseProjectId: "0",
-    upstreamRuleId: row.querySelector(".rule-id").value.trim(),
-    expectedName: row.querySelector(".rule-name").value.trim()
+    region: row.querySelector(".rule-region").value,
+    projectId: row.querySelector(".rule-project").value,
+    enterpriseProjectId: row.querySelector(".rule-eps").value,
+    upstreamRuleId: row.querySelector(".rule-id").value,
+    expectedName: row.querySelector(".rule-name").value
   }));
 }
 

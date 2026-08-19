@@ -8,9 +8,9 @@
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
   <title>华为云告警变更管控 · DPOMAgent</title>
-  <link rel="stylesheet" href="styles.css?v=20260819-3">
-  <script src="config.js?v=20260819-3" defer></script>
-  <script type="module" src="app.js?v=20260819-3"></script>
+  <link rel="stylesheet" href="styles.css?v=20260819-4">
+  <script src="config.js?v=20260819-4" defer></script>
+  <script type="module" src="app.js?v=20260819-4"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -140,6 +140,7 @@
       <label class="field"><span>服务</span><select class="rule-source"><option value="AOM_V4">AOM</option><option value="UNIFIED_APM_AOM_V4">统一 APM</option><option value="CES_V2">CES</option></select></label>
       <label class="field"><span>Region</span><input class="rule-region" placeholder="cn-north-9" required></label>
       <label class="field"><span>Project ID</span><input class="rule-project" required></label>
+      <label class="field"><span>企业项目 ID</span><input class="rule-eps" placeholder="留空=全部；0=默认项目"></label>
       <label class="field"><span>规则 ID</span><input class="rule-id" required></label>
       <label class="field"><span>规则名称（可选）</span><input class="rule-name"></label>
       <button class="icon-button remove-rule" type="button" aria-label="删除规则">×</button>
