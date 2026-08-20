@@ -1,5 +1,5 @@
-import {createApiClient} from "./api-client.js?v=20260819-4";
-import {auditEntry, availableActions, ruleSelector, sourceLabel, statusTone} from "./state.js?v=20260819-4";
+import {createApiClient} from "./api-client.js?v=20260819-5";
+import {auditEntry, availableActions, ruleSelector, sourceLabel, statusTone} from "./state.js?v=20260819-5";
 
 const elements = Object.fromEntries(Array.from(document.querySelectorAll("[id]")).map(item => [item.id, item]));
 let api = null;
@@ -49,6 +49,10 @@ function bindEvents() {
 
 async function createOperation(event) {
   event.preventDefault();
+  if (!ensureFutureTimes()) {
+    notify("变更窗口时间已过期，已自动顺延为新的时间，请确认后重新提交。", "warning");
+    return;
+  }
   await perform("正在读取并冻结规则清单…", async () => {
     const payload = {
       changeTicket: elements["change-ticket"].value.trim(),
@@ -146,7 +150,27 @@ async function perform(message, work) {
 }
 
 function handleError(error) {
-  notify(`${error.code ? `${error.code} · ` : ""}${error.message}`, "danger");
+  const prefix = error.code ? error.code + " · " : "";
+  notify(prefix + error.message + formatDetails(error.details), "danger");
+}
+
+const FIELD_LABELS = {changeTicket: "变更单号", windowStart: "变更开始", windowEnd: "变更结束", restoreDeadline: "恢复截止", rules: "规则", manifestDigest: "清单摘要", expiresAt: "审批有效至"};
+
+function formatDetails(details) {
+  if (!details || typeof details !== "object") return "";
+  const parts = Object.entries(details).map(([field, message]) => (FIELD_LABELS[field] || field) + "：" + message);
+  return parts.length ? "（" + parts.join("；") + "）" : "";
+}
+
+function ensureFutureTimes() {
+  const now = Date.now();
+  const stale = ["window-start", "window-end", "restore-deadline"].some(id => {
+    const value = elements[id].value;
+    if (!value) return true;
+    return new Date(value).getTime() <= now;
+  });
+  if (stale) seedTimes();
+  return !stale;
 }
 
 function addRuleRow(source) {

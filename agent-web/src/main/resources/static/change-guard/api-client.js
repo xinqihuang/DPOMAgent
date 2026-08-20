@@ -23,7 +23,7 @@ export function createApiClient(configuredBaseUrl, fetchImplementation = globalT
     const payload = await readPayload(response);
     if (!response.ok) {
       throw clientError(payload?.code ?? `HTTP_${response.status}`,
-        payload?.message ?? "Change Guard 请求失败", undefined, response.status);
+        payload?.message ?? "Change Guard 请求失败", undefined, response.status, payload?.details);
     }
     return payload;
   }
@@ -75,9 +75,10 @@ async function readPayload(response) {
   return response.json();
 }
 
-function clientError(code, message, cause, status) {
+function clientError(code, message, cause, status, details) {
   const error = new Error(message, cause ? {cause} : undefined);
   error.code = code;
   error.status = status;
+  error.details = details;
   return error;
 }

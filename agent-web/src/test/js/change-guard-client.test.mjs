@@ -88,6 +88,22 @@ test("ruleSelector keeps enterprise project id and defaults empty to no-filter",
   assert.equal(ruleSelector({enterpriseProjectId: "  "}).enterpriseProjectId, "");
 });
 
+test("surfaces field-level validation details", async () => {
+  const client = createApiClient("https://change-guard.example.test",
+    async () => jsonResponse(400, {code: "INVALID_REQUEST", message: "request validation failed",
+      details: {changeTicket: "变更单号不能为空", windowStart: "变更开始时间必须晚于当前时间"}}));
+
+  let caught = null;
+  try {
+    await client.create({changeTicket: ""});
+  } catch (error) {
+    caught = error;
+  }
+  assert.equal(caught.code, "INVALID_REQUEST");
+  assert.equal(caught.details.changeTicket, "变更单号不能为空");
+  assert.equal(caught.details.windowStart, "变更开始时间必须晚于当前时间");
+});
+
 function jsonResponse(status, payload) {
   return {
     status,
