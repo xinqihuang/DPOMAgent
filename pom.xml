@@ -22,6 +22,7 @@
     <modules>
         <module>agent-common</module>
         <module>agent-adapter</module>
+        <module>agent-alarm</module>
         <module>agent-core</module>
         <module>agent-web</module>
     </modules>

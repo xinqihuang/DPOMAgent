@@ -13,4 +13,12 @@
     <artifactId>agent-common</artifactId>
     <name>agent-common</name>
     <description>DPOMAgent 公共模块：跨模块共享的内部 DTO、枚举与异常</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

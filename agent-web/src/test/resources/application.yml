@@ -45,7 +45,7 @@ management:
           OUT_OF_SERVICE: 503
 
 mybatis:
-  mapper-locations: classpath*:com/dpom/agent/core/persistence/mapper/*.xml
+  mapper-locations: classpath*:com/dpom/agent/core/persistence/mapper/*.xml,classpath*:com/dpom/agent/alarm/persistence/mapper/*.xml
 
 logging:
   level:

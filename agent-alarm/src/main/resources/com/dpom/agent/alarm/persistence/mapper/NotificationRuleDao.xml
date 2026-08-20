@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.alarm.persistence.NotificationRuleDao">
+    <resultMap id="ruleResult" type="com.dpom.agent.alarm.domain.NotificationRule">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="name" javaType="string"/>
+            <arg column="source_filter" javaType="com.dpom.agent.common.alarm.AlarmSource"/>
+            <arg column="service_code_filter" javaType="string"/>
+            <arg column="resource_filter" javaType="string"/>
+            <arg column="severity_filter" javaType="com.dpom.agent.common.alarm.SeverityLevel"/>
+            <arg column="tag_filter" javaType="string"/>
+            <arg column="channels" javaType="string"/>
+            <arg column="enabled" javaType="_boolean"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="ruleResult">
+        SELECT id, name, source_filter, service_code_filter, resource_filter, severity_filter, tag_filter,
+               channels, enabled, created_at, updated_at
+        FROM notification_rule WHERE id = #{id}
+    </select>
+
+    <select id="findAllEnabled" resultMap="ruleResult">
+        SELECT id, name, source_filter, service_code_filter, resource_filter, severity_filter, tag_filter,
+               channels, enabled, created_at, updated_at
+        FROM notification_rule WHERE enabled = TRUE ORDER BY id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO notification_rule (name, source_filter, service_code_filter, resource_filter, severity_filter,
+                                       tag_filter, channels, enabled)
+        VALUES (#{name}, #{sourceFilter}, #{serviceCodeFilter}, #{resourceFilter}, #{severityFilter},
+                #{tagFilter}, #{channels}, #{enabled})
+    </insert>
+
+    <update id="updateEnabled">
+        UPDATE notification_rule SET enabled = #{enabled}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id}
+    </update>
+</mapper>

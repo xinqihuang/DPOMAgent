@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.alarm.persistence.AlarmDao">
+    <resultMap id="alarmResult" type="com.dpom.agent.alarm.domain.Alarm">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="source" javaType="com.dpom.agent.common.alarm.AlarmSource"/>
+            <arg column="ingestion_mode" javaType="string"/>
+            <arg column="external_id" javaType="string"/>
+            <arg column="fingerprint" javaType="string"/>
+            <arg column="resource_id" javaType="string"/>
+            <arg column="alarm_name" javaType="string"/>
+            <arg column="severity" javaType="com.dpom.agent.common.alarm.SeverityLevel"/>
+            <arg column="status" javaType="com.dpom.agent.common.alarm.AlarmStatus"/>
+            <arg column="occurrence_count" javaType="_int"/>
+            <arg column="first_occurred_at" javaType="java.time.LocalDateTime"/>
+            <arg column="last_occurred_at" javaType="java.time.LocalDateTime"/>
+            <arg column="ingested_at" javaType="java.time.LocalDateTime"/>
+            <arg column="service_code" javaType="string"/>
+            <arg column="environment" javaType="string"/>
+            <arg column="raw_payload" javaType="string"/>
+            <arg column="sample_payloads" javaType="string"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="alarmResult">
+        SELECT id, source, ingestion_mode, external_id, fingerprint, resource_id, alarm_name, severity, status,
+               occurrence_count, first_occurred_at, last_occurred_at, ingested_at, service_code, environment,
+               raw_payload, sample_payloads
+        FROM alarm WHERE id = #{id}
+    </select>
+
+    <select id="findLatestByFingerprint" resultMap="alarmResult">
+        SELECT id, source, ingestion_mode, external_id, fingerprint, resource_id, alarm_name, severity, status,
+               occurrence_count, first_occurred_at, last_occurred_at, ingested_at, service_code, environment,
+               raw_payload, sample_payloads
+        FROM alarm WHERE fingerprint = #{fingerprint} ORDER BY last_occurred_at DESC LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO alarm (source, ingestion_mode, external_id, fingerprint, resource_id, alarm_name, severity,
+                           status, occurrence_count, first_occurred_at, last_occurred_at, service_code, environment,
+                           raw_payload, sample_payloads)
+        VALUES (#{source}, #{ingestionMode}, #{externalId}, #{fingerprint}, #{resourceId}, #{alarmName}, #{severity},
+                #{status}, #{occurrenceCount}, #{firstOccurredAt}, #{lastOccurredAt}, #{serviceCode}, #{environment},
+                #{rawPayload}, #{samplePayloads})
+    </insert>
+
+    <update id="mergeOccurrence">
+        UPDATE alarm
+        SET occurrence_count = occurrence_count + 1,
+            last_occurred_at = #{lastOccurredAt},
+            sample_payloads = COALESCE(#{samplePayloads}, sample_payloads)
+        WHERE id = #{id}
+    </update>
+
+    <select id="search" resultMap="alarmResult">
+        SELECT id, source, ingestion_mode, external_id, fingerprint, resource_id, alarm_name, severity, status,
+               occurrence_count, first_occurred_at, last_occurred_at, ingested_at, service_code, environment,
+               raw_payload, sample_payloads
+        FROM alarm
+        <where>
+            <if test="source != null">AND source = #{source}</if>
+            <if test="resourceId != null">AND resource_id = #{resourceId}</if>
+            <if test="serviceCode != null">AND service_code = #{serviceCode}</if>
+            <if test="severity != null">AND severity = #{severity}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="fromTime != null">AND last_occurred_at &gt;= #{fromTime}</if>
+            <if test="toTime != null">AND last_occurred_at &lt;= #{toTime}</if>
+            <if test="cursorId != null">AND id &lt; #{cursorId}</if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
