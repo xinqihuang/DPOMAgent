@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.alarm.persistence.AlarmSuppressionDao">
+    <resultMap id="suppressionResult" type="com.dpom.agent.alarm.domain.AlarmSuppression">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="kind" javaType="com.dpom.agent.alarm.domain.SuppressionKind"/>
+            <arg column="match_key" javaType="string"/>
+            <arg column="reason" javaType="string"/>
+            <arg column="start_at" javaType="java.time.LocalDateTime"/>
+            <arg column="end_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_by" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO alarm_suppression (kind, match_key, reason, start_at, end_at, created_by)
+        VALUES (#{kind}, #{matchKey}, #{reason}, #{startAt}, #{endAt}, #{createdBy})
+    </insert>
+
+    <select id="findActiveByMatchKey" resultMap="suppressionResult">
+        SELECT id, kind, match_key, reason, start_at, end_at, created_by, created_at
+        FROM alarm_suppression
+        WHERE match_key = #{matchKey} AND start_at &lt;= #{now} AND end_at &gt;= #{now}
+        ORDER BY id
+    </select>
+</mapper>

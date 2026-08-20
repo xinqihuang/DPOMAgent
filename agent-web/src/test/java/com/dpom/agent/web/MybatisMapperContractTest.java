@@ -7,6 +7,12 @@ import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.command.IncidentInsert;
 import com.dpom.agent.core.persistence.command.InvestigationInsert;
+import com.dpom.agent.alarm.domain.Alarm;
+import com.dpom.agent.alarm.persistence.AlarmDao;
+import com.dpom.agent.alarm.persistence.command.AlarmInsert;
+import com.dpom.agent.common.alarm.AlarmSource;
+import com.dpom.agent.common.alarm.AlarmStatus;
+import com.dpom.agent.common.alarm.SeverityLevel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +54,9 @@ class MybatisMapperContractTest {
     @Autowired
     private InvestigationDao investigationDao;
 
+    @Autowired
+    private AlarmDao alarmDao;
+
     @Test
     void incidentInsertAndSelectRoundTripOnRealMysql() {
         IncidentInsert command = new IncidentInsert("asset-service", "prod", "1.2.3", "abc123def456",
@@ -77,5 +86,18 @@ class MybatisMapperContractTest {
         assertThat(investigation.maxSteps()).isEqualTo(50);
         assertThat(investigation.createdAt()).isNotNull();
         assertThat(investigation.updatedAt()).isNotNull();
+    }
+
+    @Test
+    void alarmInsertAndSelectRoundTripOnRealMysql() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        AlarmInsert command = new AlarmInsert(AlarmSource.AOM, "webhook", "ext-9", "fp-9", "res-9",
+                "磁盘满", SeverityLevel.CRITICAL, AlarmStatus.FIRING, 1, now, now,
+                "asset-service", "prod", "{\"disk\":99}", null);
+        alarmDao.insert(command);
+        Alarm alarm = alarmDao.findById(command.getId()).orElseThrow();
+        assertThat(alarm.source()).isEqualTo(AlarmSource.AOM);
+        assertThat(alarm.severity()).isEqualTo(SeverityLevel.CRITICAL);
+        assertThat(alarm.rawPayload()).isEqualTo("{\"disk\":99}");
     }
 }

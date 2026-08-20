@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.alarm.persistence.AlarmAuditDao">
+    <resultMap id="auditResult" type="com.dpom.agent.alarm.domain.AlarmAudit">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="action" javaType="string"/>
+            <arg column="target_type" javaType="string"/>
+            <arg column="target_id" javaType="long"/>
+            <arg column="operator" javaType="string"/>
+            <arg column="detail" javaType="string"/>
+            <arg column="result" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO alarm_audit (action, target_type, target_id, operator, detail, result)
+        VALUES (#{action}, #{targetType}, #{targetId}, #{operator}, #{detail}, #{result})
+    </insert>
+
+    <select id="findByTarget" resultMap="auditResult">
+        SELECT id, action, target_type, target_id, operator, detail, result, created_at
+        FROM alarm_audit WHERE target_type = #{targetType} AND target_id = #{targetId}
+        ORDER BY created_at, id
+    </select>
+</mapper>

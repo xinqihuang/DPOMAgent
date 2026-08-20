@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.alarm.persistence.AlarmIncidentDao">
+    <resultMap id="incidentResult" type="com.dpom.agent.alarm.domain.AlarmIncident">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="status" javaType="com.dpom.agent.common.alarm.AlarmIncidentStatus"/>
+            <arg column="severity" javaType="com.dpom.agent.common.alarm.SeverityLevel"/>
+            <arg column="service_code" javaType="string"/>
+            <arg column="environment" javaType="string"/>
+            <arg column="correlation_basis" javaType="string"/>
+            <arg column="summary" javaType="string"/>
+            <arg column="started_at" javaType="java.time.LocalDateTime"/>
+            <arg column="ended_at" javaType="java.time.LocalDateTime"/>
+            <arg column="escalation_candidate" javaType="_boolean"/>
+            <arg column="escalation_evaluated_at" javaType="java.time.LocalDateTime"/>
+            <arg column="assignee" javaType="string"/>
+            <arg column="acknowledged_at" javaType="java.time.LocalDateTime"/>
+            <arg column="resolved_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findById" resultMap="incidentResult">
+        SELECT id, status, severity, service_code, environment, correlation_basis, summary, started_at, ended_at,
+               escalation_candidate, escalation_evaluated_at, assignee, acknowledged_at, resolved_at,
+               created_at, updated_at
+        FROM alarm_incident WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO alarm_incident (status, severity, service_code, environment, correlation_basis, summary,
+                                    started_at, ended_at)
+        VALUES (#{status}, #{severity}, #{serviceCode}, #{environment}, #{correlationBasis}, #{summary},
+                #{startedAt}, #{endedAt})
+    </insert>
+
+    <insert id="addMember">
+        INSERT INTO alarm_incident_member (incident_id, alarm_id) VALUES (#{incidentId}, #{alarmId})
+    </insert>
+
+    <select id="findMemberAlarmIds" resultType="long">
+        SELECT alarm_id FROM alarm_incident_member WHERE incident_id = #{incidentId} ORDER BY id
+    </select>
+
+    <update id="updateLifecycle">
+        UPDATE alarm_incident
+        SET status = #{status}, assignee = #{assignee}, acknowledged_at = #{acknowledgedAt},
+            resolved_at = #{resolvedAt}, ended_at = #{endedAt}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateEscalation">
+        UPDATE alarm_incident
+        SET escalation_candidate = #{candidate}, escalation_evaluated_at = #{evaluatedAt},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <select id="search" resultMap="incidentResult">
+        SELECT id, status, severity, service_code, environment, correlation_basis, summary, started_at, ended_at,
+               escalation_candidate, escalation_evaluated_at, assignee, acknowledged_at, resolved_at,
+               created_at, updated_at
+        FROM alarm_incident
+        <where>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="severity != null">AND severity = #{severity}</if>
+            <if test="serviceCode != null">AND service_code = #{serviceCode}</if>
+            <if test="fromTime != null">AND started_at &gt;= #{fromTime}</if>
+            <if test="toTime != null">AND started_at &lt;= #{toTime}</if>
+            <if test="cursorId != null">AND id &lt; #{cursorId}</if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
