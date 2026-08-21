@@ -30,6 +30,13 @@ public interface NotificationRuleDao {
     List<NotificationRule> findAllEnabled();
 
     /**
+     * 查询全部规则（含停用），按 id 升序，用于管理面。
+     *
+     * @return 全部规则列表
+     */
+    List<NotificationRule> findAll();
+
+    /**
      * 插入规则，自增主键回填到 {@code command.id}。
      *
      * @param command 插入命令

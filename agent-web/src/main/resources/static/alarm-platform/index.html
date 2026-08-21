@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>告警中台 · DPOMAgent</title>
+<style>
+  :root{--bg:#f5f7fa;--card:#fff;--line:#e5e9f0;--text:#1f2937;--muted:#6b7280;--brand:#2563eb;--brand-soft:#eff6ff;--danger:#dc2626;--danger-soft:#fef2f2;--warn:#d97706;--warn-soft:#fffbeb;--ok:#059669;--ok-soft:#ecfdf5;--neutral:#6b7280}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
+  .topbar{background:#0f172a;color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px}
+  .topbar .brand-mark{width:32px;height:32px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .topbar h1{font-size:16px;margin:0}
+  .topbar .sub{font-size:12px;color:#94a3b8}
+  .topbar .spacer{flex:1}
+  .env-tag{font-size:12px;background:rgba(255,255,255,.12);border-radius:99px;padding:3px 10px}
+  .shell{max-width:1280px;margin:18px auto;padding:0 16px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .stat .n{font-size:26px;font-weight:700}
+  .stat .l{font-size:12px;color:var(--muted)}
+  .stat.crit .n{color:var(--danger)}.stat.maj .n{color:var(--warn)}.stat.ok .n{color:var(--ok)}
+  .tabs{display:flex;gap:8px;margin-bottom:12px}
+  .tab{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600}
+  .tab.active{background:var(--brand);border-color:var(--brand);color:#fff}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-bottom:1px solid var(--line);align-items:center}
+  .toolbar label{font-size:12px;color:var(--muted)}
+  select,input[type=text]{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:#fff;font-size:13px}
+  .btn{border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;background:#fff;font-size:13px;font-weight:600}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn-quiet{background:#fff;color:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+  th{background:#fafbfc;color:var(--muted);font-weight:600;font-size:12px;white-space:nowrap}
+  tr.sel{background:var(--brand-soft)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600}
+  .badge-danger{background:var(--danger-soft);color:var(--danger)}
+  .badge-warn{background:var(--warn-soft);color:var(--warn)}
+  .badge-ok{background:var(--ok-soft);color:var(--ok)}
+  .badge-neutral{background:#f3f4f6;color:var(--neutral)}
+  .src{font-size:11px;padding:1px 6px;border-radius:4px;background:#eef2ff;color:#4338ca;font-weight:600}
+  .src.apm{background:#ecfdf5;color:#065f46}
+  .src.ces{background:#fff7ed;color:#9a3412}
+  .rowlink{color:var(--brand);cursor:pointer;text-decoration:none;font-weight:600}
+  .modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal.open{display:flex}
+  .modal-card{background:#fff;border-radius:12px;max-width:480px;width:100%;padding:20px}
+  .modal-card h3{margin:0 0 8px}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:8px;display:none;z-index:99}
+  .toast.show{display:block}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+  .diag-steps{list-style:none;padding:0;margin:0}
+  .diag-steps li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .dot{width:18px;height:18px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:var(--neutral)}
+  .dot.done{background:var(--ok)}
+  .dot.run{background:var(--warn);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.5}}
+  .report{background:linear-gradient(180deg,#f8fafc,#fff);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:12px}
+  .report h4{margin:0 0 8px;font-size:15px}
+  .report .conclusion{background:var(--brand-soft);border-left:3px solid var(--brand);padding:10px 12px;border-radius:6px;margin:8px 0}
+  .kv{display:grid;grid-template-columns:100px 1fr;gap:4px 8px;font-size:13px}
+  .kv dt{color:var(--muted)}
+  .kv dd{margin:0}
+  .empty{padding:30px;text-align:center;color:var(--muted)}
+  .hint{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand-mark">告</div>
+  <div>
+    <h1>华为云告警中台 · DPOMAgent</h1>
+    <div class="sub">AOM · 统一 APM · CES · LTS ｜ 关联事件化 · 通知分发 · 处置工件（REQUIRES_APPROVAL）· 诊断编排</div>
+  </div>
+  <div class="spacer"></div>
+  <span class="env-tag">本地部署 · MySQL + Redis</span>
+</div>
+
+<div class="shell">
+  <div class="stats">
+    <div class="stat crit"><div class="n" id="stat-active">0</div><div class="l">活动告警</div></div>
+    <div class="stat maj"><div class="n" id="stat-incident">0</div><div class="l">未处理事件</div></div>
+    <div class="stat"><div class="n" id="stat-shielded">0</div><div class="l">已停用规则</div></div>
+    <div class="stat ok"><div class="n" id="stat-cleared">0</div><div class="l">已恢复告警</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="alarms">告警中心</div>
+    <div class="tab" data-tab="rules">规则管理</div>
+  </div>
+
+  <div class="panel" id="panel-alarms">
+    <div class="toolbar">
+      <label>来源</label>
+      <select id="f-src"><option value="">全部</option><option value="AOM">AOM</option><option value="APM">统一 APM</option><option value="CES">CES</option><option value="LTS">LTS</option></select>
+      <label>严重度</label>
+      <select id="f-sev"><option value="">全部</option><option value="CRITICAL">严重</option><option value="WARNING">重要</option><option value="INFO">一般</option></select>
+      <div style="flex:1"></div>
+      <button class="btn btn-danger" id="btn-clear" disabled>清除告警</button>
+      <button class="btn btn-primary" id="btn-diag" disabled>采集并诊断</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th><input type="checkbox" id="check-all-alarms"></th><th>来源</th><th>告警名称</th><th>资源</th><th>严重度</th><th>状态</th><th>最近发生</th><th>操作</th></tr></thead>
+        <tbody id="alarm-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-rules" style="display:none">
+    <div class="toolbar">
+      <label>来源</label>
+      <select id="fr-src"><option value="">全部</option><option value="AOM">AOM</option><option value="APM">统一 APM</option><option value="CES">CES</option><option value="LTS">LTS</option></select>
+      <div style="flex:1"></div>
+      <button class="btn btn-danger" id="btn-shield" disabled>批量屏蔽</button>
+      <button class="btn btn-primary" id="btn-enable" disabled>批量开启</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th><input type="checkbox" id="check-all-rules"></th><th>来源</th><th>规则名称</th><th>服务过滤</th><th>严重度</th><th>渠道</th><th>当前状态</th><th>操作</th></tr></thead>
+        <tbody id="rule-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel">
+      <div style="padding:12px;border-bottom:1px solid var(--line);font-weight:700">诊断链路（关联 → 通知 → 处置工件）</div>
+      <div style="padding:12px">
+        <div class="empty" id="diag-empty">在告警中心勾选告警，点「采集并诊断」。</div>
+        <ul class="diag-steps" id="diag-steps" style="display:none"></ul>
+      </div>
+    </div>
+    <div class="panel">
+      <div style="padding:12px;border-bottom:1px solid var(--line);font-weight:700">定位报告</div>
+      <div style="padding:12px">
+        <div class="empty" id="report-empty">诊断完成后这里展示事件审计时间线。</div>
+        <div class="report" id="report-card" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <p class="hint" style="margin-top:10px">数据来自后端 agent-alarm（MySQL 持久化）。「采集并诊断」执行关联事件化 → 通知分发 → 处置工件（REQUIRES_APPROVAL）全链路；处置工件不自动执行生产操作。</p>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h3 id="modal-title">确认</h3>
+    <div id="modal-body" style="color:var(--muted);font-size:13px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-quiet" id="modal-cancel">取消</button>
+      <button class="btn btn-danger" id="modal-ok">确认</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SOURCE = {AOM:"AOM", APM:"统一 APM", CES:"CES", LTS:"LTS"};
+var SEV = {CRITICAL:{t:"严重",c:"danger"}, WARNING:{t:"重要",c:"warn"}, INFO:{t:"一般",c:"neutral"}};
+var ACT_LABEL = {CORRELATE:"关联事件化",TRIGGER:"触发诊断调查",TRIGGER_SKIP:"触发跳过",ARTIFACT_GENERATE:"生成处置工件",ARTIFACT_SKIP:"工件跳过",NOTIFY:"通知分发",ACKNOWLEDGE:"认领",RESOLVE:"闭环"};
+var alarms = [];
+var rules = [];
+var incidents = [];
+var selectedAlarms = {};
+var selectedRules = {};
+var modalAction = null;
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function sevBadge(s){var v=SEV[s]||{t:s,c:"neutral"};return "<span class=\"badge badge-"+v.c+"\">"+v.t+"</span>";}
+function statusBadge(s){var m={FIRING:["danger","活动"],RESOLVED:["ok","已恢复"]};var p=m[s]||["neutral",s];return "<span class=\"badge badge-"+p[0]+"\">"+p[1]+"</span>";}
+function srcTag(s){var c=s==="APM"?"apm":s==="CES"?"ces":"";return "<span class=\"src "+c+"\">"+(SOURCE[s]||s)+"</span>";}
+function fmtTs(t){return t?String(t).replace("T"," ").substring(5,19):"-";}
+function renderAlarms(){
+  var fs=$("f-src").value, fv=$("f-sev").value;
+  var rows = alarms.filter(function(a){return (!fs||a.source===fs)&&(!fv||a.severity===fv);});
+  $("alarm-body").innerHTML = rows.map(function(a){
+    return "<tr class=\""+(selectedAlarms[a.id]?"sel":"")+"\">"
+      +"<td><input type=\"checkbox\" "+(selectedAlarms[a.id]?"checked":"")+" onchange=\"toggleAlarm("+a.id+")\"></td>"
+      +"<td>"+srcTag(a.source)+"</td>"
+      +"<td><a class=\"rowlink\" onclick=\"diagOne("+a.id+")\">"+esc(a.alarmName)+"</a></td>"
+      +"<td>"+esc(a.resourceId)+"</td>"
+      +"<td>"+sevBadge(a.severity)+"</td>"
+      +"<td>"+statusBadge(a.status)+"</td>"
+      +"<td style=\"white-space:nowrap\">"+fmtTs(a.lastOccurredAt)+"</td>"
+      +"<td><button class=\"btn btn-quiet\" onclick=\"diagOne("+a.id+")\">诊断</button></td>"
+      +"</tr>";
+  }).join("") || "<tr><td colspan=\"8\" class=\"empty\">无匹配告警</td></tr>";
+  refreshStats();
+}
+function renderRules(){
+  var fs=$("fr-src").value;
+  var rows = rules.filter(function(r){return !fs || r.sourceFilter===fs;});
+  $("rule-body").innerHTML = rows.map(function(r){
+    return "<tr class=\""+(selectedRules[r.id]?"sel":"")+"\">"
+      +"<td><input type=\"checkbox\" "+(selectedRules[r.id]?"checked":"")+" onchange=\"toggleRule("+r.id+")\"></td>"
+      +"<td>"+(r.sourceFilter?srcTag(r.sourceFilter):"-")+"</td>"
+      +"<td>"+esc(r.name)+"</td>"
+      +"<td>"+esc(r.serviceCodeFilter||"-")+"</td>"
+      +"<td>"+(r.severityFilter?sevBadge(r.severityFilter):"-")+"</td>"
+      +"<td style=\"max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\">"+esc(r.channels||"-")+"</td>"
+      +"<td>"+(r.enabled?"<span class=\"badge badge-ok\">已启用</span>":"<span class=\"badge badge-neutral\">已停用</span>")+"</td>"
+      +"<td><button class=\"btn btn-quiet\" onclick=\"toggleOneRule("+r.id+")\">"+(r.enabled?"屏蔽":"开启")+"</button></td>"
+      +"</tr>";
+  }).join("") || "<tr><td colspan=\"8\" class=\"empty\">无匹配规则</td></tr>";
+  refreshStats();
+}
+function refreshStats(){
+  $("stat-active").textContent = alarms.filter(function(a){return a.status==="FIRING";}).length;
+  $("stat-incident").textContent = incidents.filter(function(i){return i.status!=="RESOLVED";}).length;
+  $("stat-shielded").textContent = rules.filter(function(r){return !r.enabled;}).length;
+  $("stat-cleared").textContent = alarms.filter(function(a){return a.status==="RESOLVED";}).length;
+}
+function toggleAlarm(id){if(selectedAlarms[id]){delete selectedAlarms[id];}else{selectedAlarms[id]=1;} updateBtns(); renderAlarms();}
+function toggleRule(id){if(selectedRules[id]){delete selectedRules[id];}else{selectedRules[id]=1;} updateBtns(); renderRules();}
+function selectedCount(m){return Object.keys(m).length;}
+function selectedIds(m){return Object.keys(m).map(function(k){return parseInt(k,10);});}
+function updateBtns(){
+  $("btn-clear").disabled = selectedCount(selectedAlarms)===0;
+  $("btn-diag").disabled = selectedCount(selectedAlarms)===0;
+  $("btn-shield").disabled = selectedCount(selectedRules)===0;
+  $("btn-enable").disabled = selectedCount(selectedRules)===0;
+}
+function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2600);}
+function confirmModal(title, body, action){$("modal-title").textContent=title;$("modal-body").innerHTML=body;modalAction=action;$("modal").classList.add("open");}
+function api(url, opts){return fetch(url, opts||{}).then(function(r){if(!r.ok){throw new Error("HTTP "+r.status);}return r.json();});}
+function loadAlarms(){
+  api("/api/v1/alarms?limit=50").then(function(page){alarms = page.items||[]; renderAlarms(); loadIncidents();}).catch(function(e){toast("加载告警失败: "+e.message);});
+}
+function loadIncidents(){
+  api("/api/v1/alarm-incidents?limit=50").then(function(page){incidents = page.items||[]; refreshStats();}).catch(function(){});
+}
+function loadRules(){
+  api("/api/v1/notification/rules").then(function(list){rules = list||[]; renderRules();}).catch(function(e){toast("加载规则失败: "+e.message);});
+}
+function diagOne(id){diagAlarms([id]);}
+function diagAlarms(ids){
+  $("diag-empty").style.display="none";$("report-card").style.display="none";
+  var ul=$("diag-steps");ul.style.display="";ul.innerHTML="<li><span class='dot run'>·</span><span style='flex:1'>正在执行关联事件化 → 通知 → 处置工件…</span></li>";
+  api("/api/v1/alarm-incidents/correlate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({alarmIds:ids})}).then(function(data){
+    var incidentIds = data.incidentIds||[];
+    if(incidentIds.length===0){ul.innerHTML="<li><span class='dot'>·</span><span style='flex:1'>未产生事件（告警未达关联条件或严重度不足）</span></li>";toast("未产生事件");return;}
+    toast("关联完成，事件 #"+incidentIds.join(","));
+    loadAuditReport(incidentIds[0]);
+    loadAlarms();
+  }).catch(function(e){ul.innerHTML="";toast("诊断失败: "+e.message);});
+}
+function loadAuditReport(incidentId){
+  Promise.all([
+    api("/api/v1/alarm-incidents/"+incidentId+"/audit"),
+    api("/api/v1/alarm-incidents/"+incidentId+"/members")
+  ]).then(function(res){renderReport(incidentId, res[0], res[1]);}).catch(function(e){toast("加载审计失败: "+e.message);});
+}
+function renderReport(incidentId, timeline, members){
+  var ul=$("diag-steps");ul.style.display="";ul.innerHTML="";
+  (timeline||[]).forEach(function(a){
+    var label = ACT_LABEL[a.action]||a.action;
+    ul.innerHTML += "<li><span class='dot done'>✓</span><span style='flex:1'><b>"+esc(label)+"</b><br><span class='hint'>"+esc(a.detail||"")+" · "+esc(a.result||"")+" · "+fmtTs(a.createdAt)+"</span></span></li>";
+  });
+  $("report-empty").style.display="none";
+  var card=$("report-card");card.style.display="";
+  var hasArtifact = (timeline||[]).some(function(a){return a.action==="ARTIFACT_GENERATE";});
+  card.innerHTML = "<h4>定位报告 · 事件 #"+incidentId+"</h4>"
+    +"<div class=\"kv\"><dt>成员告警</dt><dd>"+(members||[]).join(", ")+"</dd><dt>审计条目</dt><dd>"+(timeline||[]).length+"</dd><dt>处置工件</dt><dd>"+(hasArtifact?"已生成（REQUIRES_APPROVAL）":"未生成")+"</dd></div>"
+    +"<h4 style=\"margin-top:12px\">审计时间线</h4><ul style=\"font-size:13px;color:var(--muted);padding-left:18px\">"
+    +(timeline||[]).map(function(a){return "<li>"+esc(ACT_LABEL[a.action]||a.action)+"："+esc(a.detail||"")+"（"+esc(a.result||"")+"）</li>";}).join("")
+    +"</ul>"
+    +(hasArtifact?"<div class='conclusion' style='margin-top:8px'><b>处置工件已生成，需人工审批后执行。</b>DPOMAgent 不自动执行生产操作。</div>":"");
+}
+$("modal-cancel").onclick=function(){$("modal").classList.remove("open");};
+$("modal-ok").onclick=function(){$("modal").classList.remove("open");if(modalAction){modalAction();}};
+$("btn-clear").onclick=function(){toast("告警清除属生产写操作，需审批门禁，当前 MVP 未接入");};
+$("btn-diag").onclick=function(){var ids=selectedIds(selectedAlarms);if(ids.length>0){diagAlarms(ids);}};
+function toggleOneRule(id){
+  var r=null;rules.forEach(function(x){if(x.id===id)r=x;});if(!r)return;
+  setRuleEnabled(id, !r.enabled);
+}
+function setRuleEnabled(id, enabled){
+  api("/api/v1/notification/rules/"+id+"/enabled",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({enabled:enabled})}).then(function(){toast("规则 #"+id+" 已"+(enabled?"启用":"停用"));loadRules();}).catch(function(e){toast("操作失败: "+e.message);});
+}
+$("btn-shield").onclick=function(){
+  var ids=selectedIds(selectedRules);
+  confirmModal("批量屏蔽规则","将停用 <b>"+ids.length+"</b> 条通知规则。",function(){ids.forEach(function(id){setRuleEnabled(id,false);});selectedRules={};updateBtns();});
+};
+$("btn-enable").onclick=function(){
+  var ids=selectedIds(selectedRules);
+  confirmModal("批量开启规则","将启用 <b>"+ids.length+"</b> 条通知规则。",function(){ids.forEach(function(id){setRuleEnabled(id,true);});selectedRules={};updateBtns();});
+};
+document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){
+  document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
+  t.classList.add("active");
+  var tab=t.getAttribute("data-tab");
+  $("panel-alarms").style.display = tab==="alarms"?"":"none";
+  $("panel-rules").style.display = tab==="rules"?"":"none";
+};});
+$("check-all-alarms").onchange=function(e){
+  var fs=$("f-src").value,fv=$("f-sev").value;
+  alarms.filter(function(a){return (!fs||a.source===fs)&&(!fv||a.severity===fv);}).forEach(function(a){if(e.target.checked){selectedAlarms[a.id]=1;}else{delete selectedAlarms[a.id];}});
+  updateBtns();renderAlarms();
+};
+$("check-all-rules").onchange=function(e){
+  var fs=$("fr-src").value;
+  rules.filter(function(r){return !fs||r.sourceFilter===fs;}).forEach(function(r){if(e.target.checked){selectedRules[r.id]=1;}else{delete selectedRules[r.id];}});
+  updateBtns();renderRules();
+};
+$("f-src").onchange=renderAlarms;$("f-sev").onchange=renderAlarms;$("fr-src").onchange=renderRules;
+loadAlarms();loadRules();
+</script>
+</body>
+</html>

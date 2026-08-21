@@ -29,6 +29,12 @@
         FROM notification_rule WHERE enabled = TRUE ORDER BY id
     </select>
 
+    <select id="findAll" resultMap="ruleResult">
+        SELECT id, name, source_filter, service_code_filter, resource_filter, severity_filter, tag_filter,
+               channels, enabled, created_at, updated_at
+        FROM notification_rule ORDER BY id
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO notification_rule (name, source_filter, service_code_filter, resource_filter, severity_filter,
                                        tag_filter, channels, enabled)
