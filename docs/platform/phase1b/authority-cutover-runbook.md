@@ -1,5 +1,8 @@
 # Phase 1B source-authority cutover and rollback runbook
 
+> **SUPERSEDED — DO NOT EXECUTE.** This runbook belongs to the historical DPOMBase-owned design. Use
+> `docs/runbooks/phase1b-kafka-cutover-and-http-rollback.md`; Investigation authority stays in DPOMAgent.
+
 This runbook is the only allowed order for moving new Investigation ownership from DPOMAgent to
 DPOMBaseMCPServer. Historical DPOMAgent rows stay in its database and remain queryable; never copy, delete,
 rewrite, or re-parent them.
@@ -46,4 +49,3 @@ snapshot/SSE/Kafka progress sequences diverge.
 After the observation criteria pass, set SRE's compatibility end time, keep the HTTP adapter deployed for the
 declared window, and require post-window DPOMAgent authority to fail with a stable authority rejection. Retain
 historical DPOMAgent queries and all audit records according to their original retention policy.
-

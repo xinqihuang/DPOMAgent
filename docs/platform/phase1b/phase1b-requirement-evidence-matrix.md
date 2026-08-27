@@ -1,5 +1,8 @@
 # Phase 1B requirement-to-evidence matrix
 
+> Historical matrix for the superseded DPOMBase-owned Phase 1B decision. See the active OpenSpec realignment
+> tasks and evidence for current requirements.
+
 Every delta-spec scenario is mapped below. Test class names are repository-searchable and reports are under
 `docs/phase1b`.
 

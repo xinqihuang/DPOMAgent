@@ -2,6 +2,15 @@
 
 Date: 2026-08-27 (Asia/Shanghai)
 
+## Exact component commits
+
+- DPOMAgent diagnosis authority and producer: `91f6efd1e66b82126c0ba1beee75f5eb913eca10`.
+- SRE evaluated-report consumer: `bf040fc`.
+- DPOMBase evidence-only tool service: `fd08e6d`.
+- HuaweiCloudAlarmChangeGuard mutation service: `2b4d9cb`.
+- DeepEval semantic-Judge service and repository-local contract: `fc57486`.
+- Full clean-clone results and test totals are recorded in `isolated-contract-builds.md`.
+
 ## DPOMAgent authority persistence on real MySQL
 
 - Target: local MySQL 8.0 on `127.0.0.1:3306`, dedicated schema `dpom_authority_contract`.
@@ -50,3 +59,14 @@ Date: 2026-08-27 (Asia/Shanghai)
 - The initial run exposed an assertion overload that compared Jackson object iteration order. The gate now
   compares RFC 8785 canonical bytes, matching the contract's deterministic semantic requirement; the
   corrected test passed.
+
+## Phase 5 cross-service acceptance
+
+- DPOMAgent and SRE `diagnostic-report/v1` trees were compared at the exact commits above: all twelve assets
+  matched, and both repositories' pinned SHA-256 manifests verified.
+- DPOMAgent diagnosis-only contracts covered deterministic source projection, idempotency, optimistic
+  revisions, immutable recovery lineage, exact history and real-MySQL rollback.
+- SRE focused Phase 5 suites covered immutable DPOM lineage, individual-Judge/Dataset/Replay/Suite lineage,
+  canonical replay, authorization/redaction and JSON/Markdown/Portal/HTML/PDF semantic equivalence.
+- The exact-commit clean-clone reactor builds reran those suites with zero failures. The cross-service gate is
+  therefore complete without reading another repository's source or database at runtime.

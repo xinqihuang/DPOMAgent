@@ -50,10 +50,10 @@
 
 ## 7. Cross-Phase Verification and Delivery
 
-- [ ] 7.1 Run full offline builds, architecture/security/redaction suites and strict OpenSpec validation for all five affected services from clean clones.
+- [x] 7.1 Run full offline builds, architecture/security/redaction suites and strict OpenSpec validation for all five affected services from clean clones.
 - [x] 7.2 Run DPOMAgent Investigation/report real-MySQL contracts on a fresh dedicated schema at local MySQL 3306, including restart, transaction and immutable-history evidence.
 - [x] 7.3 Run the DPOMAgent-to-Kafka-to-SRE end-to-end flow on local Kafka 9092 and real MySQL, including duplicate/conflict/order, broker restart, replay and HTTP rollback parity.
-- [ ] 7.4 Run Phase 5 diagnosis-only and evaluated-report cross-service acceptance with deterministic replay and renderer equivalence against exact component commits.
+- [x] 7.4 Run Phase 5 diagnosis-only and evaluated-report cross-service acceptance with deterministic replay and renderer equivalence against exact component commits.
 - [x] 7.5 Re-run Phase 2 local fake-model infrastructure and Phase 3/4 regression suites; keep Phase 2 pending until its separate approved-model six-Judge gate objectively passes.
 - [ ] 7.6 Publish corrected Phase 1/5 requirement matrices, acceptance reports and status only after every gate passes, and reconcile Phase 2–4 prerequisite language with actual evidence.
 - [ ] 7.7 Review all final diffs for unrelated/user-owned changes and secret literals, commit and push each owning repository, then verify clean worktrees and matching remote heads.

@@ -1,6 +1,7 @@
 # Phase 5 Requirement-to-Evidence Matrix
 
-Acceptance baseline: contract `diagnostic-report/1.0.0`, template `diagnostic-report-standard@1.0.0`, DPOMBaseMCPServer `0.0.1-SNAPSHOT`, SRE Intelligence Service `0.1.0-SNAPSHOT`.
+Acceptance baseline: contract `diagnostic-report/1.0.0`, template `diagnostic-report-standard@1.0.0`,
+DPOMAgent commit `91f6efd1e66b82126c0ba1beee75f5eb913eca10`, and SRE Intelligence Service commit `bf040fc`.
 
 | Task | Objective repository evidence |
 |---|---|
@@ -15,12 +16,12 @@ Acceptance baseline: contract `diagnostic-report/1.0.0`, template `diagnostic-re
 | 2.5 | `fixtures/invalid/cases.json` with eight negative cases |
 | 2.6 | `scripts/validate-diagnostic-report.py`; Java conformance tests |
 | 2.7 | Contract README compatibility, gap and extension catalogs |
-| 3.1 | DPOMBase report domain values, builder and ports |
+| 3.1 | DPOMAgent report domain values, builder and ports |
 | 3.2 | `DiagnosisOnlyReportBuilder` and its tests |
-| 3.3 | DPOMBase builder validation and incomplete-evidence tests |
-| 3.4 | DPOMBase MyBatis repository/mapper and deployment `003_diagnostic_report_*` SQL |
-| 3.5 | DPOMBase service, authorization, controller and default-off properties |
-| 3.6 | DPOMBase builder, authority, persistence and application-service tests |
+| 3.3 | DPOMAgent builder validation and incomplete-evidence tests |
+| 3.4 | DPOMAgent MyBatis repository/mapper and reviewed diagnostic-report SQL |
+| 3.5 | DPOMAgent service, authorization, bounded API and default-off properties |
+| 3.6 | DPOMAgent builder, authority, H2/real-MySQL persistence and service tests |
 | 4.1 | `Phase5EvaluationAuthorityAdapter`; architecture boundary tests |
 | 4.2 | `EvaluatedDiagnosticReportBuilder`; persisted Phase 2 authority adapter |
 | 4.3 | Validator, builder and contract tests |
@@ -45,4 +46,9 @@ Acceptance baseline: contract `diagnostic-report/1.0.0`, template `diagnostic-re
 | 7.5 | This matrix and `docs/phase5/acceptance-report.md` |
 | 7.6 | Phase 5 exit criteria and strict OpenSpec validation |
 
-The schema suite covers bounded structure, independent outcome axes, evidence linkage and unavailable-Judge failure closure. DPOMBase covers authoritative diagnosis-only projection and immutable revisions. SRE covers evaluated projection, every persisted individual Judge result, conflict quarantine, deterministic replay and renderer parity. The golden alarm revisions encode the Eden/CodeCache distinction and limitations. Real local acceptance crosses Kafka and MySQL without production evidence or credentials in artifacts.
+The schema suite covers bounded structure, independent outcome axes, evidence linkage and unavailable-Judge failure closure.
+DPOMAgent covers authoritative diagnosis-only projection and immutable revisions. DPOMBaseMCPServer is evidence-only and
+has architecture tests rejecting report authority. SRE covers evaluated projection, every persisted individual Judge
+result, conflict quarantine, deterministic replay and renderer parity. The golden alarm revisions encode the
+Eden/CodeCache distinction and limitations. Real local acceptance crosses Kafka and MySQL without production evidence
+or credentials in artifacts.

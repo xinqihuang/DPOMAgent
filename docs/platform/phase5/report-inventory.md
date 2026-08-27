@@ -4,13 +4,13 @@ Hand-authored diagnostics and historical acceptance reports are legacy presentat
 
 | Retained report field | Authoritative source | Canonical Phase 5 field |
 |---|---|---|
-| Alarm/event identity and lifecycle | DPOMBase persisted Incident and versioned provider evidence reference | `identity.incidentId`, `timeline`, `evidenceReferences` |
-| Investigation and diagnosis run | DPOMBase Investigation Runtime | `identity.investigationId`, `identity.runId` |
+| Alarm/event identity and lifecycle | DPOMAgent persisted Incident and versioned provider evidence reference | `identity.incidentId`, `timeline`, `evidenceReferences` |
+| Investigation and diagnosis run | DPOMAgent Investigation Runtime | `identity.investigationId`, `identity.runId` |
 | Target service/instance/IP | Persisted diagnosis target projection and evidence scope | `target` |
 | Incident and observation windows | Incident fact and evidence collection metadata | `incidentWindow`, `evidenceReferences[].window` |
-| Metric observations | DPOMBase bounded Observation plus immutable evidence reference | `observations`, `evidenceReferences` |
-| Hypotheses and alternatives | DPOMBase persisted Hypothesis | `hypotheses` |
-| Root-cause conclusion and confidence | DPOMBase persisted Conclusion; confidence is bounded and never strengthened by a renderer | `conclusions` |
+| Metric observations | DPOMAgent bounded Observation plus immutable DPOMBase evidence reference | `observations`, `evidenceReferences` |
+| Hypotheses and alternatives | DPOMAgent persisted Hypothesis | `hypotheses` |
+| Root-cause conclusion and confidence | DPOMAgent persisted Conclusion; confidence is bounded and never strengthened by a renderer | `conclusions` |
 | Evidence gaps/query limitations | Persisted missing-capability facts and validation results | `gapCodes` |
 | Recommendations | Persisted advisory diagnosis output; never an execution record | `recommendations` |
 | Eval Case, Run and Suite | SRE Intelligence persisted Phase 2 authority | `evaluation.lineage` |

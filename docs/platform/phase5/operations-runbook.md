@@ -2,7 +2,11 @@
 
 ## Safety defaults and rollout
 
-Both DPOMBase diagnosis-only generation and SRE evaluated-report generation/rendering are disabled by default. Enable one surface at a time with environment-injected credentials, verify readiness reports `READY`, then permit Workflow traffic. Metadata reads, rendered projections and controlled evidence-reference dereferencing use separate credentials. Never place credentials in configuration files, report JSON, renderer output, logs or audit reasons.
+Both DPOMAgent diagnosis-only generation and SRE evaluated-report generation/rendering are disabled by default.
+DPOMBaseMCPServer only collects bounded evidence and never enables a report surface. Enable one authoritative surface at
+a time with environment-injected credentials, verify readiness reports `READY`, then permit traffic. Metadata reads,
+rendered projections and controlled evidence-reference dereferencing use separate credentials. Never place credentials
+in configuration files, report JSON, renderer output, logs or audit reasons.
 
 ## Capacity and bounds
 

@@ -1,7 +1,7 @@
 # Phase 2 — Curated Cases and Governed Evaluation Data
 
 - Status: Planned
-- Prerequisite: Phase 1 three-service topology and compatibility cutover are accepted.
+- Prerequisite: Phase 1 corrected four-core-service boundaries and compatibility cutover are accepted.
 - Goal: convert Phase 1 evaluation projections into reviewable, versioned Incident Cases and reproducible Dataset Versions.
 
 ## Scope

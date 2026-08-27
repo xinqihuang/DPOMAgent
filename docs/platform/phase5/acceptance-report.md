@@ -3,7 +3,9 @@
 - Accepted: 2026-08-26
 - Contract: `diagnostic-report/1.0.0`
 - Template: `diagnostic-report-standard@1.0.0`
-- DPOMBaseMCPServer: `0.0.1-SNAPSHOT`
+- DPOMAgent exact implementation commit: `91f6efd1e66b82126c0ba1beee75f5eb913eca10`
+- SRE exact implementation commit: `bf040fc`
+- DPOMBaseMCPServer evidence-only boundary commit: `fd08e6d`
 - SRE Intelligence Service: `0.1.0-SNAPSHOT`
 - Historical decision: **PASS** for the superseded DPOMBase-owned diagnosis profile
 - Current decision: **REOPENED / IN PROGRESS** under `openspec/changes/realign-phase1-phase5-to-dpomagent-authority`
@@ -16,8 +18,9 @@ the active implementation after DPOMBase became evidence-only, so it MUST NOT be
 | Verification | Result |
 |---|---|
 | Offline shared contract | `PHASE5_CONTRACT_STATUS=PASS valid=7 invalid=8` |
-| SRE full reactor | BUILD SUCCESS; 352 tests, 0 failures, 0 errors, 6 explicit environment-gated skips |
-| DPOMBase full reactor | BUILD SUCCESS; 501 tests, 0 failures, 0 errors, 0 skips; Checkstyle 0 violations |
+| DPOMAgent clean-clone full reactor | BUILD SUCCESS; 536 tests, 0 failures/errors, 50 gated skips |
+| SRE clean-clone full reactor | BUILD SUCCESS; 354 tests, 0 failures/errors, 6 gated skips |
+| DPOMBase clean-clone full reactor | BUILD SUCCESS; 399 tests, 0 failures/errors, evidence-only architecture gate PASS |
 | Real MySQL Phase 5 persistence | `PHASE5_MYSQL_CONTRACT_STATUS=EXECUTED outcome=PASS` |
 | Real Kafka/MySQL cross-service flow | `PHASE5_E2E_CONTRACT_STATUS=EXECUTED kafka=PASS mysql=PASS judges=7 report=PASS` |
 
@@ -37,8 +40,13 @@ The real persistence contract exercised insert, request/revision uniqueness, opt
 
 Generation and rendering remain default-off. Rollout requires explicit non-production enablement and separate metadata/render/evidence authorization. Renderer failure does not affect canonical authority. Rollback disables generation/rendering first and retains immutable reports; reviewed SQL refuses unsafe removal while data remains.
 
-No unresolved Phase 5 acceptance gap remains. Environment-gated SRE tests are intentionally skipped by the ordinary offline reactor and are covered separately by the executed local MySQL and Kafka acceptance runs above.
+No unresolved Phase 5 implementation or cross-service acceptance gap remains. The overall change deliberately keeps the
+published Phase 5 status `IN PROGRESS` until the remaining cross-phase external gates are either executed or explicitly
+resolved; this report does not promote those unrelated pending gates to success.
 
 ## Cross-phase audit
 
-Phase 1, Phase 3 and Phase 4 remain accepted, and Phase 5 projects their immutable lineage without changing their ownership. Phase 2 implementation and fake-model/real Kafka/MySQL evidence are present, but its own roadmap intentionally remains `Planned`: the separate approved-provider six-Judge gate last failed closed on provider HTTP 401 and tasks 9.2/9.5 remain unchecked. That pre-existing external acceptance dependency does not weaken Phase 5's executed seven-result persistence and report-projection acceptance, and it has not been relabeled as success.
+Phase 3 and Phase 4 remain accepted, and Phase 5 projects immutable Phase 1–4 lineage without changing ownership.
+Phase 2 implementation and fake-model/real Kafka/MySQL evidence are present, but its separate approved-provider
+six-Judge gate last failed closed on provider HTTP 401. That external dependency does not weaken Phase 5's executed
+seven-result persistence and report-projection evidence, and it has not been relabeled as success.

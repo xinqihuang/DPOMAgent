@@ -1,5 +1,7 @@
 # Phase 1B Investigation Persistence Verification
 
+> Historical evidence for the superseded DPOMBase persistence design; current authority is DPOMAgent.
+
 Date: 2026-08-25
 
 ## Scope

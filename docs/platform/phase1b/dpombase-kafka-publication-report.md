@@ -1,5 +1,7 @@
 # Phase 1B DPOMBase Kafka Publication Verification
 
+> Historical evidence for a superseded ownership boundary; it is not current Kafka authority or acceptance proof.
+
 Date: 2026-08-25
 
 ## Scope

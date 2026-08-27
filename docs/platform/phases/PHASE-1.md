@@ -1,9 +1,10 @@
-# Phase 1 — Three-Service Diagnosis-to-Evaluation Foundation
+# Phase 1 — Four-Core-Service Diagnosis-to-Evaluation Foundation
 
 - Status: In Progress — authority realignment
 - Previous acceptance: 2026-08-25, retained as historical evidence for the superseded DPOMBase-owned boundary
 - Active change: `openspec/changes/realign-phase1-phase5-to-dpomagent-authority`
-- Goal: deliver the accepted three-service diagnosis-to-evaluation foundation with a bounded, rollback-safe compatibility window.
+- Goal: deliver DPOMAgent diagnosis authority, DPOMBase evidence tools, SRE evaluation control and stateless DeepEval
+  with a bounded, rollback-safe HTTP-to-Kafka compatibility window.
 
 ## Milestone 1A — Delivered compatibility baseline
 
@@ -46,11 +47,11 @@ acceptance evidence are recorded in `../phase1b/phase1b-acceptance-report.md` an
 - [x] Replay works without the original LLM conversation.
 - [x] Service and credential boundaries are verified.
 - [x] Scenario-by-scenario acceptance evidence exists, including real local Kafka and cutover/rollback.
-- [ ] DPOMAgent owns durable, restartable Diagnosis and Investigation state under the corrected boundary.
-- [ ] DPOMAgent Kafka publication occurs only after authoritative diagnosis state is durable; real MySQL and broker gates pass.
-- [ ] Kafka and compatibility HTTP have equivalent idempotency, conflict, ordering, replay, and observability semantics.
-- [ ] DPOMAgent SSE exposes safe diagnosis progress without evidence bodies, prompts, model output, or credentials.
-- [ ] HTTP-to-Kafka cutover, rollback and default-off admission/publication are objectively verified without moving diagnosis ownership.
+- [x] DPOMAgent owns durable, restartable Diagnosis and Investigation state under the corrected boundary.
+- [x] DPOMAgent Kafka publication occurs only after authoritative diagnosis state is durable; real MySQL and broker gates pass.
+- [x] Kafka and compatibility HTTP have equivalent idempotency, conflict, ordering, replay, and observability semantics.
+- [x] DPOMAgent SSE exposes safe diagnosis progress without evidence bodies, prompts, model output, or credentials.
+- [x] HTTP-to-Kafka cutover, rollback and default-off admission/publication are objectively verified without moving diagnosis ownership.
 
 ## Deferred to later phases
 

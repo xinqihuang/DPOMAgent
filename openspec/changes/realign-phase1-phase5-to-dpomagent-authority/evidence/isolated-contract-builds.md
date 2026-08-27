@@ -1,21 +1,28 @@
-# Isolated contract builds
+# Isolated clean-clone verification
 
-Date: 2026-08-27
+Date: 2026-08-27 (Asia/Shanghai)
 
-DPOMAgent commit `42057d061ca1363fbd52cf46dcd1aba7a1a05652` was cloned
-from GitHub into a new temporary directory with no workspace siblings. Its
-portability verifier passed and the complete nine-module Maven test reactor
-passed: agent-web ran 226 tests with 0 failures, 0 errors and 36 conditional
-skips. Contract checksum and conformance tests passed from repository-local
-assets.
+Five repositories were cloned with `git clone --local --no-hardlinks` into a new directory outside every
+service worktree. Builds therefore consumed committed repository content only; no sibling source tree,
+untracked file or previously generated `target` directory could satisfy a test.
 
-SREIntelligenceService commit
-`139a70f01021c209c5a18eb1997b40e706c8b87e` was independently cloned into a
-different temporary directory. A pre-build scan found no parent/sibling
-contract reference in Maven or active scripts. The complete four-module Maven
-test reactor passed: sre-web ran 248 tests with 0 failures, 0 errors and 6
-conditional skips.
+| Repository | Exact verified commit | Clean-clone gate | Result |
+| --- | --- | --- | --- |
+| DPOMAgent | `91f6efd1e66b82126c0ba1beee75f5eb913eca10` | Maven nine-module `verify` | PASS: 536 tests, 0 failures/errors, 50 gated skips |
+| DPOMBaseMCPServer | `fd08e6d` | Maven ten-module `verify` | PASS: 399 tests, 0 failures/errors, 1 gated skip |
+| SREIntelligenceService | `bf040fc` | Maven four-module `verify` | PASS: 354 tests, 0 failures/errors, 6 gated skips |
+| HuaweiCloudAlarmChangeGuard | `2b4d9cb` | Maven `verify` | PASS: 96 tests, 0 failures/errors, 7 explicitly gated live skips |
+| DeepEvalService | `fc57486` | frozen `uv` sync, Ruff, mypy and pytest | PASS: 68 tests, 0 failures |
 
-Both repositories pin `contracts/**` to LF so byte-level SHA-256 provenance is
-stable across Windows and Unix checkouts. Neither build used the former outer
-repository, a sibling service source tree or a machine-specific workspace path.
+Strict OpenSpec validation also passed from the isolated DPOMAgent clone. DPOMAgent's full Spring Boot
+repackage succeeded there, proving the earlier running-process JAR lock was a worktree/runtime condition,
+not a source or Maven failure.
+
+The first isolated DeepEvalService run objectively exposed its remaining `../contracts` dependency: three
+contract tests could not find the former workspace-root directory. Commit `fc57486` moved the twelve pinned
+semantic-Judge contract assets into DeepEvalService and changed the tests to resolve them repository-locally.
+A fresh second clone then passed Ruff, mypy and all 68 tests. Its twelve assets are content-equivalent to the
+pinned SRE consumer copy.
+
+All repository-owned contract files remain version controlled; no build relies on
+`AISREPlatformGovernance`, `D:/code/contracts`, or another service's working tree.

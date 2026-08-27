@@ -1,5 +1,7 @@
 # DPOMBase authoritative REST/SSE/Kafka progress report
 
+> Historical evidence for a superseded ownership boundary. DPOMAgent now owns authoritative progress and SSE.
+
 Status: accepted on 2026-08-25.
 
 The default-off Portal API reads the existing MyBatis Investigation aggregate and persisted progress log.
@@ -25,4 +27,3 @@ Evidence:
 - Kafka projection tests prove topic, canonical source, and progress sequence parity.
 - DPOMBase `mvn verify`: 493 tests, zero failures/errors/skips after this change set.
 - Gated MySQL contract: `MYSQL_CONTRACT_STATUS=EXECUTED`, schema version 1 state `READY`.
-

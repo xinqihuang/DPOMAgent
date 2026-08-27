@@ -82,12 +82,12 @@ until the corrected ownership passes the realignment gates that follow.
 
 ## Current Realignment Gates
 
-- [ ] DPOMAgent produces and persists diagnosis-only canonical revisions from immutable Investigation facts.
-- [ ] SRE consumes the versioned DPOMAgent source without cross-database access and retains exact evaluation lineage.
-- [ ] DPOMBase remains evidence-only and contains no report authority.
-- [ ] Producer contracts, fixtures and canonical vectors build from isolated clean clones without workspace sibling paths.
-- [ ] Real MySQL/Kafka diagnosis-only and evaluated-report flows pass under the corrected ownership.
-- [ ] Corrected requirement matrix and acceptance report replace the historical decision.
+- [x] DPOMAgent produces and persists diagnosis-only canonical revisions from immutable Investigation facts.
+- [x] SRE consumes the versioned DPOMAgent source without cross-database access and retains exact evaluation lineage.
+- [x] DPOMBase remains evidence-only and contains no report authority.
+- [x] Producer contracts, fixtures and canonical vectors build from isolated clean clones without workspace sibling paths.
+- [x] Real MySQL/Kafka diagnosis-only and evaluated-report flows pass under the corrected ownership.
+- [x] Corrected requirement matrix and acceptance report replace the historical decision.
 
 ## Not in Scope
 

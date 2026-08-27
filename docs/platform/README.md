@@ -19,14 +19,14 @@
 | 兼容垂直切片 | 已跑通的 DPOMAgent HTTP Outbox -> SRE -> DeepEval 实现；是迁移基线，不是最终拓扑 |
 | Phase 1 目标 | DPOMAgent、DPOMBaseMCPServer、SRE Intelligence Service、DeepEval Service 四个核心后端部署单元 |
 | Phase 1A | 已完成的兼容垂直切片和验收证据 |
-| Phase 1B | 尚未完成的运行时归属收敛、Kafka 等价路径和 DPOMAgent 迁移 |
+| Phase 1B | 已实现、仍待最终状态发布的 DPOMAgent HTTP Outbox 到 Kafka 等价迁移 |
 | Phase 2 | Case、Gold、Dataset、六 Judge 和人工一致性 |
 | Phase 3 | 失败归因、能力缺口、建议和 Release Gate |
 | Phase 4 | 受人工治理的 Improvement Agent |
 
 Phase 1A/1B 只是里程碑标签，不是新增长期架构层级。Phase 1 整体在 Phase 1B 验收完成前保持 In Progress。
 
-## 三服务目标
+## 四个核心服务目标
 
 ```text
 Portal -> DPOMAgent -> Kafka -> SRE Intelligence Service -> HTTP -> DeepEval Service

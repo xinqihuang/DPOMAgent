@@ -12,7 +12,8 @@ Date: 2026-08-27
 
 - APM uses the published Huawei Cloud alarm-center APIs through SDK `HcClient` AK/SK signing. The implementation validates a unique ID, exact detail state, update response body `{"ok":"ok"}`, request ID, approval/audit/rollback state machine and fail-closed errors.
 - Official authorization items were verified from the rendered Huawei Cloud API reference: `apm::getAdminInfo` for list/detail and `apm::updateAdminInfo` for status update.
-- `HuaweiCloudAlarmChangeGuard`: offline `mvn verify` passed 95 tests with zero failures/errors; six explicitly gated live tests were skipped.
+- `HuaweiCloudAlarmChangeGuard`: exact-commit clean-clone `mvn verify` passed 96 tests with zero failures/errors;
+  seven explicitly gated live tests were skipped.
 
 ## Authorized live check status
 

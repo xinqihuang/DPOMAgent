@@ -1,5 +1,7 @@
 # Phase 1B Investigation Domain Verification
 
+> Historical evidence for the superseded DPOMBase Investigation domain; current authority is DPOMAgent.
+
 Date: 2026-08-25
 
 ## Scope
