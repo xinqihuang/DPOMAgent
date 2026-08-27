@@ -1,0 +1,8 @@
+{
+  "algorithm":"RFC8785+SHA-256",
+  "digestExclusions":["/reportDigest"],
+  "vectors":[
+    {"name":"object-key-order","input":{"b":2,"a":1},"canonicalUtf8":"{\"a\":1,\"b\":2}","sha256":"43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777"},
+    {"name":"diagnosis-complete","fixture":"fixtures/valid/diagnosis-complete.json","sha256":"74e15c290e965a22f1f6b2a344ebba5252ee604da524de15d52b4e63447e9d30"}
+  ]
+}

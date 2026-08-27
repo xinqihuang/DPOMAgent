@@ -1,0 +1,46 @@
+{
+  "eventId": "28a1193e-9620-48aa-aa36-6e9ee5a2026d",
+  "eventType": "investigation.replay-ready",
+  "schemaVersion": "2.0",
+  "occurredAt": "2026-08-25T02:35:00Z",
+  "producer": { "service": "DPOMAgent", "instanceId": "dpom-base-prod-cn-north-9-01" },
+  "sourceAuthority": {
+    "service": "DPOMAgent",
+    "authorityEpoch": "phase1b-cn-north-9-20260825",
+    "aggregateVersion": 13,
+    "publicationIntentId": "PUB-INV-20260825-0001-13"
+  },
+  "incidentId": "INC-20260825-0001",
+  "investigationId": "INV-20260825-0001",
+  "runId": "RUN-20260825-0002",
+  "aggregateSequence": 2,
+  "idempotencyKey": "INV-20260825-0001.replay.13",
+  "provenance": {
+    "application": { "status": "available", "name": "DPOMAgent", "version": "2.0.0" },
+    "model": { "status": "unavailable", "reasonCode": "NOT_APPLICABLE" },
+    "prompt": { "status": "unavailable", "reasonCode": "NOT_APPLICABLE" },
+    "skills": [{ "status": "unavailable", "reasonCode": "NOT_APPLICABLE" }],
+    "toolContracts": [{ "status": "available", "name": "replay-export", "version": "1.0" }],
+    "source": { "status": "available", "serviceCode": "asset-service", "release": "2026.08.25.1" },
+    "evidenceSchema": { "status": "available", "name": "evidence-manifest", "version": "1.0" }
+  },
+  "evidenceManifest": {
+    "manifestId": "EM-INV-20260825-0001-13",
+    "schemaVersion": "1.0",
+    "sha256": "7c7dd1d4b9ebd34589a266a545dbd68c02e8c94b4f6158d859ed272a7df08ca2",
+    "byteSize": 2048,
+    "sensitivity": "RESTRICTED",
+    "retentionClass": "EVAL_90D"
+  },
+  "artifactRef": {
+    "artifactId": "ART-REPLAY-20260825-0001",
+    "locationType": "controlled-obs-evidence",
+    "locator": "evidence/phase1b/ART-REPLAY-20260825-0001",
+    "mediaType": "application/json",
+    "byteSize": 32768,
+    "sha256": "8d7dd1d4b9ebd34589a266a545dbd68c02e8c94b4f6158d859ed272a7df08ca3",
+    "artifactSchemaVersion": "1.0",
+    "retentionClass": "EVAL_90D",
+    "createdAt": "2026-08-25T02:34:59Z"
+  }
+}

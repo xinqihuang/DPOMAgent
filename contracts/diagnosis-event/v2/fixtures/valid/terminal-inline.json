@@ -1,0 +1,48 @@
+{
+  "eventId": "bb16f60c-4db2-45bf-bd99-25164bc93d91",
+  "eventType": "investigation.completed",
+  "schemaVersion": "2.0",
+  "occurredAt": "2026-08-25T02:30:00Z",
+  "producer": {
+    "service": "DPOMAgent",
+    "instanceId": "dpom-base-prod-cn-north-9-01"
+  },
+  "sourceAuthority": {
+    "service": "DPOMAgent",
+    "authorityEpoch": "phase1b-cn-north-9-20260825",
+    "aggregateVersion": 12,
+    "publicationIntentId": "PUB-INV-20260825-0001-12"
+  },
+  "incidentId": "INC-20260825-0001",
+  "investigationId": "INV-20260825-0001",
+  "runId": "RUN-20260825-0002",
+  "aggregateSequence": 1,
+  "idempotencyKey": "INV-20260825-0001.completed.12",
+  "provenance": {
+    "application": { "status": "available", "name": "DPOMAgent", "version": "2.0.0" },
+    "model": { "status": "available", "name": "diagnosis-model", "version": "2026-08-25", "provider": "approved-provider" },
+    "prompt": { "status": "available", "name": "investigation-system-prompt", "version": "4.0.0" },
+    "skills": [{ "status": "available", "name": "trace-evidence-analysis", "version": "1.0.0" }],
+    "toolContracts": [{ "status": "available", "name": "apm-trace", "version": "2.0" }],
+    "source": { "status": "available", "serviceCode": "asset-service", "release": "2026.08.25.1", "commitSha": "90abcdef1234567" },
+    "evidenceSchema": { "status": "available", "name": "evidence-manifest", "version": "1.0" }
+  },
+  "evidenceManifest": {
+    "manifestId": "EM-INV-20260825-0001-12",
+    "schemaVersion": "1.0",
+    "sha256": "6b7dd1d4b9ebd34589a266a545dbd68c02e8c94b4f6158d859ed272a7df08ca1",
+    "byteSize": 1840,
+    "sensitivity": "RESTRICTED",
+    "retentionClass": "EVAL_90D"
+  },
+  "inlinePayload": {
+    "payloadType": "diagnosis-summary",
+    "payloadSchemaVersion": "1.0",
+    "content": {
+      "conclusionRef": "CON-20260825-0001",
+      "resultType": "ROOT_CAUSE_IDENTIFIED",
+      "summary": "Transaction rollback was confirmed by trace and version-matched source evidence.",
+      "evidenceRefs": ["EV-TRACE-0007", "EV-CODE-0011"]
+    }
+  }
+}

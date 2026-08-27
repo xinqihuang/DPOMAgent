@@ -1,0 +1,21 @@
+# Phase 4 Requirement-to-Evidence Matrix
+
+| Requirement | Objective evidence |
+|---|---|
+| Default-off configuration and separated identities | `Phase4SafetyConfigurationTest`; operator, reviewer and approver authentication are independent and empty/shared credentials fail closed |
+| Framework-neutral boundaries and forbidden capabilities | `CoreArchitectureTest`, `Phase4ApiSurfaceRedactionTest`; Phase 4 core has no Spring, MyBatis, cloud/Kafka/DeepEval implementation or production-write dependency, and exposes no deploy/activate/configuration/waiver route |
+| Versioned contracts, canonical digests and exact lineage | `Phase4ContractValidationTest`, `contracts/phase4/v1`; positive graph plus tampered digest, mismatched lineage, bounds, safety and secret-field negatives |
+| Reviewed SQL and durable MyBatis persistence | `Phase4DeploymentSqlAssetsTest`, `Phase4GovernancePersistenceTest`, `Phase4GovernanceMySqlContractIT`; insertion, uniqueness, optimistic locking, cursor pagination, rollback/transactional publication and exact-history reconstruction |
+| Bounded deterministic proposals | `ImprovementProposalPolicyTest`, `ProposalLifecycleTest`, `Phase4ProposalServiceTest`, `JdkDeepSeekProposalAdapterTest`; approved targets/model alias, normalized output, semantic digest and no raw provider output/credential persistence |
+| Proposal lifecycle and fail-closed generation | `Phase4ProposalServiceTest`, `Phase4ProposalControllerTest`; invalid model output, stale source digest, unsupported source/target, prohibited instruction, duplicate request, self approval and stale transition |
+| Immutable inactive candidate artifacts | `CandidateArtifactPolicyTest`, `Phase4GovernedImprovementEndToEndTest`; exact proposal/baseline parents, bounded target representation and inactive state before and after handoff |
+| Deny-by-default sandbox and recovery | `SandboxPolicyCatalogTest`, `Phase4GovernancePersistenceTest`, `Phase4SandboxControllerTest`, `Phase4GovernedImprovementEndToEndTest`; shell/network/credential/write denial, timeout/budget/capacity controls, kill, expired lease, restart, duplicate delivery and deterministic terminal result |
+| Frozen validation reusing Phase 2/3 authority | `Phase4EvaluationAuthorityAdapterTest`, `Phase4ValidationServiceTest`, `Phase4ValidationControllerTest`; exact Dataset/Replay/Judge/report/comparison/gate versions, authoritative reuse and one immutable result |
+| Validation predicates fail closed | `Phase4ValidationServiceTest`; incompatible cohort, missing/stale report, unavailable Judge, integrity failure, insufficient sample, success failure, cost/latency regression and deterministic restart all remain explicit evidence |
+| Ordered signed dossier and human governance | `Phase4DossierServiceTest`, `Phase4DossierControllerTest`; exact manifest, signing/verification, transactional publication, independent ACCEPT/REJECT/DEPRECATE/SUPERSEDE, optimistic concurrency and bounded handoff |
+| Adoption eligibility and immutable gate history | `Phase4DossierServiceTest`; signature tamper, original BLOCK, expired/revoked/mismatched waiver, stale decision, self approval and invalid supersession fail closed while original evidence is retained |
+| Complete governed business flow | `Phase4GovernedImprovementEndToEndTest`; approved Phase 3 recommendation → proposal/review → inactive candidate → sandbox kill/restart → frozen validation → actual comparison/gate → signed dossier → reject → superseding revision → accept/handoff |
+| Real infrastructure compatibility | `Phase4GovernanceMySqlContractIT` PASS on local MySQL 3306; `Phase2EndToEndMySqlContractIT` PASS on local MySQL 3306, Kafka 9092 and allow-listed DeepEval fixture 18081 with seven Judges and expired-lease recovery |
+| Full regression and specification conformance | Maven `verify`: `sre-core` 97 tests and `sre-web` 232 tests, zero failures/errors; six explicitly gated external tests skipped offline and required real suites run separately; `openspec validate implement-phase4-governed-improvement-agent --strict`: PASS |
+
+All evidence is non-production. Runtime credentials and signing material are injected and are not part of fixtures, persisted provider output, logs or this report.

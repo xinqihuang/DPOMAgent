@@ -58,6 +58,19 @@ logging:
 
 # 外部能力接入配置（默认值见各适配器的 @Value 注解）
 dpom:
+  authority:
+    # 新权威只读 API 默认关闭；启用时 token 必须由部署环境注入且至少 32 字符。
+    api:
+      enabled: ${DPOM_AUTHORITY_API_ENABLED:false}
+    read-token: ${DPOM_AUTHORITY_READ_TOKEN:}
+  investigation:
+    # Phase 1B 切换与回滚演练已通过；默认停止新建。兼容窗口内回滚可显式设为 true，历史查询保持可用。
+    legacy-admission-enabled: ${DPOM_AGENT_LEGACY_ADMISSION_ENABLED:false}
+  evaluation:
+    delivery:
+      enabled: ${DPOM_EVALUATION_DELIVERY_ENABLED:false}
+    replay:
+      enabled: ${DPOM_EVALUATION_REPLAY_ENABLED:false}
   flyway:
     mysql-baseline:
       enabled: ${DPOM_FLYWAY_MYSQL_BASELINE_ENABLED:true}

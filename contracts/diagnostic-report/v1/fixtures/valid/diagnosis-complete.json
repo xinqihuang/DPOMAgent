@@ -1,0 +1,19 @@
+{
+  "contractType":"diagnostic-report","schemaVersion":"1.0.0","reportProfile":"DIAGNOSIS_ONLY","reportId":"REPORT-DIAG-001","revision":1,"supersedesReportId":null,"changeReasons":[],
+  "identity":{"incidentId":"INC-001","investigationId":"INV-001","runId":"RUN-001"},
+  "target":{"provider":"HUAWEI_CLOUD","region":"cn-north-9","resourceType":"APM_INSTANCE","resourceId":"instance-2121291","displayName":"DPBinMedService"},
+  "incidentWindow":{"from":"2026-08-15T03:56:55Z","to":"2026-08-15T04:01:55Z"},
+  "timeline":[{"itemId":"TIME-001","at":"2026-08-15T03:56:55Z","stateCode":"ALERT","summary":"Alarm became active"}],
+  "observations":[{"itemId":"OBS-001","claimType":"OBSERVATION","summary":"Eden utilization crossed the rule threshold","confidenceBasisPoints":10000,"supportingEvidenceRefs":["EVID-EDEN"],"contradictingEvidenceRefs":[]}],
+  "hypotheses":[{"itemId":"HYP-001","claimType":"HYPOTHESIS","summary":"The alarm template selected the wrong memory pool","confidenceBasisPoints":9500,"supportingEvidenceRefs":["EVID-EDEN","EVID-CODECACHE"],"contradictingEvidenceRefs":[]}],
+  "conclusions":[{"itemId":"CON-001","claimType":"CONCLUSION","summary":"The CodeCache alarm label does not match the observed Eden metric","confidenceBasisPoints":9500,"supportingEvidenceRefs":["EVID-EDEN","EVID-CODECACHE"],"contradictingEvidenceRefs":[],"disposition":"CONFIRMED"}],
+  "evidenceReferences":[
+    {"evidenceId":"EVID-CODECACHE","sourceCapability":"APM_TREND","sourceAdapter":"huawei-apm-v1","artifactRef":"artifact-codecache-001","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","collectedAt":"2026-08-25T02:00:00Z","window":{"from":"2026-08-15T03:40:00Z","to":"2026-08-15T04:15:00Z"},"targetResourceId":"instance-2121291","sensitivity":"CONTROLLED","redaction":"NONE"},
+    {"evidenceId":"EVID-EDEN","sourceCapability":"APM_TREND","sourceAdapter":"huawei-apm-v1","artifactRef":"artifact-eden-001","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","collectedAt":"2026-08-25T02:00:00Z","window":{"from":"2026-08-15T03:40:00Z","to":"2026-08-15T04:15:00Z"},"targetResourceId":"instance-2121291","sensitivity":"CONTROLLED","redaction":"NONE"}
+  ],
+  "gapCodes":[],"recommendations":[{"itemId":"REC-001","summary":"Review the memory-pool filter in alarm rule 17680","supportingEvidenceRefs":["EVID-EDEN","EVID-CODECACHE"],"safetyCode":"HUMAN_REVIEW_REQUIRED","executionState":"ADVISORY_ONLY"}],
+  "evaluation":{"outcome":"NOT_REQUIRED","lineage":{},"judges":[]},
+  "provenance":[{"componentId":"DPOMAgent","componentVersion":"1.0.0","contractVersion":"diagnosis-event-v2","sourceDigest":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}],
+  "generatedAt":"2026-08-25T02:05:00Z","completeness":"COMPLETE","extensions":{"provider.huawei.apm@1":{"alarmId":16557989,"collector":"JVM"}},
+  "reportDigest":"74e15c290e965a22f1f6b2a344ebba5252ee604da524de15d52b4e63447e9d30"
+}

@@ -1,0 +1,16 @@
+{
+  "canonicalization": "RFC8785",
+  "digest": "SHA-256-lowercase-hex",
+  "fixtures": [
+    {
+      "file": "replay-artifact.json",
+      "canonicalByteSize": 1685,
+      "canonicalSha256": "1fe94da9c73c1fbee421843824ebd92218e06cb84c18e7cec119c1b6118fdd57"
+    },
+    {
+      "file": "terminal-inline.json",
+      "canonicalByteSize": 1739,
+      "canonicalSha256": "819ca62202048915f09394746a64793b7fd886f7e9d1c97fec469e220ebb2a5a"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "cases":[
+    {"name":"missing-identity","base":"diagnosis-complete.json","operation":"remove","path":"/identity","reason":"REPORT_IDENTITY_REQUIRED"},
+    {"name":"unsupported-version","base":"diagnosis-complete.json","operation":"replace","path":"/schemaVersion","value":"2.0.0","reason":"REPORT_VERSION_UNSUPPORTED"},
+    {"name":"orphan-evidence","base":"diagnosis-complete.json","operation":"replace","path":"/conclusions/0/supportingEvidenceRefs/0","value":"EVID-ORPHAN","reason":"REPORT_EVIDENCE_ORPHAN"},
+    {"name":"confirmed-without-support","base":"diagnosis-complete.json","operation":"replace","path":"/conclusions/0/supportingEvidenceRefs","value":[],"reason":"REPORT_CONFIRMED_UNSUPPORTED"},
+    {"name":"evaluated-absent-judge","base":"evaluated-pass.json","operation":"remove","path":"/evaluation/judges/5","reason":"REPORT_REQUIRED_JUDGE_MISSING"},
+    {"name":"digest-mismatch","base":"diagnosis-complete.json","operation":"replace","path":"/reportDigest","value":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","reason":"REPORT_DIGEST_MISMATCH"},
+    {"name":"oversized-field","base":"diagnosis-complete.json","operation":"repeat","path":"/target/displayName","value":"x","count":1025,"reason":"REPORT_BOUND_EXCEEDED"},
+    {"name":"prohibited-content","base":"diagnosis-complete.json","operation":"replace","path":"/recommendations/0/summary","value":"Authorization: Bearer prohibited-secret-value","reason":"REPORT_PROHIBITED_CONTENT"}
+  ]
+}

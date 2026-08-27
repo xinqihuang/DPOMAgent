@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dpom.internal/contracts/diagnosis-progress/v1/diagnosis-progress.schema.json",
+  "title": "DPOM Diagnosis Progress v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "progressId", "schemaVersion", "occurredAt", "investigationId", "runId",
+    "progressSequence", "aggregateVersion", "sourceAuthority", "status", "stage", "summaryCode"
+  ],
+  "properties": {
+    "progressId": { "type": "string", "format": "uuid" },
+    "schemaVersion": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "investigationId": { "$ref": "#/$defs/id" },
+    "runId": { "$ref": "#/$defs/id" },
+    "progressSequence": { "type": "integer", "minimum": 1 },
+    "aggregateVersion": { "type": "integer", "minimum": 1 },
+    "sourceAuthority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["service", "authorityEpoch"],
+      "properties": {
+        "service": { "const": "DPOMAgent" },
+        "authorityEpoch": { "$ref": "#/$defs/id" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACCEPTED", "RUNNING", "CHECKPOINTED", "COMPLETED", "INCONCLUSIVE", "FAILED", "CANCELLED"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["ADMISSION", "EVIDENCE_COLLECTION", "HYPOTHESIS", "VERIFICATION", "TERMINALIZATION"]
+    },
+    "summaryCode": {
+      "type": "string", "minLength": 1, "maxLength": 64,
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "percentComplete": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "checkpointRef": { "$ref": "#/$defs/id" }
+  },
+  "$defs": {
+    "id": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    }
+  }
+}

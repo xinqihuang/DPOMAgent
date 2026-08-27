@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.DiagnosisEventOutboxDao">
+    <resultMap id="outboxResult" type="com.dpom.agent.core.diagnosisevent.DiagnosisEventOutbox">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="event_id" javaType="string"/>
+            <arg column="idempotency_key" javaType="string"/>
+            <arg column="investigation_id" javaType="long"/>
+            <arg column="run_id" javaType="long"/>
+            <arg column="event_type" javaType="string"/>
+            <arg column="aggregate_sequence" javaType="_long"/>
+            <arg column="schema_version" javaType="string"/>
+            <arg column="canonical_content" javaType="string"/>
+            <arg column="canonical_sha256" javaType="string"/>
+            <arg column="status" javaType="com.dpom.agent.core.diagnosisevent.DiagnosisOutboxStatus"/>
+            <arg column="attempt_count" javaType="_int"/>
+            <arg column="next_attempt_at" javaType="java.time.LocalDateTime"/>
+            <arg column="lease_owner" javaType="string"/>
+            <arg column="lease_token" javaType="string"/>
+            <arg column="lease_expires_at" javaType="java.time.LocalDateTime"/>
+            <arg column="last_error_code" javaType="string"/>
+            <arg column="delivered_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="columns">
+        id, event_id, idempotency_key, investigation_id, run_id, event_type, aggregate_sequence,
+        schema_version, canonical_content, canonical_sha256, status, attempt_count, next_attempt_at,
+        lease_owner, lease_token, lease_expires_at, last_error_code, delivered_at, created_at, updated_at
+    </sql>
+
+    <select id="findById" resultMap="outboxResult">
+        SELECT <include refid="columns"/> FROM diagnosis_event_outbox WHERE id = #{id}
+    </select>
+    <select id="findByEventId" resultMap="outboxResult">
+        SELECT <include refid="columns"/> FROM diagnosis_event_outbox WHERE event_id = #{eventId}
+    </select>
+    <select id="findByIdempotencyKey" resultMap="outboxResult">
+        SELECT <include refid="columns"/> FROM diagnosis_event_outbox WHERE idempotency_key = #{idempotencyKey}
+    </select>
+    <select id="findByInvestigationId" resultMap="outboxResult">
+        SELECT <include refid="columns"/> FROM diagnosis_event_outbox
+        WHERE investigation_id = #{investigationId} ORDER BY id
+    </select>
+    <select id="findReadyIds" resultType="long">
+        SELECT id FROM diagnosis_event_outbox
+        WHERE status = 'PENDING' AND next_attempt_at &lt;= #{now}
+        ORDER BY next_attempt_at, id LIMIT #{limit}
+    </select>
+    <select id="findExpiredLeaseIds" resultType="long">
+        SELECT id FROM diagnosis_event_outbox
+        WHERE status = 'IN_FLIGHT' AND lease_expires_at &lt;= #{now}
+        ORDER BY lease_expires_at, id LIMIT #{limit}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO diagnosis_event_outbox
+            (event_id, idempotency_key, investigation_id, run_id, event_type, aggregate_sequence,
+             schema_version, canonical_content, canonical_sha256, status, attempt_count, next_attempt_at)
+        VALUES
+            (#{eventId}, #{idempotencyKey}, #{investigationId}, #{runId}, #{eventType}, #{aggregateSequence},
+             #{schemaVersion}, #{canonicalContent}, #{canonicalSha256}, 'PENDING', 0, #{nextAttemptAt})
+    </insert>
+
+    <update id="acquireLease">
+        UPDATE diagnosis_event_outbox
+        SET status = 'IN_FLIGHT', attempt_count = attempt_count + 1,
+            lease_owner = #{leaseOwner}, lease_token = #{leaseToken}, lease_expires_at = #{leaseExpiresAt},
+            updated_at = #{now}
+        WHERE id = #{id} AND status = 'PENDING' AND next_attempt_at &lt;= #{now}
+    </update>
+    <update id="recoverExpired">
+        UPDATE diagnosis_event_outbox
+        SET status = 'PENDING', next_attempt_at = #{now}, lease_owner = NULL, lease_token = NULL,
+            lease_expires_at = NULL, last_error_code = 'LEASE_EXPIRED', updated_at = #{now}
+        WHERE status = 'IN_FLIGHT' AND lease_expires_at &lt;= #{now}
+    </update>
+    <update id="recoverExpiredById">
+        UPDATE diagnosis_event_outbox
+        SET status = 'PENDING', next_attempt_at = #{now}, lease_owner = NULL, lease_token = NULL,
+            lease_expires_at = NULL, last_error_code = 'LEASE_EXPIRED', updated_at = #{now}
+        WHERE id = #{id} AND status = 'IN_FLIGHT' AND lease_expires_at &lt;= #{now}
+    </update>
+    <update id="markDelivered">
+        UPDATE diagnosis_event_outbox
+        SET status = 'DELIVERED', delivered_at = #{now}, lease_owner = NULL, lease_token = NULL,
+            lease_expires_at = NULL, last_error_code = NULL, updated_at = #{now}
+        WHERE id = #{id} AND status = 'IN_FLIGHT' AND lease_token = #{leaseToken} AND lease_expires_at &gt; #{now}
+    </update>
+    <update id="scheduleRetry">
+        UPDATE diagnosis_event_outbox
+        SET status = 'PENDING', next_attempt_at = #{nextAttemptAt}, lease_owner = NULL, lease_token = NULL,
+            lease_expires_at = NULL, last_error_code = #{errorCode}, updated_at = #{now}
+        WHERE id = #{id} AND status = 'IN_FLIGHT' AND lease_token = #{leaseToken} AND lease_expires_at &gt; #{now}
+    </update>
+    <update id="markDead">
+        UPDATE diagnosis_event_outbox
+        SET status = 'DEAD', lease_owner = NULL, lease_token = NULL, lease_expires_at = NULL,
+            last_error_code = #{errorCode}, updated_at = #{now}
+        WHERE id = #{id} AND status = 'IN_FLIGHT' AND lease_token = #{leaseToken} AND lease_expires_at &gt; #{now}
+    </update>
+    <update id="replay">
+        UPDATE diagnosis_event_outbox
+        SET status = 'PENDING', attempt_count = 0, next_attempt_at = #{now}, lease_owner = NULL,
+            lease_token = NULL, lease_expires_at = NULL, last_error_code = NULL, delivered_at = NULL,
+            updated_at = #{now}
+        WHERE id = #{id} AND status = 'DEAD'
+    </update>
+</mapper>

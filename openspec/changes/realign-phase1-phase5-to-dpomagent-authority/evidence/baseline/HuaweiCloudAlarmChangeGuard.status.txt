@@ -1,0 +1,17 @@
+branch=main
+head=f2a98d826894b2444f68f9395d15e2fdfb06d0ec
+upstream=origin/main
+aheadBehind=0	0
+--- porcelain-v1 --untracked-files=all ---
+ M src/main/java/com/huawei/smartom/changeguard/domain/RuleSource.java
+ M src/main/java/com/huawei/smartom/changeguard/provider/HuaweiClientFactory.java
+ M src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmAlarmRuleProvider.java
+ M src/test/java/com/huawei/smartom/changeguard/provider/apm/ApmAlarmRuleProviderTest.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmAlarmCenterClient.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmAlarmRuleListResponse.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmListAlarmRulesBody.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmListAlarmRulesRequest.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmRuleSummary.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmUpdateRuleStatusRequest.java
+?? src/main/java/com/huawei/smartom/changeguard/provider/apm/ApmUpdateRuleStatusResponse.java
+?? src/test/java/com/huawei/smartom/changeguard/provider/apm/ApmAlarmCenterClientTest.java

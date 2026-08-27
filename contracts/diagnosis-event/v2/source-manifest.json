@@ -1,0 +1,23 @@
+{
+  "manifestVersion": "1.0",
+  "contract": "diagnosis-event",
+  "majorVersion": 2,
+  "canonicalSchema": "diagnosis-event.schema.json",
+  "canonicalProducer": "DPOMAgent",
+  "compatibilityProducer": "DPOMAgent",
+  "compatibilityContract": "../v1/diagnosis-event.schema.json",
+  "canonicalization": "RFC8785",
+  "digest": "SHA-256-lowercase-hex",
+  "transportMetadataExcluded": [
+    "httpHeaders", "hmacSignature", "kafkaHeaders", "topic", "partition", "offset", "consumerGroup", "retryAttempt"
+  ],
+  "requiredAuthorityFields": [
+    "sourceAuthority.service", "sourceAuthority.authorityEpoch",
+    "sourceAuthority.aggregateVersion", "sourceAuthority.publicationIntentId"
+  ],
+  "limits": {
+    "eventBytes": 65536,
+    "inlinePayloadBytes": 16384,
+    "evidenceManifestReferenceBytes": 2048
+  }
+}

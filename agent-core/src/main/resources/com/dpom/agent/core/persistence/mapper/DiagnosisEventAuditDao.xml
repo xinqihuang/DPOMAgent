@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.DiagnosisEventAuditDao">
+    <resultMap id="auditResult" type="com.dpom.agent.core.diagnosisevent.DiagnosisEventAudit">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="event_id" javaType="string"/>
+            <arg column="event_type" javaType="string"/>
+            <arg column="action" javaType="string"/>
+            <arg column="result" javaType="string"/>
+            <arg column="error_code" javaType="string"/>
+            <arg column="operator_ref" javaType="string"/>
+            <arg column="reason" javaType="string"/>
+            <arg column="correlation_id" javaType="string"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+    <select id="findByEventId" resultMap="auditResult">
+        SELECT id, event_id, event_type, action, result, error_code, operator_ref, reason,
+               correlation_id, created_at
+        FROM diagnosis_event_audit WHERE event_id = #{eventId} ORDER BY id
+    </select>
+    <insert id="append" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO diagnosis_event_audit
+            (event_id, event_type, action, result, error_code, operator_ref, reason, correlation_id)
+        VALUES
+            (#{eventId}, #{eventType}, #{action}, #{result}, #{errorCode}, #{operatorRef}, #{reason}, #{correlationId})
+    </insert>
+</mapper>

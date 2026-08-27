@@ -13,9 +13,12 @@ import com.dpom.agent.core.investigation.ToolAction;
 import com.dpom.agent.core.investigation.ToolExecutionResult;
 import com.dpom.agent.core.observation.Observation;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.DiagnosisEventAuditDao;
+import com.dpom.agent.core.persistence.DiagnosisEventOutboxDao;
 import com.dpom.agent.core.persistence.HypothesisDao;
 import com.dpom.agent.core.persistence.IncidentDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.InvestigationRunDao;
 import com.dpom.agent.core.persistence.ObservationDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,9 @@ class InvestigationCoordinatorTest {
     private InvestigationDao investigationDao;
 
     @Autowired
+    private InvestigationRunDao investigationRunDao;
+
+    @Autowired
     private HypothesisDao hypothesisDao;
 
     @Autowired
@@ -46,6 +52,12 @@ class InvestigationCoordinatorTest {
 
     @Autowired
     private ConclusionDao conclusionDao;
+
+    @Autowired
+    private DiagnosisEventOutboxDao outboxDao;
+
+    @Autowired
+    private DiagnosisEventAuditDao auditDao;
 
     @Autowired
     private HypothesisService hypothesisService;
@@ -68,7 +80,12 @@ class InvestigationCoordinatorTest {
         assertThat(investigationDao.findById(investigationId).orElseThrow().status())
                 .isEqualTo(InvestigationStatus.COMPLETED);
         assertThat(hypothesisDao.findByInvestigationId(investigationId)).hasSize(1);
-        assertThat(conclusionDao.findByInvestigationId(investigationId)).isPresent();
+        assertThat(conclusionDao.findByInvestigationId(investigationId).orElseThrow().resultType())
+                .isEqualTo(InvestigationCoordinator.RESULT_ROOT_CAUSE);
+        assertThat(investigationRunDao.findByInvestigationId(investigationId))
+                .singleElement()
+                .satisfies(run -> assertThat(run.endedAt()).isNotNull());
+        assertPendingCreatedEvent(investigationId);
     }
 
     @Test
@@ -83,6 +100,10 @@ class InvestigationCoordinatorTest {
                 .isEqualTo(InvestigationStatus.INCONCLUSIVE);
         assertThat(conclusionDao.findByInvestigationId(investigationId).orElseThrow().resultType())
                 .isEqualTo(InvestigationCoordinator.RESULT_INSUFFICIENT_EVIDENCE);
+        assertThat(investigationRunDao.findByInvestigationId(investigationId))
+                .singleElement()
+                .satisfies(run -> assertThat(run.endedAt()).isNotNull());
+        assertPendingCreatedEvent(investigationId);
     }
 
     @Test
@@ -153,5 +174,16 @@ class InvestigationCoordinatorTest {
                 InvestigationStatus.CREATED, null, maxSteps, maxToolCalls, maxDuration, maxNoProgress);
         investigationDao.insert(investigationCommand);
         return investigationCommand.getId();
+    }
+
+    private void assertPendingCreatedEvent(long investigationId) {
+        assertThat(outboxDao.findByInvestigationId(investigationId))
+                .singleElement()
+                .satisfies(event -> {
+                    assertThat(event.status().name()).isEqualTo("PENDING");
+                    assertThat(auditDao.findByEventId(event.eventId()))
+                            .singleElement()
+                            .satisfies(audit -> assertThat(audit.action()).isEqualTo("CREATED"));
+                });
     }
 }

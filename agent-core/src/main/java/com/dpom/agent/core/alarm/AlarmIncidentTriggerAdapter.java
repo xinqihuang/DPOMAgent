@@ -11,6 +11,8 @@ import com.dpom.agent.core.persistence.command.InvestigationInsert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -28,6 +30,7 @@ public class AlarmIncidentTriggerAdapter implements AlarmIncidentTriggerPort {
     private final IncidentDao incidentDao;
     private final InvestigationDao investigationDao;
     private final TransactionTemplate transactionTemplate;
+    private final boolean admissionEnabled;
 
     /**
      * 构造触发适配器。
@@ -38,13 +41,24 @@ public class AlarmIncidentTriggerAdapter implements AlarmIncidentTriggerPort {
      */
     public AlarmIncidentTriggerAdapter(IncidentDao incidentDao, InvestigationDao investigationDao,
             PlatformTransactionManager transactionManager) {
+        this(incidentDao, investigationDao, transactionManager, true);
+    }
+
+    @Autowired
+    public AlarmIncidentTriggerAdapter(IncidentDao incidentDao, InvestigationDao investigationDao,
+            PlatformTransactionManager transactionManager,
+            @Value("${dpom.investigation.legacy-admission-enabled:false}") boolean admissionEnabled) {
         this.incidentDao = incidentDao;
         this.investigationDao = investigationDao;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.admissionEnabled = admissionEnabled;
     }
 
     @Override
     public AlarmIncidentTriggerResult trigger(AlarmIncidentTriggerRequest request) {
+        if (!admissionEnabled) {
+            return AlarmIncidentTriggerResult.skipped("LEGACY_AUTHORITY_RETIRED");
+        }
         Long investigationId = transactionTemplate.execute(status -> createInvestigation(request));
         LOG.info("告警事件 {} 触发调查 investigationId={}", request.incidentId(), investigationId);
         return AlarmIncidentTriggerResult.triggered(investigationId);

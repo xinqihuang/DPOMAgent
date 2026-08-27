@@ -59,7 +59,9 @@ export function auditEntry(event) {
 export function sourceLabel(source) {
   return ({
     AOM_V4: "AOM",
-    UNIFIED_APM_AOM_V4: "统一 APM",
-    CES_V2: "CES"
+    APM_V1_TEMPLATE: "APM",
+    CES_V2: "CES",
+    LTS_KEYWORDS: "LTS 关键词",
+    LTS_SQL: "LTS SQL"
   })[source] ?? source ?? "未知";
 }

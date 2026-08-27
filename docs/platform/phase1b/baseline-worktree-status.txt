@@ -1,0 +1,506 @@
+CapturedAt=2026-08-25T03:00:42.5365653+08:00
+===== D:\code\DPOMAgent =====
+HEAD=719bf9188a6ab397ba4c1a5c714009a2309924d5
+## main...origin/main [ahead 1]
+ M README.md
+ M agent-core/pom.xml
+ M agent-core/src/main/java/com/dpom/agent/core/investigation/InvestigationCoordinator.java
+ M agent-core/src/main/java/com/dpom/agent/core/persistence/InvestigationDao.java
+ M agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/InvestigationDao.xml
+ M agent-web/src/main/java/com/dpom/agent/web/controller/GlobalExceptionHandler.java
+ M agent-web/src/main/java/com/dpom/agent/web/service/InvestigationApplicationService.java
+ M agent-web/src/main/resources/application.yml
+ M agent-web/src/test/java/com/dpom/agent/web/InvestigationCoordinatorTest.java
+ M agent-web/src/test/java/com/dpom/agent/web/InvestigationExecutionFailureTest.java
+ M agent-web/src/test/java/com/dpom/agent/web/MybatisExternalMysqlContractTest.java
+ M openspec/specs/investigation-agent/spec.md
+ M pom.xml
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DeliveryAcknowledgement.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DeliveryOutcome.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisArtifactReference.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEvent.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventDeliveryPort.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventDeliveryRequest.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventProducer.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventProvenance.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisInlinePayload.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/ProvenanceSource.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/ProvenanceVersion.java
+?? agent-common/src/test/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventModelTest.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/BuiltDiagnosisEvent.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/CanonicalJsonException.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/CanonicalJsonWriter.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisDeliveryPolicy.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventAudit.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventBuildMetadata.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventBuilder.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventContractValidator.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventDeliveryService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventLeaseService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventMetrics.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventOutbox.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventReplayNonce.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventReplayService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventStateService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventValidationException.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisOutboxStatus.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisReplayException.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisRetryPolicy.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/LeaseTokenSource.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/Rfc8785CanonicalJsonWriter.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/ValidatedDiagnosisEvent.java
+?? agent-core/src/main/java/com/dpom/agent/core/investigation/InvestigationTerminalizationCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/investigation/InvestigationTerminalizationService.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/DiagnosisEventAuditDao.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/DiagnosisEventOutboxDao.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/DiagnosisReplayNonceDao.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventAuditInsert.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventLeaseCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventOutboxInsert.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventReplayCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventTransitionCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisReplayNonceInsert.java
+?? agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/DiagnosisEventAuditDao.xml
+?? agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/DiagnosisEventOutboxDao.xml
+?? agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/DiagnosisReplayNonceDao.xml
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/ContractAssetIntegrityTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventBuilderTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventConformanceTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventDeliveryServiceTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisRetryPolicyTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/Rfc8785CanonicalJsonWriterTest.java
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/diagnosis-event.schema.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/fixtures/invalid/cases.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/fixtures/valid/valid-artifact.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/fixtures/valid/valid-inline.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/source-sha256.properties
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventDeliveryConfiguration.java
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventProperties.java
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventPropertiesConfiguration.java
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventReplayConfiguration.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisEventDeliveryWorker.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisEventHttpDeliveryAdapter.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisEventReplayController.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisReplayAuthenticator.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisReplayRequest.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisReplayRequestValidator.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/ReplayAuthenticationException.java
+?? agent-web/src/main/java/com/dpom/agent/web/metrics/MicrometerDiagnosisEventMetrics.java
+?? agent-web/src/main/resources/db/migration/V12__diagnosis_event_outbox.sql
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventConditionalAssemblyTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventHttpDeliveryAdapterTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventPersistenceTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventPropertiesTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventReplayDisabledTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventReplayEndpointTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisReplayAuthenticationTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/InvestigationTerminalizationIntegrationTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/MicrometerDiagnosisEventMetricsTest.java
+?? docs/add-diagnosis-event-outbox-acceptance-report.md
+?? docs/architecture/ADR-003-ai-sre-service-boundary-reference.md
+?? docs/tasks/T220-diagnosis-event-outbox.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/.openspec.yaml
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/design.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/proposal.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/specs/diagnosis-event-outbox/spec.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/specs/investigation-agent/spec.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/tasks.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/.openspec.yaml
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/design.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/proposal.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/specs/diagnosis-event-outbox/spec.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/specs/investigation-agent/spec.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/tasks.md
+?? openspec/specs/diagnosis-event-outbox/spec.md
+===== D:\code\DPOMBaseMCPServer =====
+HEAD=9bc1d44826e5420e54be28096336b831c3cc46b3
+## master...origin/master
+?? docs/decisions/ADR-005-ai-sre-service-boundary-reference.md
+?? docs/diagnostics/apm-codecache-alarm-16557997.md
+===== D:\code\SREIntelligenceService =====
+HEAD=HEAD
+## No commits yet on main
+?? .gitignore
+?? AGENTS.md
+?? README.md
+?? docs/acceptance-report.md
+?? docs/architecture/ADR-001-phase1-service-boundary-reference.md
+?? docs/architecture/rule-judge-invariant-source.md
+?? docs/contracts/deployment-acceptance-v1.md
+?? docs/contracts/diagnosis-event-v1-snapshot.md
+?? docs/contracts/evaluation-suite-v1.openapi.json
+?? docs/contracts/semantic-run-v1.openapi.json
+?? docs/deployment-acceptance-report.md
+?? docs/evaluation-suite-acceptance-report.md
+?? docs/rule-judge-acceptance-report.md
+?? docs/runbooks/deployment-acceptance.md
+?? docs/runbooks/diagnosis-event-ingestion.md
+?? docs/runbooks/evaluation-suite.md
+?? docs/runbooks/rule-judge.md
+?? docs/runbooks/semantic-judge.md
+?? docs/semantic-judge-acceptance-report.md
+?? pom.xml
+?? scripts/check-contract-drift.ps1
+?? scripts/contracts/deployment-acceptance-report-v1.schema.json
+?? scripts/lib/DeploymentAcceptance.psm1
+?? scripts/tests/Test-DeploymentAcceptance.ps1
+?? scripts/tests/fixtures/grounded-event.json
+?? scripts/tests/fixtures/responses.json
+?? scripts/tests/fixtures/signing-vectors.json
+?? scripts/verify-rule-judge-deployment.ps1
+?? scripts/verify-semantic-cross-service.ps1
+?? scripts/verify-semantic-real-model.ps1
+?? sre-common/pom.xml
+?? sre-common/src/main/java/com/dpom/sre/common/DiagnosisEventContract.java
+?? sre-core/pom.xml
+?? sre-core/src/main/java/com/dpom/sre/core/CoreModule.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/CanonicalHashVerifier.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/ContractErrorCode.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/ContractValidationException.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/DiagnosisEventValidator.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/HmacRequestVerifier.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/Rfc8785CanonicalWriter.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/SecurityBoundaryValidator.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/StrictJsonParser.java
+?? sre-core/src/main/java/com/dpom/sre/core/contract/ValidatedDiagnosisEvent.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/EvaluationSuiteDefinition.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/EvaluationSuiteService.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/FixedEvaluationSuiteCatalog.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteAggregator.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteAuditRecord.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteChildDefinition.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteChildExecution.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteChildReport.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteChildResult.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteChildStatus.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteCommandBinding.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteIdentity.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteJudgeKind.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteRun.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteRunOutcome.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteRunPreparation.java
+?? sre-core/src/main/java/com/dpom/sre/core/evaluationsuite/SuiteRunStatus.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/DiagnosisEventIngestionService.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/DiagnosisEventReceipt.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/EvalCase.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/EvalCaseInsert.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/IngestionAuditRecord.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/IngestionCommand.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/IngestionOutcome.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/IngestionRejectedException.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/IngestionResult.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/InvestigationSequenceCursor.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/ReceiptInsert.java
+?? sre-core/src/main/java/com/dpom/sre/core/ingestion/ReceiptStatus.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/ComponentVersionPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/DiagnosisEventReceiptPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvalCasePort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvaluationSuiteAuditPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvaluationSuiteChildPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvaluationSuiteClockPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvaluationSuiteIdPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvaluationSuiteMetricsPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/EvaluationSuiteRunPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/IngestionAuditPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/IngestionMetricsPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/InvestigationSequencePort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/RuleJudgeAuditPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/RuleJudgeClockPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/RuleJudgeEvalCasePort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/RuleJudgeExecutionPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/RuleJudgeMetricsPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/RuleJudgeResultPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticAttemptPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticAuditPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticClockPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticEvalCasePort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticJudgeClientPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticJudgeExecutionPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticMetricsPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/port/SemanticRunPort.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/DeterministicRule.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/EnabledRuleCatalog.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/EvalCaseCorrelation.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/EvalCaseCorrelationService.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/NormalizedRuleInput.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RootCauseEvidenceGroundingRule.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleCatalog.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleEvaluation.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleExecutionCommand.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleExecutionOutcome.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleExecutionResult.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleFindingCode.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleIdentity.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeAuditRecord.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeErrorCode.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeException.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeResult.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeResultInsert.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeService.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleJudgeStatus.java
+?? sre-core/src/main/java/com/dpom/sre/core/rulejudge/RuleProjectionNormalizer.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/FixedSemanticJudgeCatalog.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/FrozenSemanticRequest.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticAttempt.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticAuditRecord.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticClientException.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticClientResult.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticJudgeCatalog.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticJudgeErrorCode.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticJudgeException.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticJudgeIdentity.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticProjectionMapper.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticRun.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticRunCommand.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticRunOutcome.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticRunPreparation.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticRunService.java
+?? sre-core/src/main/java/com/dpom/sre/core/semantic/SemanticRunStatus.java
+?? sre-core/src/test/java/com/dpom/sre/core/CoreArchitectureTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/evaluationsuite/FixedEvaluationSuiteCatalogTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/evaluationsuite/SuiteAggregatorTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/evaluationsuite/SuiteRunTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/rulejudge/EnabledRuleCatalogTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/rulejudge/EvalCaseCorrelationServiceTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/rulejudge/RootCauseEvidenceGroundingRuleTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/rulejudge/RuleJudgeServiceTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/rulejudge/RuleProjectionNormalizerTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/semantic/SemanticProjectionMapperTest.java
+?? sre-core/src/test/java/com/dpom/sre/core/semantic/SemanticRunStateTest.java
+?? sre-web/pom.xml
+?? sre-web/src/main/java/com/dpom/sre/web/SreIntelligenceApplication.java
+?? sre-web/src/main/java/com/dpom/sre/web/client/JdkDeepEvalClient.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/DiagnosisEventWebConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/EvaluationSuiteConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/EvaluationSuiteProperties.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/IngestionCoreConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/IngestionProperties.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/ReconciliationSchedulingConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/RuleJudgeCoreConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/RuleJudgeProperties.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/RuleJudgeWebConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/SemanticJudgeConfiguration.java
+?? sre-web/src/main/java/com/dpom/sre/web/config/SemanticJudgeProperties.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/DiagnosisEventController.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/EvalCaseCorrelationController.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/EvaluationSuiteController.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/EvaluationSuiteExceptionHandler.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/IngestionExceptionHandler.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/RuleJudgeController.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/RuleJudgeExceptionHandler.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/SemanticRunController.java
+?? sre-web/src/main/java/com/dpom/sre/web/controller/SemanticRunExceptionHandler.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/DeliveryAcknowledgement.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvalCaseCorrelationResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvaluationSuiteCreateRequest.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvaluationSuiteErrorResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvaluationSuiteHistoryResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvaluationSuiteReplayRequest.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvaluationSuiteReportView.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/EvaluationSuiteRunView.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/RuleJudgeErrorResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/RuleJudgeExecuteRequest.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/RuleJudgeExecutionResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/RuleJudgeHistoryResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/RuleJudgeResultView.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/SemanticErrorResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/SemanticRunCreateRequest.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/SemanticRunHistoryResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/SemanticRunSubmissionResponse.java
+?? sre-web/src/main/java/com/dpom/sre/web/dto/SemanticRunView.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/EvaluationSuiteHealthIndicator.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/IngestionReadinessHealthIndicator.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/MicrometerEvaluationSuiteMetricsAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/MicrometerIngestionMetricsAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/MicrometerRuleJudgeMetricsAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/MicrometerSemanticMetricsAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/RuleJudgeReadinessHealthIndicator.java
+?? sre-web/src/main/java/com/dpom/sre/web/observability/SemanticJudgeReadinessHealthIndicator.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/DiagnosisEventReceiptMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/EvalCaseMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/EvaluationSuiteAuditMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/EvaluationSuiteChildMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/EvaluationSuiteRunMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/EvaluationSuiteRunRow.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/IngestionAuditMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/InvestigationSequenceMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisDiagnosisEventReceiptAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisEvalCaseAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisEvaluationSuiteAuditAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisEvaluationSuiteChildAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisEvaluationSuiteRunAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisIngestionAuditAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisInvestigationSequenceAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisRuleJudgeAuditAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisRuleJudgeResultAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisSemanticAttemptAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisSemanticAuditAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/MyBatisSemanticRunAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/RuleJudgeAuditMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/RuleJudgeResultMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/SemanticAttemptMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/SemanticAuditMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/persistence/SemanticRunMapper.java
+?? sre-web/src/main/java/com/dpom/sre/web/security/OperatorTokenVerifier.java
+?? sre-web/src/main/java/com/dpom/sre/web/security/SemanticOperatorTokenVerifier.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/EvaluationSuiteCoordinator.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/ExistingRuleJudgeExecutionAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/ExistingSemanticJudgeExecutionAdapter.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/IngestionFailureAuditService.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/QuarantineReconciliationWorker.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/RuleJudgeFailureAuditService.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/SemanticJudgeCoordinator.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/SemanticRunSubmission.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/TransactionalDiagnosisEventIngestion.java
+?? sre-web/src/main/java/com/dpom/sre/web/service/TransactionalRuleJudge.java
+?? sre-web/src/main/resources/application-offline.yml
+?? sre-web/src/main/resources/application-production.yml
+?? sre-web/src/main/resources/application.yml
+?? sre-web/src/main/resources/db/migration/V1__create_diagnosis_event_ingestion.sql
+?? sre-web/src/main/resources/db/migration/V2__create_rule_judge.sql
+?? sre-web/src/main/resources/db/migration/V3__create_semantic_judge.sql
+?? sre-web/src/main/resources/db/migration/V4__create_evaluation_suite.sql
+?? sre-web/src/main/resources/mappers/DiagnosisEventReceiptMapper.xml
+?? sre-web/src/main/resources/mappers/EvalCaseMapper.xml
+?? sre-web/src/main/resources/mappers/EvaluationSuiteAuditMapper.xml
+?? sre-web/src/main/resources/mappers/EvaluationSuiteChildMapper.xml
+?? sre-web/src/main/resources/mappers/EvaluationSuiteRunMapper.xml
+?? sre-web/src/main/resources/mappers/IngestionAuditMapper.xml
+?? sre-web/src/main/resources/mappers/InvestigationSequenceMapper.xml
+?? sre-web/src/main/resources/mappers/RuleJudgeAuditMapper.xml
+?? sre-web/src/main/resources/mappers/RuleJudgeResultMapper.xml
+?? sre-web/src/main/resources/mappers/SemanticAttemptMapper.xml
+?? sre-web/src/main/resources/mappers/SemanticAuditMapper.xml
+?? sre-web/src/main/resources/mappers/SemanticRunMapper.xml
+?? sre-web/src/test/java/com/dpom/sre/web/OfflineApplicationSmokeTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/acceptance/DeploymentAcceptanceBoundaryTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/acceptance/DeploymentAcceptanceLocalIT.java
+?? sre-web/src/test/java/com/dpom/sre/web/acceptance/EvaluationSuiteHttpAcceptanceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/acceptance/EvaluationSuiteRealModelAcceptanceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/acceptance/SemanticCrossServiceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/acceptance/SemanticRealModelAcceptanceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/client/JdkDeepEvalClientTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/config/IngestionPropertiesTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/config/RuleJudgePropertiesTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/config/RuleJudgeStartupSafetyTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/config/SemanticJudgePropertiesTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/CanonicalizationAndHashTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/ContractSnapshotTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/DiagnosisEventConformanceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/EvaluationSuiteOpenApiContractTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/HmacRequestVerifierTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/SecurityBoundaryValidatorTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/contract/SemanticOpenApiContractTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/controller/DiagnosisEventEndpointTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/controller/EvalCaseCorrelationControllerTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/controller/RuleJudgeControllerTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/controller/SemanticRunControllerTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/mysql/DiagnosisIngestionMySqlContractIT.java
+?? sre-web/src/test/java/com/dpom/sre/web/mysql/MySqlContractGateTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/observability/OperationalTelemetryTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/observability/RuleJudgeOperationalTelemetryTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/persistence/EvaluationSuiteMapperPersistenceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/persistence/MapperPersistenceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/persistence/RuleJudgeMapperPersistenceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/persistence/SemanticMapperPersistenceTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/ConcurrentIngestionTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/ConcurrentRuleJudgeIntegrationTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/EvaluationSuiteCoordinatorIntegrationTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/ExistingJudgeApplicationPortCharacterizationTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/IngestionRollbackTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/QuarantineReconciliationTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/RuleJudgeIngestionIntegrationTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/SemanticJudgeCoordinatorIntegrationTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/TransactionRetryTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/TransactionalIngestionTest.java
+?? sre-web/src/test/java/com/dpom/sre/web/service/TransactionalRuleJudgeRetryTest.java
+?? sre-web/src/test/resources/application-testdb.yml
+?? sre-web/src/test/resources/contracts/diagnosis-event/v1/contract-sha256.txt
+?? sre-web/src/test/resources/contracts/diagnosis-event/v1/diagnosis-event.schema.json
+?? sre-web/src/test/resources/contracts/diagnosis-event/v1/fixtures/invalid/cases.json
+?? sre-web/src/test/resources/contracts/diagnosis-event/v1/fixtures/valid/valid-artifact.json
+?? sre-web/src/test/resources/contracts/diagnosis-event/v1/fixtures/valid/valid-inline.json
+===== D:\code\DeepEvalService =====
+GIT=NONE
+D:\code\DeepEvalService\Dockerfile
+D:\code\DeepEvalService\pyproject.toml
+D:\code\DeepEvalService\README.md
+D:\code\DeepEvalService\scripts\verify.ps1
+D:\code\DeepEvalService\src\deepeval_service\__init__.py
+D:\code\DeepEvalService\src\deepeval_service\__pycache__\__init__.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\__pycache__\config.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\adapters\__init__.py
+D:\code\DeepEvalService\src\deepeval_service\adapters\__pycache__\__init__.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\adapters\__pycache__\deepeval_model.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\adapters\__pycache__\fake_model.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\adapters\deepeval_model.py
+D:\code\DeepEvalService\src\deepeval_service\adapters\fake_model.py
+D:\code\DeepEvalService\src\deepeval_service\api\__init__.py
+D:\code\DeepEvalService\src\deepeval_service\api\__pycache__\__init__.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\api\__pycache__\app.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\api\__pycache__\models.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\api\app.py
+D:\code\DeepEvalService\src\deepeval_service\api\models.py
+D:\code\DeepEvalService\src\deepeval_service\application\__init__.py
+D:\code\DeepEvalService\src\deepeval_service\application\__pycache__\__init__.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\application\__pycache__\catalog.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\application\__pycache__\ports.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\application\__pycache__\service.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\application\catalog.py
+D:\code\DeepEvalService\src\deepeval_service\application\ports.py
+D:\code\DeepEvalService\src\deepeval_service\application\service.py
+D:\code\DeepEvalService\src\deepeval_service\config.py
+D:\code\DeepEvalService\src\deepeval_service\domain\__init__.py
+D:\code\DeepEvalService\src\deepeval_service\domain\__pycache__\__init__.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\domain\__pycache__\models.cpython-312.pyc
+D:\code\DeepEvalService\src\deepeval_service\domain\models.py
+D:\code\DeepEvalService\tests\__init__.py
+D:\code\DeepEvalService\tests\__pycache__\__init__.cpython-312.pyc
+D:\code\DeepEvalService\tests\__pycache__\conftest.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_api.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_architecture.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_capacity.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_catalog.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_contracts.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_deepeval_adapter.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_fake_model.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\__pycache__\test_real_model_configuration.cpython-312-pytest-8.4.1.pyc
+D:\code\DeepEvalService\tests\conftest.py
+D:\code\DeepEvalService\tests\test_api.py
+D:\code\DeepEvalService\tests\test_architecture.py
+D:\code\DeepEvalService\tests\test_capacity.py
+D:\code\DeepEvalService\tests\test_catalog.py
+D:\code\DeepEvalService\tests\test_contracts.py
+D:\code\DeepEvalService\tests\test_deepeval_adapter.py
+D:\code\DeepEvalService\tests\test_fake_model.py
+D:\code\DeepEvalService\tests\test_real_model_configuration.py
+D:\code\DeepEvalService\uv.lock
+===== D:\code\contracts =====
+GIT=NONE
+D:\code\contracts\deepeval-semantic-judge\v1\error-response.schema.json
+D:\code\contracts\deepeval-semantic-judge\v1\execute-request.schema.json
+D:\code\contracts\deepeval-semantic-judge\v1\execute-response.schema.json
+D:\code\contracts\deepeval-semantic-judge\v1\fixtures\fail.json
+D:\code\contracts\deepeval-semantic-judge\v1\fixtures\invalid-output.json
+D:\code\contracts\deepeval-semantic-judge\v1\fixtures\oversized.json
+D:\code\contracts\deepeval-semantic-judge\v1\fixtures\pass.json
+D:\code\contracts\deepeval-semantic-judge\v1\fixtures\timeout.json
+D:\code\contracts\deepeval-semantic-judge\v1\README.md
+D:\code\contracts\deepeval-semantic-judge\v1\semantic-run.schema.json
+D:\code\contracts\diagnosis-event\v1\diagnosis-event.schema.json
+D:\code\contracts\diagnosis-event\v1\fixtures\invalid\cases.json
+D:\code\contracts\diagnosis-event\v1\fixtures\valid\valid-artifact.json
+D:\code\contracts\diagnosis-event\v1\fixtures\valid\valid-inline.json
+D:\code\contracts\diagnosis-event\v1\FOLLOW_UP_CHANGES.md
+D:\code\contracts\diagnosis-event\v1\IMPLEMENTATION_HANDOFF.md
+D:\code\contracts\diagnosis-event\v1\README.md
+D:\code\contracts\diagnosis-event\v1\validate_contract.py
+D:\code\contracts\evaluation-suite\v1\create-request.schema.json
+D:\code\contracts\evaluation-suite\v1\fixtures\fail-report.json
+D:\code\contracts\evaluation-suite\v1\fixtures\idempotency-conflict.json
+D:\code\contracts\evaluation-suite\v1\fixtures\incomplete-report.json
+D:\code\contracts\evaluation-suite\v1\fixtures\pass-report.json
+D:\code\contracts\evaluation-suite\v1\fixtures\replay-report.json
+D:\code\contracts\evaluation-suite\v1\README.md
+D:\code\contracts\evaluation-suite\v1\replay-request.schema.json
+D:\code\contracts\evaluation-suite\v1\report.schema.json

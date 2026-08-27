@@ -1,0 +1,7 @@
+branch=main
+head=ce6c38eb31f478f4b71a29be6b7389066887f3e5
+upstream=origin/main
+aheadBehind=0	0
+--- porcelain-v1 --untracked-files=all ---
+ M docs/runbooks/semantic-judge.md
+ M scripts/verify-semantic-real-model.ps1

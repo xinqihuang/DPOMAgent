@@ -1,0 +1,17 @@
+{
+  "description": "Mutations and stateful modes applied to canonical positive fixtures.",
+  "cases": [
+    { "name": "missing-event-id", "base": "terminal-inline.json", "operations": [{ "op": "remove", "path": "/eventId" }], "expectedError": "CONTRACT_VALIDATION_FAILED" },
+    { "name": "unknown-major", "base": "terminal-inline.json", "operations": [{ "op": "set", "path": "/schemaVersion", "value": "3.0" }], "expectedError": "UNSUPPORTED_SCHEMA" },
+    { "name": "canonical-digest-mismatch", "base": "terminal-inline.json", "mode": "digest-mismatch", "operations": [], "expectedError": "CANONICAL_DIGEST_MISMATCH" },
+    { "name": "conflicting-identity", "base": "terminal-inline.json", "mode": "idempotency-conflict", "operations": [{ "op": "set", "path": "/inlinePayload/content/summary", "value": "Conflicting content under the same identity." }], "expectedError": "IDEMPOTENCY_CONFLICT" },
+    { "name": "sequence-gap", "base": "terminal-inline.json", "mode": "sequence-gap", "operations": [{ "op": "set", "path": "/aggregateSequence", "value": 4 }], "expectedError": "SEQUENCE_GAP" },
+    { "name": "sequence-regression", "base": "replay-artifact.json", "mode": "sequence-regression", "operations": [{ "op": "set", "path": "/aggregateSequence", "value": 1 }], "expectedError": "SEQUENCE_REGRESSION" },
+    { "name": "inactive-authority-epoch", "base": "terminal-inline.json", "mode": "authority-conflict", "operations": [{ "op": "set", "path": "/sourceAuthority/authorityEpoch", "value": "retired-epoch" }], "expectedError": "AUTHORITY_CONFLICT" },
+    { "name": "unsafe-broker-field", "base": "terminal-inline.json", "operations": [{ "op": "set", "path": "/inlinePayload/content/topic", "value": "dpom.diagnosis-event.v2" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "unsafe-credential-field", "base": "terminal-inline.json", "operations": [{ "op": "set", "path": "/inlinePayload/content/accessKey", "value": "fixture-secret" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "oversized-inline", "base": "terminal-inline.json", "operations": [{ "op": "repeat", "path": "/inlinePayload/content/oversized", "value": "x", "count": 17000 }], "expectedError": "PAYLOAD_TOO_LARGE" },
+    { "name": "broken-artifact-digest", "base": "replay-artifact.json", "mode": "artifact-integrity", "operations": [{ "op": "set", "path": "/artifactRef/sha256", "value": "0000000000000000000000000000000000000000000000000000000000000000" }], "expectedError": "ARTIFACT_INTEGRITY_FAILED" },
+    { "name": "artifact-path-traversal", "base": "replay-artifact.json", "operations": [{ "op": "set", "path": "/artifactRef/locator", "value": "../secret" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" }
+  ]
+}

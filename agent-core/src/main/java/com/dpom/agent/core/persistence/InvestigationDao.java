@@ -25,6 +25,14 @@ public interface InvestigationDao {
     Optional<Investigation> findById(@Param("id") long id);
 
     /**
+     * 按主键加行锁查询，用于短事务终态提交。
+     *
+     * @param id 主键
+     * @return 调查（可为空）
+     */
+    Optional<Investigation> findByIdForUpdate(@Param("id") long id);
+
+    /**
      * 按事件查询调查列表。
      *
      * @param incidentId 事件 id

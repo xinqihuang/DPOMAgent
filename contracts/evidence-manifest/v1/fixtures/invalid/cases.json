@@ -1,0 +1,11 @@
+{
+  "cases": [
+    { "name": "content-body-forbidden", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/entries/0/content", "value": "raw evidence" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "content-included", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/entries/0/contentIncluded", "value": true }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "credential-field", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/entries/0/accessKey", "value": "fixture-secret" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "path-traversal", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/entries/0/sourceRef", "value": "../secrets" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "invalid-entry-digest", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/entries/0/sha256", "value": "bad" }], "expectedError": "ARTIFACT_INTEGRITY_FAILED" },
+    { "name": "entry-too-large", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/entries/0/byteSize", "value": 10485761 }], "expectedError": "PAYLOAD_TOO_LARGE" },
+    { "name": "manifest-too-large", "base": "bounded-manifest.json", "operations": [{ "op": "set", "path": "/totalByteSize", "value": 52428801 }], "expectedError": "PAYLOAD_TOO_LARGE" }
+  ]
+}

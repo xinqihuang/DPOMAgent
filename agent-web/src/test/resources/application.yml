@@ -54,6 +54,9 @@ logging:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{correlationId:-}] %logger{39} - %msg%n"
 
 dpom:
+  investigation:
+    # Phase 1A compatibility behavior is opt-in in tests after the production retirement default changed.
+    legacy-admission-enabled: true
   flyway:
     mysql-baseline:
       enabled: true

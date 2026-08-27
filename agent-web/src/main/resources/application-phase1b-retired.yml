@@ -1,0 +1,8 @@
+# 仅在 Phase 1B 切换和回滚验收通过后激活此 profile。
+dpom:
+  investigation:
+    legacy-admission-enabled: false
+  evaluation:
+    delivery:
+      enabled: false
+

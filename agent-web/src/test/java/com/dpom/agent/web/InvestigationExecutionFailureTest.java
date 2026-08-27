@@ -12,8 +12,10 @@ import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.ApiRequestRecord;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.DiagnosisEventOutboxDao;
 import com.dpom.agent.core.persistence.InvestigationApiRequestDao;
 import com.dpom.agent.core.persistence.InvestigationDao;
+import com.dpom.agent.core.persistence.InvestigationRunDao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,8 @@ class InvestigationExecutionFailureTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private InvestigationDao investigationDao;
+    @Autowired private InvestigationRunDao investigationRunDao;
+    @Autowired private DiagnosisEventOutboxDao outboxDao;
     @Autowired private ConclusionDao conclusionDao;
     @Autowired private InvestigationApiRequestDao apiRequestDao;
 
@@ -101,6 +105,10 @@ class InvestigationExecutionFailureTest {
         assertThat(record.status()).isEqualTo("FAILED");
         assertThat(record.lastErrorCode()).isEqualTo("EXECUTION_ERROR");
         assertThat(record.lastErrorCode()).doesNotContain("secret-boom-sentinel");
+        assertThat(investigationRunDao.findByInvestigationId(id))
+                .singleElement()
+                .satisfies(run -> assertThat(run.endedAt()).isNotNull());
+        assertThat(outboxDao.findByInvestigationId(id)).isEmpty();
 
         String conclusionJson = mockMvc.perform(get("/api/v1/investigations/" + id + "/conclusion"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.DiagnosisReplayNonceDao">
+    <resultMap id="nonceResult" type="com.dpom.agent.core.diagnosisevent.DiagnosisEventReplayNonce">
+        <constructor>
+            <idArg column="id" javaType="long"/>
+            <arg column="nonce" javaType="string"/>
+            <arg column="expires_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO diagnosis_event_replay_nonce (nonce, expires_at) VALUES (#{nonce}, #{expiresAt})
+    </insert>
+    <select id="findActive" resultMap="nonceResult">
+        SELECT id, nonce, expires_at, created_at FROM diagnosis_event_replay_nonce
+        WHERE nonce = #{nonce} AND expires_at &gt; #{now}
+    </select>
+    <select id="existsActive" resultType="boolean">
+        SELECT CASE WHEN COUNT(id) &gt; 0 THEN TRUE ELSE FALSE END
+        FROM diagnosis_event_replay_nonce WHERE nonce = #{nonce} AND expires_at &gt; #{now}
+    </select>
+    <delete id="deleteExpired">
+        DELETE FROM diagnosis_event_replay_nonce WHERE expires_at &lt;= #{now}
+    </delete>
+</mapper>

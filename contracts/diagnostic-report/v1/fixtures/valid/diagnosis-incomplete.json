@@ -1,0 +1,11 @@
+{
+  "contractType":"diagnostic-report","schemaVersion":"1.0.0","reportProfile":"DIAGNOSIS_ONLY","reportId":"REPORT-DIAG-002","revision":1,"supersedesReportId":null,"changeReasons":[],
+  "identity":{"incidentId":"INC-002","investigationId":"INV-002","runId":"RUN-002"},"target":{"provider":"HUAWEI_CLOUD","region":"cn-north-9","resourceType":"APM_INSTANCE","resourceId":"instance-2","displayName":"unknown-instance"},
+  "incidentWindow":{"from":"2026-08-15T03:56:55Z","to":"2026-08-15T04:01:55Z"},"timeline":[{"itemId":"TIME-002","at":"2026-08-15T03:56:55Z","stateCode":"ALERT","summary":"Alarm became active"}],
+  "observations":[{"itemId":"OBS-002","claimType":"OBSERVATION","summary":"Alarm payload is available","confidenceBasisPoints":10000,"supportingEvidenceRefs":["EVID-ALARM"],"contradictingEvidenceRefs":[]}],"hypotheses":[],
+  "conclusions":[{"itemId":"CON-002","claimType":"CONCLUSION","summary":"Root cause remains undetermined","confidenceBasisPoints":0,"supportingEvidenceRefs":[],"contradictingEvidenceRefs":[],"disposition":"UNDETERMINED"}],
+  "evidenceReferences":[{"evidenceId":"EVID-ALARM","sourceCapability":"APM_ALARM","sourceAdapter":"huawei-apm-v1","artifactRef":"alarm-snapshot-2","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","collectedAt":"2026-08-25T02:00:00Z","window":{"from":"2026-08-15T03:56:55Z","to":"2026-08-15T04:01:55Z"},"targetResourceId":"instance-2","sensitivity":"CONTROLLED","redaction":"NONE"}],
+  "gapCodes":["MISSING_REQUIRED_EVIDENCE"],"recommendations":[],"evaluation":{"outcome":"NOT_REQUIRED","lineage":{},"judges":[]},
+  "provenance":[{"componentId":"DPOMAgent","componentVersion":"1.0.0","contractVersion":"diagnosis-event-v2","sourceDigest":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}],"generatedAt":"2026-08-25T02:05:00Z","completeness":"INCOMPLETE","extensions":{},
+  "reportDigest":"3d8ae617be5295912953375fce2676fe70697d7698d91c103da5650f90a791ba"
+}

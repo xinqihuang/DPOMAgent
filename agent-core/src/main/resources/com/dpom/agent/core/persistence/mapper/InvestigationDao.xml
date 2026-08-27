@@ -22,6 +22,12 @@
         FROM investigation WHERE id = #{id}
     </select>
 
+    <select id="findByIdForUpdate" resultMap="investigationResult">
+        SELECT id, incident_id, status, current_run_id, max_steps, max_tool_calls, max_duration_seconds,
+               max_no_progress_rounds, created_at, updated_at
+        FROM investigation WHERE id = #{id} FOR UPDATE
+    </select>
+
     <select id="findByIncidentId" resultMap="investigationResult">
         SELECT id, incident_id, status, current_run_id, max_steps, max_tool_calls, max_duration_seconds,
                max_no_progress_rounds, created_at, updated_at

@@ -1,0 +1,10 @@
+{
+  "cases": [
+    { "name": "missing-sequence", "base": "running.json", "operations": [{ "op": "remove", "path": "/progressSequence" }], "expectedError": "CONTRACT_VALIDATION_FAILED" },
+    { "name": "sequence-zero", "base": "running.json", "operations": [{ "op": "set", "path": "/progressSequence", "value": 0 }], "expectedError": "CONTRACT_VALIDATION_FAILED" },
+    { "name": "evidence-body", "base": "running.json", "operations": [{ "op": "set", "path": "/evidence", "value": "raw trace" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "prompt-body", "base": "running.json", "operations": [{ "op": "set", "path": "/prompt", "value": "hidden prompt" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "credential-field", "base": "running.json", "operations": [{ "op": "set", "path": "/token", "value": "fixture-token" }], "expectedError": "SECURITY_BOUNDARY_VIOLATION" },
+    { "name": "oversized-record", "base": "running.json", "operations": [{ "op": "repeat", "path": "/exception", "value": "x", "count": 9000 }], "expectedError": "PAYLOAD_TOO_LARGE" }
+  ]
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.authority.AuthorityTerminalDao">
+    <resultMap id="sourceResult" type="com.dpom.agent.core.persistence.authority.DiagnosisSourceRow">
+        <constructor>
+            <idArg column="source_id" javaType="java.lang.String"/>
+            <arg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="aggregate_version" javaType="_long"/>
+            <arg column="contract_version" javaType="java.lang.String"/>
+            <arg column="source_json" javaType="java.lang.String"/>
+            <arg column="source_sha256" javaType="java.lang.String"/>
+            <arg column="document_sha256" javaType="java.lang.String"/>
+            <arg column="committed_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <insert id="insertSource">
+        INSERT INTO authority_diagnosis_source (
+            source_id, investigation_id, aggregate_version, contract_version,
+            source_json, source_sha256, document_sha256, committed_at
+        ) VALUES (
+            #{sourceId}, #{investigationId}, #{aggregateVersion}, #{contractVersion},
+            #{sourceJson}, #{sourceSha256}, #{documentSha256}, #{committedAt}
+        )
+    </insert>
+
+    <insert id="insertIntent">
+        INSERT INTO authority_publication_intent (
+            intent_id, investigation_id, aggregate_sequence, event_type, source_id,
+            source_sha256, status, eligible_at, created_at
+        ) VALUES (
+            #{intentId}, #{investigationId}, #{aggregateSequence}, #{eventType}, #{sourceId},
+            #{sourceSha256}, #{status}, #{eligibleAt}, #{createdAt}
+        )
+    </insert>
+
+    <select id="findSource" resultMap="sourceResult">
+        SELECT source_id, investigation_id, aggregate_version, contract_version,
+               source_json, source_sha256, document_sha256, committed_at
+        FROM authority_diagnosis_source
+        WHERE investigation_id = #{investigationId}
+    </select>
+
+    <select id="countPendingIntents" resultType="_int">
+        SELECT COUNT(*)
+        FROM authority_publication_intent
+        WHERE investigation_id = #{investigationId} AND status = 'PENDING'
+    </select>
+</mapper>

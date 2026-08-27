@@ -1,0 +1,76 @@
+{
+  "eventId": "0d88ca17-936c-4ac0-9cff-2a3bf8e4ee08",
+  "eventType": "investigation.completed",
+  "schemaVersion": "1.0",
+  "occurredAt": "2026-08-21T14:30:00Z",
+  "producer": {
+    "service": "DPOMAgent",
+    "instanceId": "dpom-agent-prod-cn-north-9-01"
+  },
+  "incidentId": "INC-20260821-0001",
+  "investigationId": "INV-20260821-0001",
+  "runId": "RUN-20260821-0003",
+  "aggregateSequence": 3,
+  "idempotencyKey": "INV-20260821-0001.completed.3",
+  "provenance": {
+    "application": {
+      "status": "available",
+      "name": "DPOMAgent",
+      "version": "1.4.0"
+    },
+    "model": {
+      "status": "available",
+      "name": "diagnosis-model",
+      "version": "2026-08-15",
+      "provider": "approved-provider"
+    },
+    "prompt": {
+      "status": "available",
+      "name": "investigation-system-prompt",
+      "version": "3.2.1"
+    },
+    "skills": [
+      {
+        "status": "available",
+        "name": "apm-trace-diagnosis",
+        "version": "2.1.0"
+      }
+    ],
+    "toolContracts": [
+      {
+        "status": "available",
+        "name": "query-traces",
+        "version": "1.0"
+      },
+      {
+        "status": "available",
+        "name": "query-lts-logs",
+        "version": "1.1"
+      }
+    ],
+    "source": {
+      "status": "available",
+      "serviceCode": "asset-service",
+      "release": "2026.08.21.1",
+      "commitSha": "9a47c29e35d7b6e"
+    },
+    "evidenceSchema": {
+      "status": "available",
+      "name": "diagnostic-evidence-package",
+      "version": "1.0"
+    }
+  },
+  "inlinePayload": {
+    "payloadType": "diagnosis-summary",
+    "payloadSchemaVersion": "1.0",
+    "content": {
+      "conclusionRef": "CON-20260821-0001",
+      "resultType": "ROOT_CAUSE_IDENTIFIED",
+      "summary": "Transaction rollback was confirmed by trace and verified source evidence.",
+      "evidenceRefs": [
+        "OBS-TRACE-0007",
+        "OBS-SOURCE-0011"
+      ]
+    }
+  }
+}

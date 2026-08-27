@@ -9,6 +9,8 @@ import com.dpom.agent.web.dto.StepResponse;
 import com.dpom.agent.web.service.InvestigationApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,14 +29,26 @@ public class InvestigationController {
 
     private final InvestigationApplicationService service;
     private final InvestigationResponseMapper mapper;
+    private final boolean admissionEnabled;
 
     public InvestigationController(InvestigationApplicationService service, InvestigationResponseMapper mapper) {
+        this(service, mapper, true);
+    }
+
+    @Autowired
+    public InvestigationController(InvestigationApplicationService service, InvestigationResponseMapper mapper,
+            @Value("${dpom.investigation.legacy-admission-enabled:false}") boolean admissionEnabled) {
         this.service = service;
         this.mapper = mapper;
+        this.admissionEnabled = admissionEnabled;
     }
 
     @PostMapping
     public ResponseEntity<InvestigationResponse> submit(@RequestBody InvestigationSubmitRequest request) {
+        if (!admissionEnabled) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.GONE,
+                    "LEGACY_AUTHORITY_RETIRED");
+        }
         long id = service.submit(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(service.summary(id));
     }

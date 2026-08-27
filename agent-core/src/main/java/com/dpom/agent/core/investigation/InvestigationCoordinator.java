@@ -6,7 +6,6 @@ import com.dpom.agent.core.logevidence.EvidenceBundle;
 import com.dpom.agent.core.logevidence.EvidenceConclusionGuard;
 import com.dpom.agent.core.observation.Observation;
 import com.dpom.agent.core.observation.ObservationService;
-import com.dpom.agent.core.persistence.ConclusionDao;
 import com.dpom.agent.core.persistence.EvidenceBundleCodec;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.HypothesisDao;
@@ -14,7 +13,6 @@ import com.dpom.agent.core.persistence.InvestigationDao;
 import com.dpom.agent.core.persistence.InvestigationRunDao;
 import com.dpom.agent.core.persistence.InvestigationStepDao;
 import com.dpom.agent.core.persistence.ObservationDao;
-import com.dpom.agent.core.persistence.command.ConclusionInsert;
 import com.dpom.agent.core.persistence.command.InvestigationRunInsert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,12 +42,12 @@ public class InvestigationCoordinator {
     private final InvestigationStepDao stepDao;
     private final ObservationDao observationDao;
     private final HypothesisDao hypothesisDao;
-    private final ConclusionDao conclusionDao;
     private final EvidenceBundleDao evidenceBundleDao;
     private final StepRecorder stepRecorder;
     private final HypothesisService hypothesisService;
     private final ObservationService observationService;
     private final InvestigationStateMachine stateMachine;
+    private final InvestigationTerminalizationService terminalizationService;
 
     /**
      * 构造器注入。
@@ -59,29 +57,29 @@ public class InvestigationCoordinator {
      * @param stepDao             步骤 DAO
      * @param observationDao      观察 DAO
      * @param hypothesisDao       假设 DAO
-     * @param conclusionDao       结论 DAO
      * @param stepRecorder        步骤记录器
      * @param hypothesisService   假设服务
      * @param observationService  观察服务
      * @param stateMachine        状态机
+     * @param terminalizationService 终态事务服务
      */
     public InvestigationCoordinator(InvestigationDao investigationDao, InvestigationRunDao runDao,
                                     InvestigationStepDao stepDao, ObservationDao observationDao,
-                                    HypothesisDao hypothesisDao, ConclusionDao conclusionDao,
-                                    EvidenceBundleDao evidenceBundleDao,
+                                    HypothesisDao hypothesisDao, EvidenceBundleDao evidenceBundleDao,
                                     StepRecorder stepRecorder, HypothesisService hypothesisService,
-                                    ObservationService observationService, InvestigationStateMachine stateMachine) {
+                                    ObservationService observationService, InvestigationStateMachine stateMachine,
+                                    InvestigationTerminalizationService terminalizationService) {
         this.investigationDao = investigationDao;
         this.runDao = runDao;
         this.stepDao = stepDao;
         this.observationDao = observationDao;
         this.hypothesisDao = hypothesisDao;
-        this.conclusionDao = conclusionDao;
         this.evidenceBundleDao = evidenceBundleDao;
         this.stepRecorder = stepRecorder;
         this.hypothesisService = hypothesisService;
         this.observationService = observationService;
         this.stateMachine = stateMachine;
+        this.terminalizationService = terminalizationService;
     }
 
     /**
@@ -224,24 +222,20 @@ public class InvestigationCoordinator {
         String effectiveRootCauseId = RESULT_ROOT_CAUSE.equals(effective) ? rootCauseId : null;
         String effectiveRootCause = RESULT_ROOT_CAUSE.equals(effective) ? rootCause : null;
         InvestigationStatus status = load(investigationId).status();
-        InvestigationStatus terminal = RESULT_ROOT_CAUSE.equals(effective)
+        InvestigationStatus desired = RESULT_ROOT_CAUSE.equals(effective)
                 ? InvestigationStatus.COMPLETED : InvestigationStatus.INCONCLUSIVE;
-
-        if (stateMachine.canTransition(status, InvestigationStatus.SYNTHESIZING)) {
-            transition(investigationId, status, InvestigationStatus.SYNTHESIZING);
-            transition(investigationId, InvestigationStatus.SYNTHESIZING, terminal);
-        } else if (stateMachine.canTransition(status, terminal)) {
-            transition(investigationId, status, terminal);
-        } else {
-            transition(investigationId, status, InvestigationStatus.FAILED);
-            terminal = InvestigationStatus.FAILED;
-        }
-
-        ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, effective,
-                effectiveRootCauseId, effectiveRootCause, evidenceIds, null, summary);
-        conclusionDao.insert(conclusionCommand);
-        runDao.finish(runId, LocalDateTime.now());
+        InvestigationStatus terminal = terminalStatus(status, desired);
+        terminalizationService.terminalize(new InvestigationTerminalizationCommand(investigationId, runId, terminal,
+                effective, effectiveRootCauseId, effectiveRootCause, summary, evidenceIds));
         LOG.info("调查 {} 终结：{}", investigationId, terminal);
+    }
+
+    private InvestigationStatus terminalStatus(InvestigationStatus current, InvestigationStatus desired) {
+        if (stateMachine.canTransition(current, InvestigationStatus.SYNTHESIZING)
+                || stateMachine.canTransition(current, desired)) {
+            return desired;
+        }
+        return InvestigationStatus.FAILED;
     }
 
     /**

@@ -1,0 +1,43 @@
+{
+  "environment": "local-non-production",
+  "executedAt": "2026-08-25T12:24:03+08:00",
+  "offline": {
+    "DPOMBaseMCPServer": {"tests": 493, "failures": 0, "errors": 0, "skipped": 0, "checkstyle": "PASS"},
+    "DPOMAgent": {"tests": 458, "failures": 0, "errors": 0, "skipped": 28, "checkstyle": "PASS"},
+    "SREIntelligenceService": {"tests": 148, "failures": 0, "errors": 0, "skipped": 4, "architecture": "PASS"},
+    "DeepEvalService": {"pytest": 24, "ruff": "PASS", "mypyStrict": "PASS"}
+  },
+  "realAcceptance": {
+    "DPOMBaseMySql8": {"tests": 1, "failures": 0, "errors": 0, "marker": "MYSQL_CONTRACT_STATUS=EXECUTED"},
+    "DPOMAgentMySql8": {"tests": 15, "failures": 0, "errors": 0, "skipped": 0},
+    "SREMySql8AndExternalKafka": {"tests": 1, "failures": 0, "errors": 0, "skipped": 0, "marker": "KAFKA_MYSQL_CONTRACT_STATUS=EXECUTED broker=external"},
+    "SREToDeepEvalHttp": {"tests": 2, "failures": 0, "errors": 0, "skipped": 0, "modelMode": "deterministic-fake"},
+    "authorityCutoverRollback": {"tests": 4, "failures": 0, "errors": 0, "skipped": 0, "evidence": "cutover-rehearsal-2026-08-25.json"}
+  },
+  "scenarioCoverage": {
+    "mysqlTransactionsRestartAndRecovery": "PASS",
+    "kafkaRedeliveryOrderingGapsAndPoisonAck": "PASS",
+    "crossTransportRaceAndIdempotency": "PASS",
+    "authorizedImmutableReplay": "PASS",
+    "quarantineCapacityExhaustionAndRecovery": "PASS",
+    "restSseRestartRetentionAndSlowClientCapacity": "PASS",
+    "authenticationAuthorizationAndSecretSafety": "PASS",
+    "cutoverReadinessCountsDigestsAndOffsets": "PASS",
+    "rollbackToHttpCompatibility": "PASS",
+    "postRetirementInvalidAuthorityFailsClosed": "PASS"
+  },
+  "workspaceGates": {
+    "boundaryScan": "PASS",
+    "contractConformance": "PHASE1B_CONTRACTS=PASS event=2/12 evidence=1/7 progress=1/6",
+    "openSpecStrictValidation": "PASS"
+  },
+  "kafka": {
+    "distribution": "Apache Kafka 4.3.1",
+    "clusterId": "TTfrZLR4TOeI4aN23InjpA",
+    "bootstrapServers": "127.0.0.1:9092",
+    "diagnosisEventHighWatermarks": [41, 11],
+    "diagnosisProgressHighWatermarks": [0, 0]
+  },
+  "result": "PASS",
+  "qualification": "No production environment was mutated and no credential value was persisted."
+}

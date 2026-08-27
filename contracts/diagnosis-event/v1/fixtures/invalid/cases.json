@@ -1,0 +1,162 @@
+{
+  "description": "Each case starts from a valid fixture and applies deterministic JSON Pointer mutations.",
+  "cases": [
+    {
+      "name": "missing-incident-identity",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "remove",
+          "path": "/incidentId"
+        }
+      ],
+      "expectedError": "CONTRACT_VALIDATION_FAILED"
+    },
+    {
+      "name": "both-payload-forms",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "copy",
+          "fromFixture": "valid-artifact.json",
+          "fromPath": "/artifactRef",
+          "path": "/artifactRef"
+        }
+      ],
+      "expectedError": "CONTRACT_VALIDATION_FAILED"
+    },
+    {
+      "name": "neither-payload-form",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "remove",
+          "path": "/inlinePayload"
+        }
+      ],
+      "expectedError": "CONTRACT_VALIDATION_FAILED"
+    },
+    {
+      "name": "malformed-occurred-at",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/occurredAt",
+          "value": "2026-99-99 14:30"
+        }
+      ],
+      "expectedError": "CONTRACT_VALIDATION_FAILED"
+    },
+    {
+      "name": "unsupported-major-version",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/schemaVersion",
+            "value": "3.0"
+        }
+      ],
+      "expectedError": "UNSUPPORTED_SCHEMA"
+    },
+    {
+      "name": "invalid-artifact-checksum",
+      "base": "valid-artifact.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/artifactRef/sha256",
+          "value": "not-a-sha256"
+        }
+      ],
+      "expectedError": "CONTRACT_VALIDATION_FAILED"
+    },
+    {
+      "name": "unbounded-inline-payload",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "repeat",
+          "path": "/inlinePayload/content/oversized",
+          "value": "x",
+          "count": 17000
+        }
+      ],
+      "expectedError": "PAYLOAD_TOO_LARGE"
+    },
+    {
+      "name": "conflicting-duplicate-content",
+      "base": "valid-inline.json",
+      "mode": "idempotency-conflict",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/inlinePayload/content/summary",
+          "value": "Different content under the same idempotency key."
+        }
+      ],
+      "expectedError": "IDEMPOTENCY_CONFLICT"
+    },
+    {
+      "name": "broker-specific-field",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/inlinePayload/content/topic",
+          "value": "diagnosis-event"
+        }
+      ],
+      "expectedError": "SECURITY_BOUNDARY_VIOLATION"
+    },
+    {
+      "name": "provider-sdk-type",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/inlinePayload/content/sdkType",
+          "value": "com.huawei.huaweicloud.sdk.ces.v1.model.ShowMetricDataRequest"
+        }
+      ],
+      "expectedError": "SECURITY_BOUNDARY_VIOLATION"
+    },
+    {
+      "name": "credential-marker",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/inlinePayload/content/accessKey",
+          "value": "REDACTED_TEST_VALUE"
+        }
+      ],
+      "expectedError": "SECURITY_BOUNDARY_VIOLATION"
+    },
+    {
+      "name": "arbitrary-filesystem-path",
+      "base": "valid-artifact.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/artifactRef/locator",
+          "value": "C:\\production\\secrets.txt"
+        }
+      ],
+      "expectedError": "SECURITY_BOUNDARY_VIOLATION"
+    },
+    {
+      "name": "general-obs-management-field",
+      "base": "valid-inline.json",
+      "operations": [
+        {
+          "op": "set",
+          "path": "/inlinePayload/content/objectKey",
+          "value": "caller/chosen/key"
+        }
+      ],
+      "expectedError": "SECURITY_BOUNDARY_VIOLATION"
+    }
+  ]
+}

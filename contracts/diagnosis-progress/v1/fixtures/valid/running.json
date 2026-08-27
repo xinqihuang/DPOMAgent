@@ -1,0 +1,18 @@
+{
+  "progressId": "f588086c-a424-4430-beeb-977d89409673",
+  "schemaVersion": "1.0",
+  "occurredAt": "2026-08-25T02:25:00Z",
+  "investigationId": "INV-20260825-0001",
+  "runId": "RUN-20260825-0002",
+  "progressSequence": 4,
+  "aggregateVersion": 8,
+  "sourceAuthority": {
+    "service": "DPOMAgent",
+    "authorityEpoch": "phase1b-cn-north-9-20260825"
+  },
+  "status": "RUNNING",
+  "stage": "HYPOTHESIS",
+  "summaryCode": "HYPOTHESIS_RANKED",
+  "percentComplete": 60,
+  "checkpointRef": "CP-INV-20260825-0001-4"
+}

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.authority.InvestigationAuthorityDao">
+    <resultMap id="headResult" type="com.dpom.agent.core.persistence.authority.AuthorityHeadRow">
+        <constructor>
+            <idArg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="incident_id" javaType="java.lang.String"/>
+            <arg column="aggregate_version" javaType="_long"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="current_run_id" javaType="java.lang.String"/>
+            <arg column="steps_used" javaType="_int"/>
+            <arg column="tool_calls_used" javaType="_int"/>
+            <arg column="no_progress_rounds" javaType="_int"/>
+            <arg column="snapshot_json" javaType="java.lang.String"/>
+            <arg column="snapshot_sha256" javaType="java.lang.String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <resultMap id="revisionResult" type="com.dpom.agent.core.persistence.authority.AuthorityRevisionRow">
+        <constructor>
+            <idArg column="investigation_id" javaType="java.lang.String"/>
+            <idArg column="aggregate_version" javaType="_long"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="snapshot_json" javaType="java.lang.String"/>
+            <arg column="snapshot_sha256" javaType="java.lang.String"/>
+            <arg column="recorded_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <resultMap id="auditViewResult" type="com.dpom.agent.core.persistence.authority.AuthorityAuditViewRow">
+        <constructor>
+            <idArg column="audit_id" javaType="java.lang.String"/>
+            <arg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="sequence_number" javaType="_long"/>
+            <arg column="aggregate_version" javaType="_long"/>
+            <arg column="audit_kind" javaType="java.lang.String"/>
+            <arg column="entity_id" javaType="java.lang.String"/>
+            <arg column="reason_code" javaType="java.lang.String"/>
+            <arg column="occurred_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <insert id="insertHead">
+        INSERT INTO authority_investigation_head (
+            investigation_id, incident_id, aggregate_version, status, current_run_id,
+            steps_used, tool_calls_used, no_progress_rounds, snapshot_json,
+            snapshot_sha256, created_at, updated_at
+        ) VALUES (
+            #{investigationId}, #{incidentId}, #{aggregateVersion}, #{status}, #{currentRunId},
+            #{stepsUsed}, #{toolCallsUsed}, #{noProgressRounds}, #{snapshotJson},
+            #{snapshotSha256}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <update id="updateHead">
+        UPDATE authority_investigation_head
+        SET incident_id = #{row.incidentId}, aggregate_version = #{row.aggregateVersion},
+            status = #{row.status}, current_run_id = #{row.currentRunId},
+            steps_used = #{row.stepsUsed}, tool_calls_used = #{row.toolCallsUsed},
+            no_progress_rounds = #{row.noProgressRounds}, snapshot_json = #{row.snapshotJson},
+            snapshot_sha256 = #{row.snapshotSha256}, updated_at = #{row.updatedAt}
+        WHERE investigation_id = #{row.investigationId}
+          AND aggregate_version = #{expectedVersion}
+    </update>
+
+    <select id="findHead" resultMap="headResult">
+        SELECT investigation_id, incident_id, aggregate_version, status, current_run_id,
+               steps_used, tool_calls_used, no_progress_rounds, snapshot_json,
+               snapshot_sha256, created_at, updated_at
+        FROM authority_investigation_head
+        WHERE investigation_id = #{investigationId}
+    </select>
+
+    <insert id="insertRevision">
+        INSERT INTO authority_investigation_revision (
+            investigation_id, aggregate_version, status, snapshot_json,
+            snapshot_sha256, recorded_at
+        ) VALUES (
+            #{investigationId}, #{aggregateVersion}, #{status}, #{snapshotJson},
+            #{snapshotSha256}, #{recordedAt}
+        )
+    </insert>
+
+    <select id="findRevisions" resultMap="revisionResult">
+        SELECT investigation_id, aggregate_version, status, snapshot_json,
+               snapshot_sha256, recorded_at
+        FROM authority_investigation_revision
+        WHERE investigation_id = #{investigationId}
+        ORDER BY aggregate_version
+    </select>
+
+    <select id="findMaxAuditSequence" resultType="java.lang.Long">
+        SELECT MAX(sequence_number)
+        FROM authority_audit
+        WHERE investigation_id = #{investigationId}
+    </select>
+
+    <select id="findToolUseIds" resultType="java.lang.String">
+        SELECT tool_use_id
+        FROM authority_tool_use
+        WHERE investigation_id = #{investigationId}
+    </select>
+
+    <insert id="insertAudit">
+        INSERT INTO authority_audit (
+            audit_id, investigation_id, sequence_number, aggregate_version,
+            audit_kind, entity_id, reason_code, occurred_at
+        ) VALUES (
+            #{auditId}, #{investigationId}, #{sequenceNumber}, #{aggregateVersion},
+            #{auditKind}, #{entityId}, #{reasonCode}, #{occurredAt}
+        )
+    </insert>
+
+    <insert id="insertToolUse">
+        INSERT INTO authority_tool_use (
+            tool_use_id, investigation_id, run_id, tool_name, contract_version,
+            argument_sha256, argument_names_json, argument_size_bytes, target_scope,
+            correlation_id, status, reason_code,
+            evidence_references_json, occurred_at
+        ) VALUES (
+            #{toolUseId}, #{investigationId}, #{runId}, #{toolName}, #{contractVersion},
+            #{argumentSha256}, #{argumentNamesJson}, #{argumentSizeBytes}, #{targetScope},
+            #{correlationId}, #{status}, #{reasonCode},
+            #{evidenceReferencesJson}, #{occurredAt}
+        )
+    </insert>
+
+    <select id="findAuditPage" resultMap="auditViewResult">
+        SELECT audit_id, investigation_id, sequence_number, aggregate_version,
+               audit_kind, entity_id, reason_code, occurred_at
+        FROM authority_audit
+        WHERE investigation_id = #{investigationId} AND sequence_number &gt; #{afterSequence}
+        ORDER BY sequence_number
+        LIMIT #{limit}
+    </select>
+</mapper>

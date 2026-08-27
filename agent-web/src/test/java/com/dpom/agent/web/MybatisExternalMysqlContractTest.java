@@ -14,6 +14,9 @@ import com.dpom.agent.core.investigation.InvestigationStep;
 import com.dpom.agent.core.observation.Observation;
 import com.dpom.agent.core.persistence.ApiRequestRecord;
 import com.dpom.agent.core.persistence.ConclusionDao;
+import com.dpom.agent.core.persistence.DiagnosisEventAuditDao;
+import com.dpom.agent.core.persistence.DiagnosisEventOutboxDao;
+import com.dpom.agent.core.persistence.DiagnosisReplayNonceDao;
 import com.dpom.agent.core.persistence.EscalationRow;
 import com.dpom.agent.core.persistence.EvidenceBundleDao;
 import com.dpom.agent.core.persistence.EvidenceHandoffDao;
@@ -29,6 +32,11 @@ import com.dpom.agent.core.persistence.ScriptArtifactDao;
 import com.dpom.agent.core.persistence.ToolCallAuditDao;
 import com.dpom.agent.core.persistence.command.ApiRequestInsert;
 import com.dpom.agent.core.persistence.command.ConclusionInsert;
+import com.dpom.agent.core.persistence.command.DiagnosisEventAuditInsert;
+import com.dpom.agent.core.persistence.command.DiagnosisEventLeaseCommand;
+import com.dpom.agent.core.persistence.command.DiagnosisEventOutboxInsert;
+import com.dpom.agent.core.persistence.command.DiagnosisEventTransitionCommand;
+import com.dpom.agent.core.persistence.command.DiagnosisReplayNonceInsert;
 import com.dpom.agent.core.persistence.command.EscalationDecisionInsert;
 import com.dpom.agent.core.persistence.command.EvidenceBundleInsert;
 import com.dpom.agent.core.persistence.command.HandoffImportInsert;
@@ -47,6 +55,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DuplicateKeyException;
@@ -76,6 +86,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MybatisExternalMysqlContractTest {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MybatisExternalMysqlContractTest.class);
+
     static final String URL = System.getenv("DPOM_REAL_MYSQL_URL");
     static final String USER = System.getenv().getOrDefault("DPOM_REAL_MYSQL_USER", "root");
     static final String PASSWORD = System.getenv().getOrDefault("DPOM_REAL_MYSQL_PASSWORD", "");
@@ -101,9 +113,13 @@ class MybatisExternalMysqlContractTest {
     @Autowired ObservationDao observationDao;
     @Autowired EvidenceHandoffDao handoffDao;
     @Autowired HealthCheckMapper healthCheckMapper;
+    @Autowired DiagnosisEventOutboxDao diagnosisOutboxDao;
+    @Autowired DiagnosisEventAuditDao diagnosisAuditDao;
+    @Autowired DiagnosisReplayNonceDao diagnosisNonceDao;
     @Autowired JdbcTemplate jdbcTemplate;
 
     private static final List<String> TABLES = List.of(
+            "diagnosis_event_audit", "diagnosis_event_replay_nonce", "diagnosis_event_outbox",
             "handoff_audit", "handoff_import", "handoff_upload", "escalation_decision",
             "investigation_api_request", "evidence_bundle", "observation", "investigation_step",
             "script_artifact", "conclusion", "hypothesis", "investigation_run",
@@ -119,6 +135,26 @@ class MybatisExternalMysqlContractTest {
     @Test
     void healthCheckPing() {
         assertThat(healthCheckMapper.ping()).isEqualTo(1);
+    }
+
+    @Test
+    void diagnosisEventMigrationAndLeaseSqlRunOnRealMysql8() {
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+        String eventId = UUID.randomUUID().toString();
+        DiagnosisEventOutboxInsert insert = new DiagnosisEventOutboxInsert(eventId, "real-" + eventId,
+                900_001, 900_002, "investigation.completed", 1, "1.0", "{}", "a".repeat(64), now);
+        assertThat(diagnosisOutboxDao.insert(insert)).isOne();
+        String token = UUID.randomUUID().toString();
+        assertThat(diagnosisOutboxDao.acquireLease(new DiagnosisEventLeaseCommand(
+                insert.getId(), now, "real-mysql-test", token, now.plusMinutes(1)))).isOne();
+        assertThat(diagnosisOutboxDao.markDelivered(new DiagnosisEventTransitionCommand(
+                insert.getId(), token, now.plusSeconds(1), null, null))).isOne();
+        diagnosisAuditDao.append(new DiagnosisEventAuditInsert(eventId, "investigation.completed",
+                "ACKNOWLEDGED", "SUCCESS", null, null, null, "real-mysql"));
+        diagnosisNonceDao.insert(new DiagnosisReplayNonceInsert("real-" + UUID.randomUUID(), now.plusMinutes(5)));
+        assertThat(jdbcTemplate.queryForObject("SELECT version FROM flyway_schema_history "
+                + "WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1", String.class)).isEqualTo("12");
+        LOG.info("REAL_EXECUTED diagnosis-event-outbox MySQL 8 contract");
     }
 
     @Test

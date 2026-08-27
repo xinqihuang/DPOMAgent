@@ -1,0 +1,72 @@
+{
+  "environment": "local-non-production",
+  "executedAt": "2026-08-25T12:16:46+08:00",
+  "authorityEpoch": "phase1b-cn-north-9-20260825",
+  "cutoverAt": "2026-08-25T02:00:00Z",
+  "compatibilityUntil": "2026-09-25T00:00:00Z",
+  "components": {
+    "DPOMBaseMCPServer": {"revision": "9bc1d44+workspace-changes", "schemaVersion": 1, "schemaState": "READY"},
+    "DPOMAgent": {"revision": "719bf91+workspace-changes", "retiredProfileVerified": true},
+    "SREIntelligenceService": {"revision": "unversioned-workspace", "flywayVersion": 6},
+    "DeepEvalService": {"revision": "unversioned-workspace", "persistenceDetected": false}
+  },
+  "runtime": {
+    "java": "21.0.11",
+    "mysql": "8.0",
+    "kafkaBroker": "Apache Kafka 4.3.1 single-node KRaft",
+    "kafkaClient": "3.8.1",
+    "bootstrapServers": "127.0.0.1:9092",
+    "clusterId": "TTfrZLR4TOeI4aN23InjpA"
+  },
+  "brokerOffsets": {
+    "before": {"dpom.diagnosis-event.v2": [27, 7], "dpom.diagnosis-progress.v1": [0, 0]},
+    "after": {"dpom.diagnosis-event.v2": [34, 9], "dpom.diagnosis-progress.v1": [0, 0]}
+  },
+  "dataSnapshots": {
+    "before": {"receiptCount": 0, "evalCaseCount": 0, "quarantineCount": 0, "receiptDigest": null},
+    "cutover": {
+      "receiptCount": 1,
+      "evalCaseCount": 1,
+      "receiptDigest": "7d41ba588c33060d7a48481dbac060940a1945a128c69305e47c1c9acccb48d2",
+      "readiness": "UP"
+    },
+    "invalidRetiredAuthority": {
+      "receiptCount": 0,
+      "quarantineCount": 1,
+      "reason": "AUTHORITY_CONFLICT"
+    },
+    "rollback": {
+      "transport": "HTTP_COMPATIBILITY",
+      "receiptCount": 1,
+      "evalCaseCount": 1,
+      "receiptDigest": "4e44ede2dd8d55caaeb5e719ff9a7cdb0cf4e1d5bb12baae86f12ffd42be5b7f",
+      "kafkaIntakeEnabled": false
+    }
+  },
+  "commands": [
+    "SRE gated KafkaMySqlContractIT with real MySQL and external local Kafka",
+    "DPOMBase AuthorityActivationPropertiesTest",
+    "DPOMAgent LegacyAuthorityRetirementTest"
+  ],
+  "markers": [
+    "AUTHORITY_CUTOVER_STATUS=EXECUTED",
+    "POST_RETIREMENT_INVALID_AUTHORITY_STATUS=REJECTED reason=AUTHORITY_CONFLICT",
+    "AUTHORITY_ROLLBACK_STATUS=EXECUTED transport=HTTP_COMPATIBILITY",
+    "KAFKA_MYSQL_CONTRACT_STATUS=EXECUTED broker=external"
+  ],
+  "objectiveRetirementCriteria": {
+    "oldAuthorityAdmissionStoppedWithoutWrites": "PASS",
+    "oldAuthorityDrainedOrExplicitlyClosedGuard": "PASS",
+    "newAuthorityActivationGuard": "PASS",
+    "singleActiveEpoch": "PASS",
+    "duplicateEvalCases": 0,
+    "splitAuthorityEvents": 0,
+    "invalidRetiredAuthorityFailsClosed": "PASS",
+    "historicalCompatibilityAdapterRetained": "PASS",
+    "rollbackRestoresLegacyHttpOnly": "PASS",
+    "boundedReadinessAndCapacity": "PASS"
+  },
+  "tests": {"total": 4, "failures": 0, "errors": 0, "skipped": 0},
+  "result": "PASS",
+  "qualification": "Local non-production rehearsal; no production environment was mutated."
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dpom.internal/contracts/evidence-manifest/v1/evidence-manifest.schema.json",
+  "title": "DPOM Evidence Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifestId", "schemaVersion", "investigationId", "createdAt", "sensitivity",
+    "retentionClass", "totalByteSize", "entries"
+  ],
+  "properties": {
+    "manifestId": { "$ref": "#/$defs/id" },
+    "schemaVersion": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "investigationId": { "$ref": "#/$defs/id" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "sensitivity": { "type": "string", "enum": ["INTERNAL", "RESTRICTED"] },
+    "retentionClass": { "type": "string", "enum": ["TRANSIENT_7D", "EVAL_90D", "GOLD_LONG_TERM"] },
+    "totalByteSize": { "type": "integer", "minimum": 1, "maximum": 52428800 },
+    "entries": {
+      "type": "array", "minItems": 1, "maxItems": 256,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "evidenceId", "evidenceType", "sourceRef", "capturedAt", "mediaType",
+        "byteSize", "sha256", "redactionStatus", "contentIncluded"
+      ],
+      "properties": {
+        "evidenceId": { "$ref": "#/$defs/id" },
+        "evidenceType": {
+          "type": "string",
+          "enum": ["METRIC", "LOG_TEMPLATE", "TRACE", "TOPOLOGY", "CODEGRAPH", "CONFIG", "ARTIFACT"]
+        },
+        "sourceRef": {
+          "type": "string", "minLength": 1, "maxLength": 256,
+          "pattern": "^(?![A-Za-z]:)(?!.*\\.\\.)(?!.*\\\\)[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+        },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "mediaType": { "type": "string", "minLength": 3, "maxLength": 128 },
+        "byteSize": { "type": "integer", "minimum": 1, "maximum": 10485760 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "redactionStatus": { "type": "string", "enum": ["REDACTED", "NOT_REQUIRED"] },
+        "contentIncluded": { "const": false }
+      }
+    }
+  }
+}

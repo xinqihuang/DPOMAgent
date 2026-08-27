@@ -12,6 +12,8 @@ import com.dpom.agent.core.investigation.Investigation;
 import com.dpom.agent.core.investigation.InvestigationCoordinator;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.investigation.InvestigationStep;
+import com.dpom.agent.core.investigation.InvestigationTerminalizationCommand;
+import com.dpom.agent.core.investigation.InvestigationTerminalizationService;
 import com.dpom.agent.core.investigation.SymptomBrain;
 import com.dpom.agent.core.logevidence.EvidenceBundle;
 import com.dpom.agent.core.logevidence.EvidenceBundleBuilder;
@@ -80,6 +82,7 @@ public class InvestigationApplicationService {
     private final InvestigationStepDao stepDao;
     private final InvestigationApiRequestDao apiRequestDao;
     private final InvestigationCoordinator coordinator;
+    private final InvestigationTerminalizationService terminalizationService;
     private final ModelClient modelClient;
     private final CodeGraphClient codeGraphClient;
     private final CodeWorkspace workspace;
@@ -93,7 +96,8 @@ public class InvestigationApplicationService {
 
     public InvestigationApplicationService(IncidentDao incidentDao, InvestigationDao investigationDao,
             EvidenceBundleDao evidenceBundleDao, ConclusionDao conclusionDao, InvestigationStepDao stepDao,
-            InvestigationApiRequestDao apiRequestDao, InvestigationCoordinator coordinator, ModelClient modelClient,
+            InvestigationApiRequestDao apiRequestDao, InvestigationCoordinator coordinator,
+            InvestigationTerminalizationService terminalizationService, ModelClient modelClient,
             CodeGraphClient codeGraphClient, CodeWorkspace workspace, LogTemplateMinerClient logTemplateMinerClient,
             RuntimeEvidenceClient runtimeEvidenceClient, SnapshotCache snapshotCache,
             @Qualifier("investigationExecutor") ThreadPoolTaskExecutor investigationExecutor,
@@ -105,6 +109,7 @@ public class InvestigationApplicationService {
         this.stepDao = stepDao;
         this.apiRequestDao = apiRequestDao;
         this.coordinator = coordinator;
+        this.terminalizationService = terminalizationService;
         this.modelClient = modelClient;
         this.codeGraphClient = codeGraphClient;
         this.workspace = workspace;
@@ -289,17 +294,8 @@ public class InvestigationApplicationService {
             errorCode = ErrorCodes.execution(e);
             LOG.error("investigation execution failed investigationId={} errorCode={}", investigationId, errorCode);
             if (!determined) {
-                int affected = investigationDao.updateStatusIfActive(investigationId, InvestigationStatus.FAILED);
-                if (affected == 1) {
-                    if (conclusionDao.findByInvestigationId(investigationId).isEmpty()) {
-                        ConclusionInsert conclusionCommand = new ConclusionInsert(investigationId, "FAILED",
-                                null, null, null, null, "执行失败");
-                        conclusionDao.insert(conclusionCommand);
-                    }
-                    outcome = InvestigationStatus.FAILED;
-                } else {
-                    outcome = investigationDao.findById(investigationId).orElseThrow().status();
-                }
+                terminalizeFailure(investigationId);
+                outcome = investigationDao.findById(investigationId).orElseThrow().status();
             }
         } finally {
             try {
@@ -313,6 +309,19 @@ public class InvestigationApplicationService {
             } finally {
                 MDC.remove(CorrelationIdFilter.MDC_KEY);
             }
+        }
+    }
+
+    private void terminalizeFailure(long investigationId) {
+        Investigation investigation = investigationDao.findById(investigationId).orElseThrow();
+        if (investigation.status() == InvestigationStatus.WAITING_FOR_HUMAN
+                || isTerminal(investigation.status())) {
+            return;
+        }
+        if (conclusionDao.findByInvestigationId(investigationId).isEmpty()) {
+            terminalizationService.terminalize(new InvestigationTerminalizationCommand(investigationId,
+                    investigation.currentRunId(), InvestigationStatus.FAILED, "FAILED",
+                    null, null, "执行失败", null));
         }
     }
 

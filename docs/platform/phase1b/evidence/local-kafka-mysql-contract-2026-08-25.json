@@ -1,0 +1,39 @@
+{
+  "environment": "local-non-production",
+  "executedAt": "2026-08-25T12:10:30+08:00",
+  "scope": "OpenSpec task 7.5 real Kafka + MySQL acceptance",
+  "broker": {
+    "distribution": "Apache Kafka 4.3.1",
+    "mode": "single-node-kraft",
+    "bootstrapServers": "127.0.0.1:9092",
+    "clusterId": "TTfrZLR4TOeI4aN23InjpA",
+    "clientLibraryVersion": "3.8.1"
+  },
+  "mysql": {
+    "version": "8.0",
+    "schema": "sre_intelligence_phase1b_contract"
+  },
+  "topics": {
+    "dpom.diagnosis-event.v2": {"partitions": 2, "highWatermarks": [15, 4]},
+    "dpom.diagnosis-progress.v1": {"partitions": 2, "highWatermarks": [0, 0]}
+  },
+  "command": "mvn -Pmysql-contract -pl sre-web -am verify -Dtest=NoUnitTestsRequested -Dit.test=KafkaMySqlContractIT -Dsurefire.failIfNoSpecifiedTests=false -Dfailsafe.failIfNoSpecifiedTests=false",
+  "failsafe": {"tests": 1, "failures": 0, "errors": 0, "skipped": 0},
+  "markers": [
+    "MYSQL_CONTRACT_STATUS=EXECUTED",
+    "KAFKA_MYSQL_CONTRACT_STATUS=EXECUTED broker=external"
+  ],
+  "checks": {
+    "commitBeforeAckRedelivery": "PASS",
+    "twoPartitionOrdering": "PASS",
+    "sequenceGapPromotion": "PASS",
+    "poisonQuarantineAndAcknowledgement": "PASS",
+    "recovery": "PASS",
+    "crossTransportRaceOnExternalBroker": "PASS",
+    "authorizedReplayOnExternalBroker": "PASS",
+    "capacityExhaustionOnExternalBroker": "PASS",
+    "cutoverAndRollback": "NOT_EXECUTED"
+  },
+  "result": "PASS",
+  "qualification": "Cutover and rollback are tracked separately by OpenSpec task 9.4."
+}

@@ -2,6 +2,9 @@ package com.dpom.agent.web.controller;
 
 import com.dpom.agent.core.handoff.HandoffErrorCode;
 import com.dpom.agent.core.handoff.HandoffException;
+import com.dpom.agent.core.diagnosisevent.DiagnosisReplayException;
+import com.dpom.agent.web.diagnosisevent.ReplayAuthenticationException;
+import com.dpom.agent.web.authorityapi.AuthorityAuthenticationException;
 import com.dpom.agent.web.dto.ErrorResponse;
 import com.dpom.agent.web.service.InvestigationConflictException;
 import org.slf4j.Logger;
@@ -35,6 +38,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHandoff(HandoffException ex) {
         HttpStatus status = statusFor(ex.code());
         return ResponseEntity.status(status).body(ErrorResponse.of(ex.code().name(), messageFor(ex.code())));
+    }
+
+    /** 返回不含认证细节的统一 401。 */
+    @ExceptionHandler(ReplayAuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleReplayAuthentication(ReplayAuthenticationException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("REPLAY_AUTHENTICATION_FAILED", "authentication failed"));
+    }
+
+    /** 返回不含 Authority token 配置或比对细节的统一 401。 */
+    @ExceptionHandler(AuthorityAuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorityAuthentication(
+            AuthorityAuthenticationException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("AUTHORITY_AUTHENTICATION_FAILED", "authentication failed"));
+    }
+
+    /** 映射重放的稳定业务错误。 */
+    @ExceptionHandler(DiagnosisReplayException.class)
+    public ResponseEntity<ErrorResponse> handleDiagnosisReplay(DiagnosisReplayException exception) {
+        HttpStatus status = "REPLAY_EVENT_NOT_FOUND".equals(exception.getMessage())
+                ? HttpStatus.NOT_FOUND : HttpStatus.CONFLICT;
+        return ResponseEntity.status(status).body(ErrorResponse.of(exception.getMessage(), "replay rejected"));
     }
 
     private HttpStatus statusFor(HandoffErrorCode code) {

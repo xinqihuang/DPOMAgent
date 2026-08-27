@@ -1,0 +1,63 @@
+{
+  "eventId": "ea74c627-3e5b-40a5-aead-0a36947255f7",
+  "eventType": "investigation.replay-ready",
+  "schemaVersion": "1.0",
+  "occurredAt": "2026-08-21T14:35:00+00:00",
+  "producer": {
+    "service": "DPOMAgent",
+    "instanceId": "dpom-agent-development-01"
+  },
+  "incidentId": "INC-LEGACY-0042",
+  "investigationId": "INV-LEGACY-0042",
+  "runId": "RUN-LEGACY-0042-01",
+  "aggregateSequence": 1,
+  "idempotencyKey": "INV-LEGACY-0042.replay-ready.1",
+  "provenance": {
+    "application": {
+      "status": "available",
+      "name": "DPOMAgent",
+      "version": "1.4.0"
+    },
+    "model": {
+      "status": "unavailable",
+      "reasonCode": "LEGACY_SOURCE"
+    },
+    "prompt": {
+      "status": "unavailable",
+      "reasonCode": "NOT_RECORDED"
+    },
+    "skills": [
+      {
+        "status": "unavailable",
+        "reasonCode": "NOT_RECORDED"
+      }
+    ],
+    "toolContracts": [
+      {
+        "status": "unavailable",
+        "reasonCode": "LEGACY_SOURCE"
+      }
+    ],
+    "source": {
+      "status": "available",
+      "serviceCode": "telemetry-service",
+      "release": "2026.08.20.2"
+    },
+    "evidenceSchema": {
+      "status": "available",
+      "name": "diagnostic-evidence-package",
+      "version": "1.0"
+    }
+  },
+  "artifactRef": {
+    "artifactId": "ART-REPLAY-0042",
+    "locationType": "controlled-obs-evidence",
+    "locator": "diagnostic-evidence/INV-LEGACY-0042/ART-REPLAY-0042",
+    "mediaType": "application/zip",
+    "byteSize": 20480,
+    "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "artifactSchemaVersion": "1.0",
+    "retentionClass": "EVAL_90D",
+    "createdAt": "2026-08-21T14:34:58Z"
+  }
+}

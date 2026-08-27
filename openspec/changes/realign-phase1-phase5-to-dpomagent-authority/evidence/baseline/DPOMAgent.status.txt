@@ -1,0 +1,124 @@
+branch=main
+head=ca5c3f82f514e6155ddb21f8e36e76695b9a886c
+upstream=origin/main
+aheadBehind=0	0
+--- porcelain-v1 --untracked-files=all ---
+ M AGENTS.md
+ M README.md
+ M agent-core/pom.xml
+ M agent-core/src/main/java/com/dpom/agent/core/alarm/AlarmIncidentTriggerAdapter.java
+ M agent-core/src/main/java/com/dpom/agent/core/investigation/InvestigationCoordinator.java
+ M agent-core/src/main/java/com/dpom/agent/core/persistence/InvestigationDao.java
+ M agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/InvestigationDao.xml
+ M agent-web/src/main/java/com/dpom/agent/web/controller/GlobalExceptionHandler.java
+ M agent-web/src/main/java/com/dpom/agent/web/controller/InvestigationController.java
+ M agent-web/src/main/java/com/dpom/agent/web/service/InvestigationApplicationService.java
+ M agent-web/src/main/resources/application.yml
+ M agent-web/src/main/resources/static/change-guard/app.js
+ M agent-web/src/main/resources/static/change-guard/index.html
+ M agent-web/src/main/resources/static/change-guard/state.js
+ M agent-web/src/test/java/com/dpom/agent/web/InvestigationCoordinatorTest.java
+ M agent-web/src/test/java/com/dpom/agent/web/InvestigationExecutionFailureTest.java
+ M agent-web/src/test/java/com/dpom/agent/web/MybatisExternalMysqlContractTest.java
+ M agent-web/src/test/resources/application.yml
+ M openspec/specs/investigation-agent/spec.md
+ M pom.xml
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DeliveryAcknowledgement.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DeliveryOutcome.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisArtifactReference.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEvent.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventDeliveryPort.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventDeliveryRequest.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventProducer.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventProvenance.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/DiagnosisInlinePayload.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/ProvenanceSource.java
+?? agent-common/src/main/java/com/dpom/agent/common/diagnosisevent/ProvenanceVersion.java
+?? agent-common/src/test/java/com/dpom/agent/common/diagnosisevent/DiagnosisEventModelTest.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/BuiltDiagnosisEvent.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/CanonicalJsonException.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/CanonicalJsonWriter.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisDeliveryPolicy.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventAudit.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventBuildMetadata.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventBuilder.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventContractValidator.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventDeliveryService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventLeaseService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventMetrics.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventOutbox.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventReplayNonce.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventReplayService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventStateService.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventValidationException.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisOutboxStatus.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisReplayException.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/DiagnosisRetryPolicy.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/LeaseTokenSource.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/Rfc8785CanonicalJsonWriter.java
+?? agent-core/src/main/java/com/dpom/agent/core/diagnosisevent/ValidatedDiagnosisEvent.java
+?? agent-core/src/main/java/com/dpom/agent/core/investigation/InvestigationTerminalizationCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/investigation/InvestigationTerminalizationService.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/DiagnosisEventAuditDao.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/DiagnosisEventOutboxDao.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/DiagnosisReplayNonceDao.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventAuditInsert.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventLeaseCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventOutboxInsert.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventReplayCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisEventTransitionCommand.java
+?? agent-core/src/main/java/com/dpom/agent/core/persistence/command/DiagnosisReplayNonceInsert.java
+?? agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/DiagnosisEventAuditDao.xml
+?? agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/DiagnosisEventOutboxDao.xml
+?? agent-core/src/main/resources/com/dpom/agent/core/persistence/mapper/DiagnosisReplayNonceDao.xml
+?? agent-core/src/test/java/com/dpom/agent/core/alarm/LegacyAuthorityRetirementTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/ContractAssetIntegrityTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventBuilderTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventConformanceTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisEventDeliveryServiceTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/DiagnosisRetryPolicyTest.java
+?? agent-core/src/test/java/com/dpom/agent/core/diagnosisevent/Rfc8785CanonicalJsonWriterTest.java
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/diagnosis-event.schema.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/fixtures/invalid/cases.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/fixtures/valid/valid-artifact.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/fixtures/valid/valid-inline.json
+?? agent-core/src/test/resources/contracts/diagnosis-event/v1/source-sha256.properties
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventDeliveryConfiguration.java
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventProperties.java
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventPropertiesConfiguration.java
+?? agent-web/src/main/java/com/dpom/agent/web/config/DiagnosisEventReplayConfiguration.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisEventDeliveryWorker.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisEventHttpDeliveryAdapter.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisEventReplayController.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisReplayAuthenticator.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisReplayRequest.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/DiagnosisReplayRequestValidator.java
+?? agent-web/src/main/java/com/dpom/agent/web/diagnosisevent/ReplayAuthenticationException.java
+?? agent-web/src/main/java/com/dpom/agent/web/metrics/MicrometerDiagnosisEventMetrics.java
+?? agent-web/src/main/resources/application-phase1b-retired.yml
+?? agent-web/src/main/resources/db/migration/V12__diagnosis_event_outbox.sql
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventConditionalAssemblyTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventHttpDeliveryAdapterTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventPersistenceTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventPropertiesTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventReplayDisabledTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisEventReplayEndpointTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/DiagnosisReplayAuthenticationTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/InvestigationTerminalizationIntegrationTest.java
+?? agent-web/src/test/java/com/dpom/agent/web/MicrometerDiagnosisEventMetricsTest.java
+?? docs/add-diagnosis-event-outbox-acceptance-report.md
+?? docs/architecture/ADR-003-ai-sre-service-boundary-reference.md
+?? docs/tasks/T220-diagnosis-event-outbox.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/.openspec.yaml
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/design.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/proposal.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/specs/diagnosis-event-outbox/spec.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/specs/investigation-agent/spec.md
+?? openspec/changes/archive/2026-08-22-add-dpomagent-diagnosis-event-outbox/tasks.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/.openspec.yaml
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/design.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/proposal.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/specs/diagnosis-event-outbox/spec.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/specs/investigation-agent/spec.md
+?? openspec/changes/archive/2026-08-23-add-dpomagent-diagnosis-event-outbox/tasks.md
+?? openspec/specs/diagnosis-event-outbox/spec.md

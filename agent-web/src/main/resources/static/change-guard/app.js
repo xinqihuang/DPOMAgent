@@ -1,5 +1,5 @@
-import {createApiClient} from "./api-client.js?v=20260819-5";
-import {auditEntry, availableActions, ruleSelector, sourceLabel, statusTone} from "./state.js?v=20260819-5";
+import {createApiClient} from "./api-client.js?v=20260819-6";
+import {auditEntry, availableActions, ruleSelector, sourceLabel, statusTone} from "./state.js?v=20260819-6";
 
 const elements = Object.fromEntries(Array.from(document.querySelectorAll("[id]")).map(item => [item.id, item]));
 let api = null;
@@ -10,7 +10,7 @@ initialize();
 function initialize() {
   configureApi();
   seedTimes();
-  ["AOM_V4", "UNIFIED_APM_AOM_V4", "CES_V2"].forEach(addRuleRow);
+  ["AOM_V4", "APM_V1_TEMPLATE", "CES_V2"].forEach(addRuleRow);
   bindEvents();
   renderOperation(null);
 }

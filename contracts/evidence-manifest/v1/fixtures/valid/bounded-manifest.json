@@ -1,0 +1,33 @@
+{
+  "manifestId": "EM-INV-20260825-0001-12",
+  "schemaVersion": "1.0",
+  "investigationId": "INV-20260825-0001",
+  "createdAt": "2026-08-25T02:29:59Z",
+  "sensitivity": "RESTRICTED",
+  "retentionClass": "EVAL_90D",
+  "totalByteSize": 15360,
+  "entries": [
+    {
+      "evidenceId": "EV-TRACE-0007",
+      "evidenceType": "TRACE",
+      "sourceRef": "evidence/trace/EV-TRACE-0007",
+      "capturedAt": "2026-08-25T02:20:00Z",
+      "mediaType": "application/json",
+      "byteSize": 8192,
+      "sha256": "3b7dd1d4b9ebd34589a266a545dbd68c02e8c94b4f6158d859ed272a7df08ca0",
+      "redactionStatus": "REDACTED",
+      "contentIncluded": false
+    },
+    {
+      "evidenceId": "EV-CODE-0011",
+      "evidenceType": "CODEGRAPH",
+      "sourceRef": "evidence/codegraph/EV-CODE-0011",
+      "capturedAt": "2026-08-25T02:22:00Z",
+      "mediaType": "application/json",
+      "byteSize": 7168,
+      "sha256": "4b7dd1d4b9ebd34589a266a545dbd68c02e8c94b4f6158d859ed272a7df08ca0",
+      "redactionStatus": "NOT_REQUIRED",
+      "contentIncluded": false
+    }
+  ]
+}

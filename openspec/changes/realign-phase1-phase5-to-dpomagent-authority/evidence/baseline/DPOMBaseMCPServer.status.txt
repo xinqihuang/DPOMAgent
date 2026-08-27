@@ -1,0 +1,5 @@
+branch=master
+head=7f33e684d2224cbfc822e6c1d7ed4ac44190eecc
+upstream=origin/master
+aheadBehind=0	0
+--- porcelain-v1 --untracked-files=all ---
