@@ -124,7 +124,7 @@ The consumer acknowledges a diagnosis event only after durable receipt. Duplicat
 |---|---|---|
 | Phase 1A | Complete | Compatibility HTTP vertical slice: durable ingestion, Eval Case, deterministic rule, two semantic judges, aggregate report, and persisted replay |
 | Phase 1B | In Progress | DPOMAgent-owned authority, Kafka/SSE path, HTTP compatibility and transport parity |
-| Phase 2 | Pending external gate | Implementation, fake-model and real infrastructure pass; approved-model six-Judge gate remains open |
+| Phase 2 | Complete | Case/Dataset/replay/agreement plus fake and approved-model fixed six-Judge gates accepted |
 | Phase 3 | Complete | Failure attribution, capability-gap analysis, improvement recommendation, and Release Gate accepted |
 | Phase 4 | Complete | Human-governed inactive improvement proposals, replay proof and bounded handoff accepted |
 

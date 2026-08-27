@@ -20,7 +20,7 @@ This matrix maps every Phase 2 exit criterion to executable, repository-owned ev
 | Real MySQL/Kafka | Maven `mysql-contract` profile with explicit mutation consent | all contract ITs pass; Phase 2 E2E prints 7 Judges and recovered restart |
 | DeepEval offline | `DeepEvalService/scripts/verify.ps1` | Ruff, strict mypy, and pytest pass |
 | Six-Judge HTTP fake | enable `SEMANTIC_CROSS_SERVICE` and run `Phase2SemanticCrossServiceTest` | six independent PASS/FAIL results; timeout `UNAVAILABLE`; invalid output `ERROR` |
-| Approved model | enable all three non-production real-model gates and run `Phase2SemanticRealModelAcceptanceTest` | BLOCKED externally on 2026-08-26: supplied credential returned provider HTTP 401; service correctly persisted/exposed `UNAVAILABLE` without score or secret leakage |
+| Approved model | enable all three non-production real-model gates and run `Phase2SemanticRealModelAcceptanceTest` | PASS on 2026-08-27: six independent contract-valid `FAIL` decisions from approved `deepseek-chat`; 1 test, 0 failures/errors/skips; no secret/provider body retained |
 | Contracts | `python contracts/validate_phase2_contracts.py` | all positive/negative fixtures conform |
 | Architecture/security | SRE architecture and redaction tests plus forbidden scan | core remains framework-neutral; prohibited technology/secret patterns absent |
 | OpenSpec | strict validation of `implement-phase2-governed-evaluation-data` | valid proposal/design/spec/task graph |

@@ -1,9 +1,7 @@
 # Phase 3 — Failure Attribution and Release Governance
 
 - Status: Completed (accepted 2026-08-26)
-- Prerequisite evidence used by Phase 3: implemented immutable Dataset/replay/Judge lineage and deterministic
-  fake-model/real-infrastructure evaluation. Phase 2's separate approved-model six-Judge acceptance remains open and
-  is not silently inherited as a Phase 3 success claim.
+- Prerequisite: Phase 2 immutable Dataset/replay/Judge lineage and approved-model six-Judge acceptance are complete.
 - Goal: turn reproducible evaluation failures into actionable capability gaps and fail-closed release decisions.
 
 ## Scope

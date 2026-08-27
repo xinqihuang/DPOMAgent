@@ -1,8 +1,8 @@
 # Phase 2 Final Acceptance Report
 
-- Acceptance date: 2026-08-26
+- Acceptance date: 2026-08-27
 - Scope: governed Incident Case curation, Dataset lifecycle, fixed six-Judge replay, and Judge-human agreement.
-- Decision: implementation-complete; final acceptance pending a valid approved-model credential/endpoint for the six-Judge non-production gate.
+- Decision: **ACCEPTED** — all implementation, real-infrastructure and approved-model gates passed.
 
 ## Delivered outcome
 
@@ -16,8 +16,12 @@ MySQL owns authoritative state and history. Controlled evidence bodies remain ou
 - Real MySQL covers the same persistence contract against port 3306.
 - The non-production end-to-end contract uses local Kafka, real MySQL, a verified allow-listed OBS fixture, an injected expired lease/restart, the DeepEval fake HTTP adapter, seven authoritative results, and reconstructed PASS report parity.
 - Cross-service tests execute six independent Judge calls and retain explicit timeout/invalid-output evidence.
-- Approved-model execution is separately gated by explicit non-production environment and approval identity; it cannot run accidentally.
-- The supplied credential was exercised against the configured DeepSeek-compatible endpoint on 2026-08-26 and returned HTTP 401 on a secret-safe direct probe. The application correctly failed closed as `UNAVAILABLE`; no score was inferred. This is the only remaining acceptance dependency.
+- Approved-model execution remains separately gated by explicit non-production environment and approval identity; it cannot run accidentally.
+- On 2026-08-27 the fixed six-Judge gate ran against the approved DeepSeek-compatible `deepseek-chat` profile. All
+  six calls returned contract-valid `FAIL` decisions with pinned component/prompt/rubric/schema versions; the gate
+  passed 1 test with 0 failures/errors/skips. A `FAIL` Judge decision is valid evidence and is not infrastructure failure.
+- Runtime credentials were injected only into the interactive process environment and were cleared afterward; no
+  credential, raw provider response or semantic input body was retained in the acceptance artifact.
 - Security tests prove credentials, evidence bodies, prompts, ground-truth bodies, raw model output, and arbitrary exceptions do not enter bounded APIs, logs, metrics, audits, or progress events.
 
 ## Operational conclusion

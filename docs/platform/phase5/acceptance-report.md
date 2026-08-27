@@ -47,6 +47,6 @@ resolved; this report does not promote those unrelated pending gates to success.
 ## Cross-phase audit
 
 Phase 3 and Phase 4 remain accepted, and Phase 5 projects immutable Phase 1–4 lineage without changing ownership.
-Phase 2 implementation and fake-model/real Kafka/MySQL evidence are present, but its separate approved-provider
-six-Judge gate last failed closed on provider HTTP 401. That external dependency does not weaken Phase 5's executed
-seven-result persistence and report-projection evidence, and it has not been relabeled as success.
+Phase 2 implementation, fake-model/real Kafka/MySQL evidence and its separate approved-provider six-Judge gate are
+accepted. Phase 5 consumes their immutable lineage without turning individual Judge `FAIL` outcomes into an
+infrastructure failure or an aggregate success.

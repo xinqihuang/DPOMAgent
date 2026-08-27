@@ -53,9 +53,13 @@ Date: 2026-08-27 (Asia/Shanghai)
   aggregate evaluation, evaluated report generation, RFC 8785 deterministic replay and Markdown rendering.
 - The same real-MySQL profile executed the Phase 3 and Phase 4 governance contracts with zero failures;
   the full offline SRE reactor regression also passed (SRE core 101 tests; SRE web 253 tests, 6 gated skips).
-- Phase 2 remains pending its separate approved-model six-Judge gate. No approved-model credentials are
-  present in the current process, and a historical key returned 401, so fake-model success is not promoted
-  to approved-model acceptance.
+- Phase 2's separate approved-model gate passed on 2026-08-27 under explicit non-production approval using the
+  current fixed six-Judge catalog and DeepSeek-compatible `deepseek-chat`. All six calls returned bounded,
+  contract-valid `FAIL` decisions (scores 0.0-0.4 at threshold 0.8); `FAIL` is a valid evaluation result and no
+  missing/unavailable/error result was promoted. The Maven gate ran 1 test with 0 failures/errors/skips.
+- The runtime-only API key and service token were entered through an interactive process environment, cleared after
+  execution and were not written to commands, files, evidence or Git. SRE owns the detailed body-free evidence in
+  `docs/phase2-approved-model-acceptance-2026-08-27.md`.
 - The initial run exposed an assertion overload that compared Jackson object iteration order. The gate now
   compares RFC 8785 canonical bytes, matching the contract's deterministic semantic requirement; the
   corrected test passed.
