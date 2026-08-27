@@ -17,8 +17,8 @@
 ## 3. Portable Contracts and Governance Sources
 
 - [x] 3.1 Move producer-owned Diagnosis Event/Progress, Evidence Manifest and diagnostic-report schemas, semantic rules, fixtures and canonicalization vectors into version-controlled DPOMAgent paths with version and SHA-256 provenance.
-- [ ] 3.2 Remove DPOMAgent build/test dependence on root or sibling contract directories and prove its full build in an isolated clean clone.
-- [ ] 3.3 Replace SRE `../contracts` build-helper/test-resource coupling with repository-owned pinned conformance inputs or a versioned artifact and prove its full build in an isolated clean clone.
+- [x] 3.2 Remove DPOMAgent build/test dependence on root or sibling contract directories and prove its full build in an isolated clean clone.
+- [x] 3.3 Replace SRE `../contracts` build-helper/test-resource coupling with repository-owned pinned conformance inputs or a versioned artifact and prove its full build in an isolated clean clone.
 - [x] 3.4 Move the authoritative platform ADR, phase roadmaps, acceptance index and this OpenSpec change into version-controlled DPOMAgent documentation without recreating AISREPlatformGovernance.
 - [x] 3.5 Add a portability verifier that fails when active builds or authoritative documentation reference machine-specific workspace-root paths or unversioned parent/sibling sources.
 
