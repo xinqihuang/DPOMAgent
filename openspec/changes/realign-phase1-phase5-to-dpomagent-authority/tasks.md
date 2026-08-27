@@ -34,26 +34,26 @@
 
 ## 5. Phase 5 Report Ownership and Projections
 
-- [ ] 5.1 Publish the bounded canonical diagnostic-report contract with diagnosis-only/evaluated profiles, semantic invariants, positive/negative fixtures and cross-language digest vectors.
-- [ ] 5.2 Implement DPOMAgent diagnosis-only source adapter, canonical builder and immutable persistence from terminal Investigation facts without LLM-authored report fields.
-- [ ] 5.3 Implement diagnosis-only request idempotency, optimistic revision creation, supersession/recovery lineage, exact-history queries, transaction rollback and H2/real-MySQL tests.
-- [ ] 5.4 Update SRE evaluated-report assembly to consume an immutable versioned DPOMAgent diagnosis source and attach exact Eval Case/Dataset/Replay/Suite/individual-Judge lineage without cross-database access.
-- [ ] 5.5 Verify canonical, Markdown, Portal, HTML and PDF semantic equivalence, template/report digests, authorization, bounds and secret/evidence-body redaction.
-- [ ] 5.6 Reproduce APM alarm `16557989` as a non-production golden fixture with structurally distinct Eden/CodeCache evidence, limitations and immutable recovery revision.
+- [x] 5.1 Publish the bounded canonical diagnostic-report contract with diagnosis-only/evaluated profiles, semantic invariants, positive/negative fixtures and cross-language digest vectors.
+- [x] 5.2 Implement DPOMAgent diagnosis-only source adapter, canonical builder and immutable persistence from terminal Investigation facts without LLM-authored report fields.
+- [x] 5.3 Implement diagnosis-only request idempotency, optimistic revision creation, supersession/recovery lineage, exact-history queries, transaction rollback and H2/real-MySQL tests.
+- [x] 5.4 Update SRE evaluated-report assembly to consume an immutable versioned DPOMAgent diagnosis source and attach exact Eval Case/Dataset/Replay/Suite/individual-Judge lineage without cross-database access.
+- [x] 5.5 Verify canonical, Markdown, Portal, HTML and PDF semantic equivalence, template/report digests, authorization, bounds and secret/evidence-body redaction.
+- [x] 5.6 Reproduce APM alarm `16557989` as a non-production golden fixture with structurally distinct Eden/CodeCache evidence, limitations and immutable recovery revision.
 
 ## 6. Service Boundary Enforcement
 
-- [ ] 6.1 Re-run and extend DPOMBase architecture/tool-catalog guards to reject diagnosis, model, report, Kafka producer, Investigation persistence and alarm mutation responsibilities.
-- [ ] 6.2 Complete HuaweiCloudAlarmChangeGuard architecture and contract tests proving it exclusively owns APM/CES/AOM state mutations with approval, audit and rollback boundaries.
+- [x] 6.1 Re-run and extend DPOMBase architecture/tool-catalog guards to reject diagnosis, model, report, Kafka producer, Investigation persistence and alarm mutation responsibilities.
+- [x] 6.2 Complete HuaweiCloudAlarmChangeGuard architecture and contract tests proving it exclusively owns APM/CES/AOM state mutations with approval, audit and rollback boundaries.
 - [ ] 6.3 Execute authorized non-production APM, CES and AOM disable/mask then restore checks where suitable test resources exist, preserving exact before/after provider responses without credentials.
-- [ ] 6.4 Add a workspace boundary verifier covering dependency direction, database ownership, cloud credentials, mutation tools and forbidden cross-service source imports.
+- [x] 6.4 Add a workspace boundary verifier covering dependency direction, database ownership, cloud credentials, mutation tools and forbidden cross-service source imports.
 
 ## 7. Cross-Phase Verification and Delivery
 
 - [ ] 7.1 Run full offline builds, architecture/security/redaction suites and strict OpenSpec validation for all five affected services from clean clones.
-- [ ] 7.2 Run DPOMAgent Investigation/report real-MySQL contracts on a fresh dedicated schema at local MySQL 3306, including restart, transaction and immutable-history evidence.
-- [ ] 7.3 Run the DPOMAgent-to-Kafka-to-SRE end-to-end flow on local Kafka 9092 and real MySQL, including duplicate/conflict/order, broker restart, replay and HTTP rollback parity.
+- [x] 7.2 Run DPOMAgent Investigation/report real-MySQL contracts on a fresh dedicated schema at local MySQL 3306, including restart, transaction and immutable-history evidence.
+- [x] 7.3 Run the DPOMAgent-to-Kafka-to-SRE end-to-end flow on local Kafka 9092 and real MySQL, including duplicate/conflict/order, broker restart, replay and HTTP rollback parity.
 - [ ] 7.4 Run Phase 5 diagnosis-only and evaluated-report cross-service acceptance with deterministic replay and renderer equivalence against exact component commits.
-- [ ] 7.5 Re-run Phase 2 local fake-model infrastructure and Phase 3/4 regression suites; keep Phase 2 pending until its separate approved-model six-Judge gate objectively passes.
+- [x] 7.5 Re-run Phase 2 local fake-model infrastructure and Phase 3/4 regression suites; keep Phase 2 pending until its separate approved-model six-Judge gate objectively passes.
 - [ ] 7.6 Publish corrected Phase 1/5 requirement matrices, acceptance reports and status only after every gate passes, and reconcile Phase 2–4 prerequisite language with actual evidence.
 - [ ] 7.7 Review all final diffs for unrelated/user-owned changes and secret literals, commit and push each owning repository, then verify clean worktrees and matching remote heads.

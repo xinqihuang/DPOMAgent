@@ -13,8 +13,13 @@ import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.authority.AuthorityTerminalDao;
 import com.dpom.agent.core.persistence.authority.AuthorityProgressDao;
 import com.dpom.agent.core.persistence.authority.AuthorityRevisionRow;
+import com.dpom.agent.core.persistence.authority.DiagnosticReportRevisionRow;
 import com.dpom.agent.core.persistence.authority.DiagnosisSourceRow;
 import com.dpom.agent.core.persistence.authority.InvestigationAuthorityDao;
+import com.dpom.agent.core.persistence.authority.AuthorityDiagnosticReportDao;
+import com.dpom.agent.core.report.DiagnosisOnlyReportCommand;
+import com.dpom.agent.core.report.DiagnosisOnlyReportService;
+import com.dpom.agent.core.report.DiagnosticReportValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +29,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -45,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 abstract class AbstractAuthorityPersistenceContract {
 
     private static final List<String> TABLES = List.of(
+            "authority_diagnostic_report_head", "authority_diagnostic_report_revision",
             "authority_progress_attempt", "authority_progress_intent",
             "authority_publication_attempt", "authority_publication_intent", "authority_diagnosis_source",
             "authority_audit", "authority_tool_use", "authority_investigation_revision",
@@ -66,6 +73,12 @@ abstract class AbstractAuthorityPersistenceContract {
     DiagnosisTerminalCommitService terminalCommitService;
 
     @Autowired
+    DiagnosisOnlyReportService reportService;
+
+    @Autowired
+    AuthorityDiagnosticReportDao reportDao;
+
+    @Autowired
     JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -73,6 +86,102 @@ abstract class AbstractAuthorityPersistenceContract {
 
     @Autowired
     PlatformTransactionManager transactionManager;
+
+    @Test
+    void diagnosisOnlyReportIsIdempotentImmutableAndRevisionedFromTerminalFacts() throws Exception {
+        InvestigationAuthority authority = terminalAuthority();
+        AuthorityId investigationId = authority.snapshot().investigationId();
+        store.create(newAuthority(investigationId, authority.snapshot().incident()));
+        terminalCommitService.commit(authority, 0L);
+
+        var first = reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(),
+                "report-request-1", 0, List.of()));
+        var duplicate = reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(),
+                "report-request-1", 0, List.of()));
+        assertThat(duplicate.reportId()).isEqualTo(first.reportId());
+        assertThat(duplicate.requestFingerprint()).isEqualTo(first.requestFingerprint());
+        assertThat(duplicate.canonicalContent()).isEqualTo(first.canonicalContent());
+        var firstJson = objectMapper.readTree(first.canonicalContent());
+        new DiagnosticReportValidator(objectMapper).validate(firstJson);
+        assertThat(firstJson.path("reportProfile").asText()).isEqualTo("DIAGNOSIS_ONLY");
+        assertThat(firstJson.path("recommendations")).isEmpty();
+        assertThat(firstJson.toString()).doesNotContain("alternative");
+        assertThat(firstJson.path("evaluation").path("outcome").asText()).isEqualTo("NOT_REQUIRED");
+
+        assertThatThrownBy(() -> reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(),
+                "report-request-1", 0, List.of("RECOVERY"))))
+                .isInstanceOf(IllegalStateException.class).hasMessage("REPORT_IDEMPOTENCY_CONFLICT");
+        var second = reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(),
+                "report-request-2", 1, List.of("ALARM_LIFECYCLE_RECOVERED")));
+        assertThat(second.revisionNumber()).isEqualTo(2);
+        assertThat(second.supersedesReportId()).isEqualTo(first.reportId());
+        assertThat(reportService.find(first.reportId()).canonicalContent()).isEqualTo(first.canonicalContent());
+        assertThat(reportService.history(investigationId.value(), 0, 1)).extracting("revisionNumber")
+                .containsExactly(1L);
+        assertThat(reportService.history(investigationId.value(), 1, 10)).extracting("revisionNumber")
+                .containsExactly(2L);
+        new DiagnosticReportValidator(objectMapper).validateRevisionChain(List.of(firstJson,
+                objectMapper.readTree(second.canonicalContent())));
+
+        assertThatThrownBy(() -> reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(),
+                "report-request-stale", 1, List.of("RETRY"))))
+                .isInstanceOf(IllegalStateException.class).hasMessage("REPORT_VERSION_CONFLICT");
+    }
+
+    @Test
+    void concurrentReportRevisionAllowsExactlyOneWriterAndKeepsExactHistory() throws Exception {
+        InvestigationAuthority authority = terminalAuthority();
+        AuthorityId investigationId = authority.snapshot().investigationId();
+        store.create(newAuthority(investigationId, authority.snapshot().incident()));
+        terminalCommitService.commit(authority, 0L);
+        reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(), "initial", 0, List.of()));
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+            Future<Boolean> one = pool.submit(() -> createReportAfterSignal(investigationId, "race-one", ready, start));
+            Future<Boolean> two = pool.submit(() -> createReportAfterSignal(investigationId, "race-two", ready, start));
+            ready.await();
+            start.countDown();
+            assertThat((one.get() ? 1 : 0) + (two.get() ? 1 : 0)).isOne();
+        }
+        assertThat(reportDao.findHead(investigationId.value()).orElseThrow().latestRevision()).isEqualTo(2);
+        assertThat(reportService.history(investigationId.value(), 0, 10)).hasSize(2);
+    }
+
+    @Test
+    void diagnosticReportRevisionRollsBackWithItsTransaction() {
+        InvestigationAuthority authority = terminalAuthority();
+        AuthorityId investigationId = authority.snapshot().investigationId();
+        store.create(newAuthority(investigationId, authority.snapshot().incident()));
+        terminalCommitService.commit(authority, 0L);
+        var first = reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(),
+                "rollback-initial", 0, List.of()));
+        String rolledBackId = AuthorityId.derive("diagnostic-report-rollback", investigationId.value()).value();
+        var candidate = new DiagnosticReportRevisionRow(rolledBackId, investigationId.value(),
+                first.diagnosisSourceId(), "rollback-candidate", "f".repeat(64), 2,
+                first.reportId(), "[\"ROLLBACK_PROBE\"]", first.canonicalContent(),
+                first.reportDigest(), first.sourceDigest(), LocalDateTime.now());
+
+        assertThatThrownBy(() -> new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            reportDao.insertRevision(candidate);
+            throw new IllegalStateException("ROLLBACK_PROBE");
+        })).isInstanceOf(IllegalStateException.class).hasMessage("ROLLBACK_PROBE");
+        assertThat(reportDao.findRevision(rolledBackId)).isEmpty();
+        assertThat(reportDao.findHead(investigationId.value()).orElseThrow().latestRevision()).isOne();
+    }
+
+    private boolean createReportAfterSignal(AuthorityId investigationId, String requestKey,
+            CountDownLatch ready, CountDownLatch start) throws InterruptedException {
+        ready.countDown();
+        start.await();
+        try {
+            reportService.create(new DiagnosisOnlyReportCommand(investigationId.value(), requestKey, 1,
+                    List.of("CONCURRENT_REVISION")));
+            return true;
+        } catch (RuntimeException expected) {
+            return false;
+        }
+    }
 
     /** 返回当前数据库方言的受控建表脚本。 */
     abstract Resource schemaResource();

@@ -9,6 +9,8 @@ SET @authority_rows=(
     + (SELECT COUNT(*) FROM authority_diagnosis_source)
     + (SELECT COUNT(*) FROM authority_publication_intent)
     + (SELECT COUNT(*) FROM authority_publication_attempt)
+    + (SELECT COUNT(*) FROM authority_diagnostic_report_revision)
+    + (SELECT COUNT(*) FROM authority_diagnostic_report_head)
 );
 SET @authority_refusal=IF(
     @authority_rows=0,
@@ -19,6 +21,8 @@ PREPARE authority_guard FROM @authority_refusal;
 EXECUTE authority_guard;
 DEALLOCATE PREPARE authority_guard;
 
+DROP TABLE authority_diagnostic_report_head;
+DROP TABLE authority_diagnostic_report_revision;
 DROP TABLE authority_progress_attempt;
 DROP TABLE authority_progress_intent;
 DROP TABLE authority_publication_attempt;

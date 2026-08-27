@@ -10,6 +10,8 @@ FROM (
     UNION ALL SELECT 'authority_diagnosis_source'
     UNION ALL SELECT 'authority_publication_intent'
     UNION ALL SELECT 'authority_publication_attempt'
+    UNION ALL SELECT 'authority_diagnostic_report_revision'
+    UNION ALL SELECT 'authority_diagnostic_report_head'
 ) required_table
 LEFT JOIN information_schema.tables actual
     ON actual.table_schema = DATABASE()
@@ -45,6 +47,18 @@ SELECT audit.investigation_id, MIN(audit.sequence_number) AS first_sequence,
 FROM authority_audit audit
 GROUP BY audit.investigation_id
 HAVING first_sequence <> 1 OR last_sequence <> row_count;
+
+SELECT revision.report_id, revision.report_digest, revision.source_digest
+FROM authority_diagnostic_report_revision revision
+WHERE revision.revision_number <= 0
+   OR revision.request_fingerprint NOT REGEXP '^[0-9a-f]{64}$'
+   OR revision.report_digest NOT REGEXP '^[0-9a-f]{64}$'
+   OR revision.source_digest NOT REGEXP '^[0-9a-f]{64}$';
+
+SELECT head.investigation_id, head.latest_revision, revision.revision_number
+FROM authority_diagnostic_report_head head
+LEFT JOIN authority_diagnostic_report_revision revision ON revision.report_id=head.latest_report_id
+WHERE revision.report_id IS NULL OR revision.revision_number <> head.latest_revision;
 
 SELECT source.investigation_id, source.source_id
 FROM authority_diagnosis_source source

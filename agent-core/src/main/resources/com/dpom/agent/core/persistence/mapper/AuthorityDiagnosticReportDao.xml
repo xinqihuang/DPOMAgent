@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.authority.AuthorityDiagnosticReportDao">
+    <resultMap id="headResult" type="com.dpom.agent.core.persistence.authority.DiagnosticReportHeadRow">
+        <constructor>
+            <idArg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="latest_report_id" javaType="java.lang.String"/>
+            <arg column="latest_revision" javaType="_long"/>
+            <arg column="lock_version" javaType="_long"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <resultMap id="revisionResult" type="com.dpom.agent.core.persistence.authority.DiagnosticReportRevisionRow">
+        <constructor>
+            <idArg column="report_id" javaType="java.lang.String"/>
+            <arg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="diagnosis_source_id" javaType="java.lang.String"/>
+            <arg column="request_idempotency_key" javaType="java.lang.String"/>
+            <arg column="request_fingerprint" javaType="java.lang.String"/>
+            <arg column="revision_number" javaType="_long"/>
+            <arg column="supersedes_report_id" javaType="java.lang.String"/>
+            <arg column="change_reasons_json" javaType="java.lang.String"/>
+            <arg column="canonical_content" javaType="java.lang.String"/>
+            <arg column="report_digest" javaType="java.lang.String"/>
+            <arg column="source_digest" javaType="java.lang.String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findHead" resultMap="headResult">
+        SELECT investigation_id, latest_report_id, latest_revision, lock_version, created_at, updated_at
+        FROM authority_diagnostic_report_head WHERE investigation_id=#{investigationId}
+    </select>
+
+    <select id="findRevision" resultMap="revisionResult">
+        SELECT report_id, investigation_id, diagnosis_source_id, request_idempotency_key, request_fingerprint,
+               revision_number, supersedes_report_id, change_reasons_json, canonical_content,
+               report_digest, source_digest, created_at
+        FROM authority_diagnostic_report_revision WHERE report_id=#{reportId}
+    </select>
+
+    <select id="findByRequestKey" resultMap="revisionResult">
+        SELECT report_id, investigation_id, diagnosis_source_id, request_idempotency_key, request_fingerprint,
+               revision_number, supersedes_report_id, change_reasons_json, canonical_content,
+               report_digest, source_digest, created_at
+        FROM authority_diagnostic_report_revision
+        WHERE investigation_id=#{investigationId} AND request_idempotency_key=#{requestKey}
+    </select>
+
+    <select id="findHistoryPage" resultMap="revisionResult">
+        SELECT report_id, investigation_id, diagnosis_source_id, request_idempotency_key, request_fingerprint,
+               revision_number, supersedes_report_id, change_reasons_json, canonical_content,
+               report_digest, source_digest, created_at
+        FROM authority_diagnostic_report_revision
+        WHERE investigation_id=#{investigationId} AND revision_number &gt; #{afterRevision}
+        ORDER BY revision_number
+        LIMIT #{limit}
+    </select>
+
+    <insert id="insertHead">
+        INSERT INTO authority_diagnostic_report_head
+            (investigation_id, latest_report_id, latest_revision, lock_version, created_at, updated_at)
+        VALUES (#{investigationId}, #{latestReportId}, #{latestRevision}, #{lockVersion}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="advanceHead">
+        UPDATE authority_diagnostic_report_head
+        SET latest_report_id=#{latestReportId}, latest_revision=latest_revision+1,
+            lock_version=lock_version+1, updated_at=#{updatedAt}
+        WHERE investigation_id=#{investigationId} AND latest_revision=#{expectedRevision}
+          AND lock_version=#{expectedLockVersion}
+    </update>
+
+    <insert id="insertRevision">
+        INSERT INTO authority_diagnostic_report_revision
+            (report_id, investigation_id, diagnosis_source_id, request_idempotency_key, request_fingerprint,
+             revision_number, supersedes_report_id, change_reasons_json, canonical_content,
+             report_digest, source_digest, created_at)
+        VALUES (#{reportId}, #{investigationId}, #{diagnosisSourceId}, #{requestIdempotencyKey},
+                #{requestFingerprint}, #{revisionNumber}, #{supersedesReportId}, #{changeReasonsJson},
+                #{canonicalContent}, #{reportDigest}, #{sourceDigest}, #{createdAt})
+    </insert>
+</mapper>

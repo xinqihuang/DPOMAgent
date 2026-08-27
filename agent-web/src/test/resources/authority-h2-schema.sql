@@ -144,3 +144,34 @@ CREATE TABLE IF NOT EXISTS authority_publication_attempt (
     created_at TIMESTAMP(6) NOT NULL,
     FOREIGN KEY (intent_id) REFERENCES authority_publication_intent (intent_id)
 );
+
+CREATE TABLE IF NOT EXISTS authority_diagnostic_report_revision (
+    report_id VARCHAR(128) PRIMARY KEY,
+    investigation_id VARCHAR(128) NOT NULL,
+    diagnosis_source_id VARCHAR(128) NOT NULL,
+    request_idempotency_key VARCHAR(128) NOT NULL,
+    request_fingerprint CHAR(64) NOT NULL,
+    revision_number BIGINT NOT NULL,
+    supersedes_report_id VARCHAR(128),
+    change_reasons_json VARCHAR(2048) NOT NULL,
+    canonical_content CLOB NOT NULL,
+    report_digest CHAR(64) NOT NULL,
+    source_digest CHAR(64) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+    UNIQUE (investigation_id, request_idempotency_key),
+    UNIQUE (investigation_id, revision_number),
+    FOREIGN KEY (investigation_id) REFERENCES authority_investigation_head (investigation_id),
+    FOREIGN KEY (diagnosis_source_id) REFERENCES authority_diagnosis_source (source_id),
+    FOREIGN KEY (supersedes_report_id) REFERENCES authority_diagnostic_report_revision (report_id)
+);
+
+CREATE TABLE IF NOT EXISTS authority_diagnostic_report_head (
+    investigation_id VARCHAR(128) PRIMARY KEY,
+    latest_report_id VARCHAR(128) NOT NULL,
+    latest_revision BIGINT NOT NULL,
+    lock_version BIGINT NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL,
+    FOREIGN KEY (investigation_id) REFERENCES authority_investigation_head (investigation_id),
+    FOREIGN KEY (latest_report_id) REFERENCES authority_diagnostic_report_revision (report_id)
+);

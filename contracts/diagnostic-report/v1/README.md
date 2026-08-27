@@ -5,7 +5,7 @@
 ## Profiles and independent outcome axes
 
 - `DIAGNOSIS_ONLY`: diagnosis lineage is mandatory; `evaluation.outcome` is `NOT_REQUIRED` and Judge lineage is empty.
-- `DIAGNOSIS_EVALUATED`: exact Eval Case, Eval Run and Suite plus the six required Judge kinds are mandatory. Every persisted individual Judge result is retained; multiple results may contribute to the same kind, but `judgeResultId` is unique.
+- `DIAGNOSIS_EVALUATED`: exact versioned diagnosis source, Eval Case, Dataset, Replay Plan/Run and Suite plus the six required Judge kinds are mandatory. Every persisted individual Judge result is retained; multiple results may contribute to the same kind, but `judgeResultId` is unique.
 - `completeness`: `COMPLETE | INCOMPLETE` describes integrity and required-input availability.
 - conclusion `disposition`: `CONFIRMED | HYPOTHESIS | UNDETERMINED` describes claim strength.
 - `evaluation.outcome`: `PASS | FAIL | INCOMPLETE | NOT_REQUIRED` describes evaluation only.
