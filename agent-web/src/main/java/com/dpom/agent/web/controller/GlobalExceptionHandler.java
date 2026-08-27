@@ -105,7 +105,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        LOG.error("unhandled exception errorCode={}", "INTERNAL_ERROR");
+        LOG.error("unhandled exception errorCode={}", "INTERNAL_ERROR", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "internal error"));
     }
