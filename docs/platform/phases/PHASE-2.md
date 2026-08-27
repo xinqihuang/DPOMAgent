@@ -1,6 +1,6 @@
 # Phase 2 — Curated Cases and Governed Evaluation Data
 
-- Status: Planned
+- Status: Implementation Complete / Acceptance Pending — approved-model six-Judge gate remains open
 - Prerequisite: Phase 1 corrected four-core-service boundaries and compatibility cutover are accepted.
 - Goal: convert Phase 1 evaluation projections into reviewable, versioned Incident Cases and reproducible Dataset Versions.
 
