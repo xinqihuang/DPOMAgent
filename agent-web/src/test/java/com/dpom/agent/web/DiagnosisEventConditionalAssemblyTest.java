@@ -7,8 +7,13 @@ import com.dpom.agent.core.diagnosisevent.DiagnosisEventMetrics;
 import com.dpom.agent.core.diagnosisevent.DiagnosisEventStateService;
 import com.dpom.agent.core.persistence.DiagnosisEventOutboxDao;
 import com.dpom.agent.core.persistence.authority.AuthorityTerminalDao;
+import com.dpom.agent.core.persistence.authority.AuthorityProgressDao;
+import com.dpom.agent.common.diagnosisprogress.DiagnosisProgressDeliveryPort;
+import com.dpom.agent.core.diagnosisprogress.AuthorityProgressDeliveryService;
 import com.dpom.agent.web.config.DiagnosisEventDeliveryConfiguration;
 import com.dpom.agent.web.config.DiagnosisEventPropertiesConfiguration;
+import com.dpom.agent.web.config.DiagnosisProgressDeliveryConfiguration;
+import com.dpom.agent.web.diagnosisprogress.AuthorityProgressDeliveryWorker;
 import com.dpom.agent.web.diagnosisevent.DiagnosisEventDeliveryWorker;
 import com.dpom.agent.web.diagnosisevent.AuthorityPublicationDeliveryWorker;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,9 +34,10 @@ class DiagnosisEventConditionalAssemblyTest {
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withUserConfiguration(DiagnosisEventPropertiesConfiguration.class,
-                    DiagnosisEventDeliveryConfiguration.class)
+                    DiagnosisEventDeliveryConfiguration.class, DiagnosisProgressDeliveryConfiguration.class)
             .withBean(DiagnosisEventOutboxDao.class, () -> mock(DiagnosisEventOutboxDao.class))
             .withBean(AuthorityTerminalDao.class, () -> mock(AuthorityTerminalDao.class))
+            .withBean(AuthorityProgressDao.class, () -> mock(AuthorityProgressDao.class))
             .withBean(PlatformTransactionManager.class, () -> mock(PlatformTransactionManager.class))
             .withBean(DiagnosisEventStateService.class, () -> mock(DiagnosisEventStateService.class))
             .withBean(DiagnosisEventMetrics.class, () -> mock(DiagnosisEventMetrics.class))
@@ -47,6 +53,8 @@ class DiagnosisEventConditionalAssemblyTest {
             assertThat(context).doesNotHaveBean(DiagnosisEventDeliveryService.class);
             assertThat(context).doesNotHaveBean(DiagnosisEventDeliveryWorker.class);
             assertThat(context).doesNotHaveBean(AuthorityPublicationDeliveryWorker.class);
+            assertThat(context).doesNotHaveBean(DiagnosisProgressDeliveryPort.class);
+            assertThat(context).doesNotHaveBean(AuthorityProgressDeliveryWorker.class);
         });
     }
 
@@ -63,6 +71,7 @@ class DiagnosisEventConditionalAssemblyTest {
                     assertThat(context).hasSingleBean(DiagnosisEventDeliveryService.class);
                     assertThat(context).hasSingleBean(DiagnosisEventDeliveryWorker.class);
                     assertThat(context).hasSingleBean(AuthorityPublicationDeliveryWorker.class);
+                    assertThat(context).doesNotHaveBean(DiagnosisProgressDeliveryPort.class);
                 });
     }
 
@@ -78,6 +87,23 @@ class DiagnosisEventConditionalAssemblyTest {
                     assertThat(context).hasSingleBean(DiagnosisEventDeliveryPort.class);
                     assertThat(context).doesNotHaveBean(DiagnosisEventDeliveryWorker.class);
                     assertThat(context).hasSingleBean(AuthorityPublicationDeliveryWorker.class);
+                    assertThat(context).doesNotHaveBean(DiagnosisProgressDeliveryPort.class);
+                });
+    }
+
+    @Test
+    void progressPublisherRequiresItsOwnExplicitKafkaAdmission() {
+        runner.withPropertyValues(
+                "dpom.evaluation.delivery.enabled=true",
+                "dpom.evaluation.delivery.mode=KAFKA",
+                "dpom.evaluation.delivery.kafka.bootstrap-servers=localhost:9092",
+                "dpom.evaluation.delivery.kafka.producer-identity=dpom-agent-test",
+                "dpom.evaluation.delivery.kafka.progress-enabled=true")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(DiagnosisProgressDeliveryPort.class);
+                    assertThat(context).hasSingleBean(AuthorityProgressDeliveryService.class);
+                    assertThat(context).hasSingleBean(AuthorityProgressDeliveryWorker.class);
                 });
     }
 }

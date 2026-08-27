@@ -7,9 +7,11 @@ import com.dpom.agent.core.authority.InvestigationAuthority;
 import com.dpom.agent.core.authority.InvestigationAuthorityStore;
 import com.dpom.agent.core.diagnosisevent.AuthorityPublicationDeliveryService;
 import com.dpom.agent.core.diagnosisevent.DiagnosisDeliveryPolicy;
+import com.dpom.agent.core.diagnosisprogress.AuthorityProgressDeliveryService;
 import com.dpom.agent.core.diagnosissource.DiagnosisTerminalCommitService;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.authority.AuthorityTerminalDao;
+import com.dpom.agent.core.persistence.authority.AuthorityProgressDao;
 import com.dpom.agent.core.persistence.authority.AuthorityRevisionRow;
 import com.dpom.agent.core.persistence.authority.DiagnosisSourceRow;
 import com.dpom.agent.core.persistence.authority.InvestigationAuthorityDao;
@@ -28,7 +30,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 abstract class AbstractAuthorityPersistenceContract {
 
     private static final List<String> TABLES = List.of(
+            "authority_progress_attempt", "authority_progress_intent",
             "authority_publication_attempt", "authority_publication_intent", "authority_diagnosis_source",
             "authority_audit", "authority_tool_use", "authority_investigation_revision",
             "authority_investigation_head");
@@ -53,6 +58,9 @@ abstract class AbstractAuthorityPersistenceContract {
 
     @Autowired
     AuthorityTerminalDao terminalDao;
+
+    @Autowired
+    AuthorityProgressDao progressDao;
 
     @Autowired
     DiagnosisTerminalCommitService terminalCommitService;
@@ -123,6 +131,26 @@ abstract class AbstractAuthorityPersistenceContract {
     }
 
     @Test
+    void progressIntentConflictRollsBackHeadRevisionAndAuditTogether() {
+        InvestigationAuthority authority = newAuthority();
+        store.create(authority);
+        Instant createdAt = authority.snapshot().createdAt();
+        authority.transition(0L, InvestigationStatus.SCOPING, createdAt.plusSeconds(1));
+        InvestigationAuthority.AuditRecord nextAudit = authority.snapshot().audit().get(1);
+        String conflictingProgressId = UUID.nameUUIDFromBytes(
+                ("dpom-progress:" + nextAudit.id().value()).getBytes(StandardCharsets.UTF_8)).toString();
+        jdbcTemplate.update("UPDATE authority_progress_intent SET progress_id=?, idempotency_key=?",
+                conflictingProgressId, conflictingProgressId);
+
+        assertThatThrownBy(() -> store.save(authority, 0L)).isInstanceOf(DuplicateKeyException.class);
+
+        assertThat(store.find(authority.snapshot().investigationId()).orElseThrow().version()).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM authority_investigation_revision",
+                Integer.class)).isOne();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM authority_audit", Integer.class)).isOne();
+    }
+
+    @Test
     void reconstructsExactHistoryAndResumesAfterInterruption() {
         InvestigationAuthority authority = newAuthority();
         AuthorityId id = authority.snapshot().investigationId();
@@ -144,6 +172,31 @@ abstract class AbstractAuthorityPersistenceContract {
         assertThat(dao.findAuditPage(id.value(), 2L, 2))
                 .extracting(com.dpom.agent.core.persistence.authority.AuthorityAuditViewRow::sequenceNumber)
                 .containsExactly(3L);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_progress_intent WHERE investigation_id=?", Integer.class,
+                id.value())).isEqualTo(3);
+        String admission = jdbcTemplate.queryForObject(
+                "SELECT canonical_content FROM authority_progress_intent "
+                        + "WHERE investigation_id=? AND progress_sequence=1", String.class, id.value());
+        assertThat(admission).contains("\"aggregateVersion\":0", "\"status\":\"ACCEPTED\"")
+                .doesNotContain("\"runId\"").doesNotContain("password");
+    }
+
+    @Test
+    void legacyInvestigationWithoutAdmissionDoesNotJoinProgressStreamMidSequence() {
+        InvestigationAuthority authority = newAuthority();
+        AuthorityId id = authority.snapshot().investigationId();
+        Instant createdAt = authority.snapshot().createdAt();
+        store.create(authority);
+        jdbcTemplate.update("DELETE FROM authority_progress_intent WHERE investigation_id=?", id.value());
+
+        authority.transition(0L, InvestigationStatus.SCOPING, createdAt.plusSeconds(1));
+        store.save(authority, 0L);
+
+        assertThat(store.find(id).orElseThrow().version()).isOne();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_progress_intent WHERE investigation_id=?", Integer.class,
+                id.value())).isZero();
     }
 
     @Test
@@ -281,6 +334,167 @@ abstract class AbstractAuthorityPersistenceContract {
         assertThat(replayed.attemptCount()).isZero();
         assertThat(replayed.canonicalContent()).isEqualTo(original.canonicalContent());
         assertThat(replayed.canonicalSha256()).isEqualTo(original.canonicalSha256());
+    }
+
+    @Test
+    void progressOutboxRetriesAcrossRestartAndPreservesPerInvestigationOrder() throws Exception {
+        InvestigationAuthority authority = newAuthority();
+        AuthorityId id = authority.snapshot().investigationId();
+        Instant createdAt = authority.snapshot().createdAt();
+        store.create(authority);
+        authority.transition(0L, InvestigationStatus.SCOPING, createdAt.plusSeconds(1));
+        store.save(authority, 0L);
+        String firstId = jdbcTemplate.queryForObject(
+                "SELECT progress_id FROM authority_progress_intent "
+                        + "WHERE investigation_id=? AND progress_sequence=1", String.class, id.value());
+        var original = progressDao.findIntent(firstId).orElseThrow();
+        var policy = new DiagnosisDeliveryPolicy(3, Duration.ofHours(1), Duration.ofSeconds(1),
+                Duration.ofSeconds(4), Duration.ofSeconds(10), 10);
+        Clock firstClock = Clock.fixed(Instant.parse("2026-08-27T01:01:00Z"), java.time.ZoneOffset.UTC);
+        var failing = new AuthorityProgressDeliveryService(progressDao, request ->
+                new DeliveryAcknowledgement(DeliveryOutcome.RETRYABLE_FAILURE, "BROKER_UNAVAILABLE"),
+                policy, firstClock, transactionManager);
+
+        failing.deliverReady("progress-before-restart");
+
+        var pending = progressDao.findIntent(firstId).orElseThrow();
+        assertThat(pending.status()).isEqualTo("PENDING");
+        assertThat(pending.canonicalContent()).isEqualTo(original.canonicalContent());
+        List<Long> deliveredSequences = new ArrayList<>();
+        Clock restartedClock = Clock.fixed(Instant.parse("2026-08-27T01:01:02Z"), java.time.ZoneOffset.UTC);
+        var restarted = new AuthorityProgressDeliveryService(progressDao, request -> {
+            try {
+                deliveredSequences.add(objectMapper.readTree(request.canonicalJson())
+                        .path("progressSequence").asLong());
+                return new DeliveryAcknowledgement(DeliveryOutcome.ACCEPTED, null);
+            } catch (Exception exception) {
+                throw new IllegalStateException(exception);
+            }
+        }, policy, restartedClock, transactionManager);
+        restarted.deliverReady("progress-after-restart");
+        restarted.deliverReady("progress-after-restart");
+
+        assertThat(deliveredSequences).containsExactly(1L, 2L);
+        assertThat(progressDao.findIntent(firstId).orElseThrow().canonicalContent())
+                .isEqualTo(original.canonicalContent());
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_progress_intent WHERE status='DELIVERED'", Integer.class))
+                .isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_progress_attempt WHERE progress_id=?", Integer.class, firstId))
+                .isEqualTo(2);
+    }
+
+    @Test
+    void progressConflictFailsClosedAndRemainsSecretSafe() {
+        InvestigationAuthority authority = newAuthority();
+        store.create(authority);
+        String progressId = jdbcTemplate.queryForObject(
+                "SELECT progress_id FROM authority_progress_intent", String.class);
+        var policy = new DiagnosisDeliveryPolicy(3, Duration.ofHours(1), Duration.ofSeconds(1),
+                Duration.ofSeconds(4), Duration.ofSeconds(10), 10);
+        Clock clock = Clock.fixed(Instant.parse("2026-08-27T01:01:00Z"), java.time.ZoneOffset.UTC);
+        var service = new AuthorityProgressDeliveryService(progressDao, request ->
+                new DeliveryAcknowledgement(DeliveryOutcome.IDEMPOTENCY_CONFLICT, "unsafe provider detail"),
+                policy, clock, transactionManager);
+
+        service.deliverReady("progress-conflict");
+
+        var dead = progressDao.findIntent(progressId).orElseThrow();
+        assertThat(dead.status()).isEqualTo("DEAD");
+        assertThat(dead.lastErrorCode()).isEqualTo("IDEMPOTENCY_CONFLICT");
+        String attempt = jdbcTemplate.queryForObject(
+                "SELECT CONCAT(outcome, '|', error_code) FROM authority_progress_attempt "
+                        + "WHERE progress_id=?", String.class, progressId);
+        assertThat(attempt).isEqualTo("IDEMPOTENCY_CONFLICT|IDEMPOTENCY_CONFLICT")
+                .doesNotContain("provider");
+    }
+
+    @Test
+    void uncertainProgressSendIsRecoveredAfterLeaseExpiryWithoutDuplicateAuthority() throws Exception {
+        InvestigationAuthority authority = newAuthority();
+        AuthorityId id = authority.snapshot().investigationId();
+        store.create(authority);
+        String progressId = jdbcTemplate.queryForObject(
+                "SELECT progress_id FROM authority_progress_intent WHERE investigation_id=?", String.class,
+                id.value());
+        var policy = new DiagnosisDeliveryPolicy(3, Duration.ofHours(1), Duration.ofSeconds(1),
+                Duration.ofSeconds(4), Duration.ofSeconds(1), 10);
+        Clock firstClock = Clock.fixed(Instant.parse("2026-08-27T01:01:00Z"), java.time.ZoneOffset.UTC);
+        var uncertain = new AuthorityProgressDeliveryService(progressDao, request -> {
+            jdbcTemplate.update("UPDATE authority_progress_intent SET lease_expires_at=? WHERE progress_id=?",
+                    LocalDateTime.ofInstant(firstClock.instant(), java.time.ZoneOffset.UTC), progressId);
+            return new DeliveryAcknowledgement(DeliveryOutcome.ACCEPTED, null);
+        }, policy, firstClock, transactionManager);
+
+        uncertain.deliverReady("progress-uncertain-send");
+
+        assertThat(progressDao.findIntent(progressId).orElseThrow().status()).isEqualTo("IN_FLIGHT");
+        Clock restartedClock = Clock.fixed(Instant.parse("2026-08-27T01:01:02Z"), java.time.ZoneOffset.UTC);
+        var restarted = new AuthorityProgressDeliveryService(progressDao,
+                request -> new DeliveryAcknowledgement(DeliveryOutcome.EQUIVALENT_DUPLICATE, null),
+                policy, restartedClock, transactionManager);
+        restarted.deliverReady("progress-after-lease-expiry");
+
+        var delivered = progressDao.findIntent(progressId).orElseThrow();
+        assertThat(delivered.status()).isEqualTo("DELIVERED");
+        assertThat(delivered.attemptCount()).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_progress_attempt WHERE progress_id=?", Integer.class,
+                progressId)).isOne();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT outcome FROM authority_progress_attempt WHERE progress_id=?", String.class,
+                progressId)).isEqualTo("EQUIVALENT_DUPLICATE");
+    }
+
+    @Test
+    void exhaustedProgressRetryBlocksLaterSequenceUntilImmutableReplay() throws Exception {
+        InvestigationAuthority authority = newAuthority();
+        AuthorityId id = authority.snapshot().investigationId();
+        Instant createdAt = authority.snapshot().createdAt();
+        store.create(authority);
+        authority.transition(0L, InvestigationStatus.SCOPING, createdAt.plusSeconds(1));
+        store.save(authority, 0L);
+        String firstId = jdbcTemplate.queryForObject(
+                "SELECT progress_id FROM authority_progress_intent "
+                        + "WHERE investigation_id=? AND progress_sequence=1", String.class, id.value());
+        var original = progressDao.findIntent(firstId).orElseThrow();
+        var policy = new DiagnosisDeliveryPolicy(1, Duration.ofHours(1), Duration.ofSeconds(1),
+                Duration.ofSeconds(1), Duration.ofSeconds(10), 10);
+        Clock firstClock = Clock.fixed(Instant.parse("2026-08-27T01:01:00Z"), java.time.ZoneOffset.UTC);
+        var exhausted = new AuthorityProgressDeliveryService(progressDao,
+                request -> new DeliveryAcknowledgement(DeliveryOutcome.RETRYABLE_FAILURE, "BROKER_UNAVAILABLE"),
+                policy, firstClock, transactionManager);
+
+        exhausted.deliverReady("progress-exhausted");
+        exhausted.deliverReady("progress-later-blocked");
+
+        assertThat(progressDao.findIntent(firstId).orElseThrow().status()).isEqualTo("DEAD");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_progress_intent WHERE status='DELIVERED'", Integer.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT outcome FROM authority_progress_attempt WHERE progress_id=?", String.class,
+                firstId)).isEqualTo("RETRY_EXHAUSTED");
+        assertThat(exhausted.replay(firstId)).isTrue();
+
+        List<Long> deliveredSequences = new ArrayList<>();
+        var recovered = new AuthorityProgressDeliveryService(progressDao, request -> {
+            try {
+                deliveredSequences.add(objectMapper.readTree(request.canonicalJson())
+                        .path("progressSequence").asLong());
+                return new DeliveryAcknowledgement(DeliveryOutcome.ACCEPTED, null);
+            } catch (Exception exception) {
+                throw new IllegalStateException(exception);
+            }
+        }, policy, firstClock, transactionManager);
+        recovered.deliverReady("progress-replay-first");
+        recovered.deliverReady("progress-release-second");
+
+        assertThat(deliveredSequences).containsExactly(1L, 2L);
+        assertThat(progressDao.findIntent(firstId).orElseThrow().canonicalContent())
+                .isEqualTo(original.canonicalContent());
+        assertThat(progressDao.findIntent(firstId).orElseThrow().canonicalSha256())
+                .isEqualTo(original.canonicalSha256());
     }
 
     @Test

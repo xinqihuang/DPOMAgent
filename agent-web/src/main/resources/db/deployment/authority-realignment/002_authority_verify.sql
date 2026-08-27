@@ -5,6 +5,8 @@ FROM (
     UNION ALL SELECT 'authority_investigation_revision'
     UNION ALL SELECT 'authority_tool_use'
     UNION ALL SELECT 'authority_audit'
+    UNION ALL SELECT 'authority_progress_intent'
+    UNION ALL SELECT 'authority_progress_attempt'
     UNION ALL SELECT 'authority_diagnosis_source'
     UNION ALL SELECT 'authority_publication_intent'
     UNION ALL SELECT 'authority_publication_attempt'
@@ -54,3 +56,16 @@ FROM authority_publication_intent
 WHERE canonical_sha256 NOT REGEXP '^[0-9a-f]{64}$'
    OR topic_name <> 'dpom.diagnosis-event.v2'
    OR schema_version NOT REGEXP '^2\\.[0-9]+$';
+
+SELECT progress_id, progress_sequence, aggregate_version, canonical_sha256, topic_name, schema_version
+FROM authority_progress_intent
+WHERE progress_sequence <= 0 OR aggregate_version < 0
+   OR canonical_sha256 NOT REGEXP '^[0-9a-f]{64}$'
+   OR topic_name <> 'dpom.diagnosis-progress.v1'
+   OR schema_version NOT REGEXP '^1\\.[0-9]+$';
+
+SELECT investigation_id, MIN(progress_sequence) AS first_sequence,
+       MAX(progress_sequence) AS last_sequence, COUNT(*) AS row_count
+FROM authority_progress_intent
+GROUP BY investigation_id
+HAVING first_sequence <> 1 OR last_sequence <> row_count;

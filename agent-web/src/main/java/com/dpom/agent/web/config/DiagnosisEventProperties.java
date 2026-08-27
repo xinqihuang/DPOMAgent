@@ -26,6 +26,9 @@ public class DiagnosisEventProperties {
         if (delivery.mode == null) {
             throw new IllegalStateException("MISSING_DELIVERY_MODE");
         }
+        if (delivery.kafka.progressEnabled && delivery.mode != DeliveryMode.KAFKA) {
+            throw new IllegalStateException("PROGRESS_REQUIRES_KAFKA_MODE");
+        }
         if (delivery.mode == DeliveryMode.KAFKA) {
             validateKafkaDelivery();
         } else {
@@ -56,6 +59,9 @@ public class DiagnosisEventProperties {
                 || !"dpom.diagnosis-event.v2".equals(kafka.topic)
                 || !identifier(kafka.producerIdentity) || !positive(kafka.acknowledgementTimeout)) {
             throw new IllegalStateException("INVALID_KAFKA_DELIVERY_CONFIG");
+        }
+        if (kafka.progressEnabled && !"dpom.diagnosis-progress.v1".equals(kafka.progressTopic)) {
+            throw new IllegalStateException("INVALID_KAFKA_PROGRESS_CONFIG");
         }
     }
 
@@ -147,6 +153,8 @@ public class DiagnosisEventProperties {
         private String topic = "dpom.diagnosis-event.v2";
         private String producerIdentity = "";
         private Duration acknowledgementTimeout = Duration.ofSeconds(5);
+        private boolean progressEnabled;
+        private String progressTopic = "dpom.diagnosis-progress.v1";
 
         public java.util.List<String> getBootstrapServers() { return java.util.List.copyOf(bootstrapServers); }
         public void setBootstrapServers(java.util.List<String> value) {
@@ -158,6 +166,10 @@ public class DiagnosisEventProperties {
         public void setProducerIdentity(String value) { producerIdentity = value; }
         public Duration getAcknowledgementTimeout() { return acknowledgementTimeout; }
         public void setAcknowledgementTimeout(Duration value) { acknowledgementTimeout = value; }
+        public boolean isProgressEnabled() { return progressEnabled; }
+        public void setProgressEnabled(boolean value) { progressEnabled = value; }
+        public String getProgressTopic() { return progressTopic; }
+        public void setProgressTopic(String value) { progressTopic = value; }
     }
 
     /** 内部重放认证配置，默认关闭。 */

@@ -23,7 +23,7 @@ class ContractAssetIntegrityTest {
     void repositoryAssetsMatchRecordedSourceHashes() throws Exception {
         Map<String, String> manifest = loadManifest();
 
-        assertThat(manifest).hasSize(38);
+        assertThat(manifest).hasSize(39);
         for (Map.Entry<String, String> entry : manifest.entrySet()) {
             String path = entry.getKey();
             assertThat(sha256(read(path)))

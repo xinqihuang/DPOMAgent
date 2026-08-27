@@ -1,0 +1,16 @@
+{
+  "progressId": "944e0e9f-11c2-39e2-9ac4-dd4135841c6d",
+  "schemaVersion": "1.1",
+  "occurredAt": "2026-08-27T01:00:00Z",
+  "investigationId": "investigation:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "progressSequence": 1,
+  "aggregateVersion": 0,
+  "sourceAuthority": {
+    "service": "DPOMAgent",
+    "authorityEpoch": "phase1b-local"
+  },
+  "status": "ACCEPTED",
+  "stage": "ADMISSION",
+  "summaryCode": "INVESTIGATION_CREATED",
+  "checkpointRef": "investigation:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

@@ -5,7 +5,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "progressId", "schemaVersion", "occurredAt", "investigationId", "runId",
+    "progressId", "schemaVersion", "occurredAt", "investigationId",
     "progressSequence", "aggregateVersion", "sourceAuthority", "status", "stage", "summaryCode"
   ],
   "properties": {
@@ -15,7 +15,7 @@
     "investigationId": { "$ref": "#/$defs/id" },
     "runId": { "$ref": "#/$defs/id" },
     "progressSequence": { "type": "integer", "minimum": 1 },
-    "aggregateVersion": { "type": "integer", "minimum": 1 },
+    "aggregateVersion": { "type": "integer", "minimum": 0 },
     "sourceAuthority": {
       "type": "object", "additionalProperties": false,
       "required": ["service", "authorityEpoch"],
@@ -39,6 +39,12 @@
     "percentComplete": { "type": "integer", "minimum": 0, "maximum": 100 },
     "checkpointRef": { "$ref": "#/$defs/id" }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "stage": { "not": { "const": "ADMISSION" } } } },
+      "then": { "required": ["runId"] }
+    }
+  ],
   "$defs": {
     "id": {
       "type": "string", "minLength": 1, "maxLength": 128,

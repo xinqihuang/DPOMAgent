@@ -25,11 +25,11 @@
 ## 4. DPOMAgent Kafka Outbox and SRE Unified Ingestion
 
 - [x] 4.1 Implement DPOMAgent transactional outbox rows, canonical payload/digest freezing, aggregate sequencing, leases, attempt history, idempotent acknowledgement and replay state.
-- [ ] 4.2 Implement default-off bounded Kafka Diagnosis Event/Progress publishers with readiness, capacity, retry, conflict and secret-safe telemetry.
+- [x] 4.2 Implement default-off bounded Kafka Diagnosis Event/Progress publishers with readiness, capacity, retry, conflict and secret-safe telemetry.
 - [x] 4.3 Retain the Phase 1A authenticated HTTP delivery adapter over the same frozen outbox record and make transport selection explicit and rollback-safe.
 - [x] 4.4 Route SRE HTTP and Kafka adapters through one ingestion application command while preserving transport observations separately from canonical domain content.
-- [ ] 4.5 Add contract and integration tests for HTTP/Kafka acknowledgement, idempotency, conflicting duplicates, per-Investigation ordering gaps, quarantine, replay and equivalent projections.
-- [ ] 4.6 Add restart/failure tests for state commit before publication, broker outage, uncertain send, expired lease, retry exhaustion and publisher/consumer restart without duplicate authority.
+- [x] 4.5 Add contract and integration tests for HTTP/Kafka acknowledgement, idempotency, conflicting duplicates, per-Investigation ordering gaps, quarantine, replay and equivalent projections.
+- [x] 4.6 Add restart/failure tests for state commit before publication, broker outage, uncertain send, expired lease, retry exhaustion and publisher/consumer restart without duplicate authority.
 - [x] 4.7 Update cutover/rollback runbooks for DPOMAgent-owned authority, default-off admission epochs, compatibility window, reconciliation and rollback to HTTP without ownership reversal.
 
 ## 5. Phase 5 Report Ownership and Projections

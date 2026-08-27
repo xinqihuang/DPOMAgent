@@ -4,6 +4,7 @@ import com.dpom.agent.core.authority.AuthorityId;
 import com.dpom.agent.core.authority.InvestigationAuthority;
 import com.dpom.agent.core.authority.InvestigationAuthorityStore;
 import com.dpom.agent.core.diagnosisevent.Rfc8785CanonicalJsonWriter;
+import com.dpom.agent.core.diagnosisprogress.AuthorityProgressIntentFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +26,17 @@ import java.util.Set;
 public class MyBatisInvestigationAuthorityStore implements InvestigationAuthorityStore {
 
     private final InvestigationAuthorityDao dao;
+    private final AuthorityProgressDao progressDao;
+    private final AuthorityProgressIntentFactory progressIntentFactory;
     private final ObjectMapper objectMapper;
     private final Rfc8785CanonicalJsonWriter canonicalJsonWriter;
 
     /** 创建仓储。 */
-    public MyBatisInvestigationAuthorityStore(InvestigationAuthorityDao dao, ObjectMapper objectMapper) {
+    public MyBatisInvestigationAuthorityStore(InvestigationAuthorityDao dao, AuthorityProgressDao progressDao,
+            AuthorityProgressIntentFactory progressIntentFactory, ObjectMapper objectMapper) {
         this.dao = dao;
+        this.progressDao = progressDao;
+        this.progressIntentFactory = progressIntentFactory;
         this.objectMapper = objectMapper;
         this.canonicalJsonWriter = new Rfc8785CanonicalJsonWriter(objectMapper);
     }
@@ -44,7 +50,7 @@ public class MyBatisInvestigationAuthorityStore implements InvestigationAuthorit
             throw new IllegalStateException("AUTHORITY_CREATE_CONFLICT");
         }
         insertRevision(snapshot, encoded);
-        appendHistories(snapshot, 0L, Set.of());
+        appendHistories(snapshot, 0L, Set.of(), true);
     }
 
     @Override
@@ -57,12 +63,14 @@ public class MyBatisInvestigationAuthorityStore implements InvestigationAuthorit
         String investigationId = snapshot.investigationId().value();
         Long lastAuditSequence = dao.findMaxAuditSequence(investigationId);
         Set<String> toolUseIds = new HashSet<>(dao.findToolUseIds(investigationId));
+        boolean progressAdmitted = progressDao.hasAdmission(investigationId);
         EncodedSnapshot encoded = encode(snapshot);
         if (dao.updateHead(head(snapshot, encoded), expectedVersion) != 1) {
             throw new IllegalStateException("AUTHORITY_VERSION_CONFLICT");
         }
         insertRevision(snapshot, encoded);
-        appendHistories(snapshot, lastAuditSequence == null ? 0L : lastAuditSequence, toolUseIds);
+        appendHistories(snapshot, lastAuditSequence == null ? 0L : lastAuditSequence, toolUseIds,
+                progressAdmitted);
     }
 
     @Override
@@ -97,7 +105,7 @@ public class MyBatisInvestigationAuthorityStore implements InvestigationAuthorit
     }
 
     private void appendHistories(InvestigationAuthority.Snapshot snapshot, long lastAuditSequence,
-            Set<String> existingToolUseIds) {
+            Set<String> existingToolUseIds, boolean progressAdmitted) {
         for (InvestigationAuthority.AuditRecord record : snapshot.audit()) {
             if (record.sequence() > lastAuditSequence) {
                 AuthorityAuditRow row = new AuthorityAuditRow(record.id().value(),
@@ -105,6 +113,10 @@ public class MyBatisInvestigationAuthorityStore implements InvestigationAuthorit
                         record.kind().name(), record.entityId().value(), record.reasonCode(),
                         utc(record.occurredAt()));
                 requireInserted(dao.insertAudit(row), "AUTHORITY_AUDIT_CONFLICT");
+                if (progressAdmitted) {
+                    requireInserted(progressDao.insertIntent(progressIntentFactory.create(snapshot, record)),
+                            "AUTHORITY_PROGRESS_INTENT_CONFLICT");
+                }
             }
         }
         for (InvestigationAuthority.ToolUseState toolUse : snapshot.toolUses()) {

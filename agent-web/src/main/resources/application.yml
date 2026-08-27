@@ -81,6 +81,9 @@ dpom:
         topic: ${DPOM_KAFKA_DIAGNOSIS_TOPIC:dpom.diagnosis-event.v2}
         producer-identity: ${DPOM_KAFKA_PRODUCER_IDENTITY:}
         acknowledgement-timeout: ${DPOM_KAFKA_ACK_TIMEOUT:5s}
+        # Progress 有独立 admission 开关，默认关闭；只读取事务冻结的 authority_progress_intent。
+        progress-enabled: ${DPOM_KAFKA_PROGRESS_ENABLED:false}
+        progress-topic: ${DPOM_KAFKA_PROGRESS_TOPIC:dpom.diagnosis-progress.v1}
     replay:
       enabled: ${DPOM_EVALUATION_REPLAY_ENABLED:false}
   flyway:

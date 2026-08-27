@@ -21,6 +21,7 @@ class DiagnosisEventPropertiesTest {
             assertThat(context).hasNotFailed();
             DiagnosisEventProperties properties = context.getBean(DiagnosisEventProperties.class);
             assertThat(properties.getDelivery().isEnabled()).isFalse();
+            assertThat(properties.getDelivery().getKafka().isProgressEnabled()).isFalse();
             assertThat(properties.getReplay().isEnabled()).isFalse();
         });
     }
@@ -58,6 +59,20 @@ class DiagnosisEventPropertiesTest {
         assertStartupFailure("dpom.evaluation.replay.enabled=true",
                 "dpom.evaluation.replay.hmac-secret=abcdef0123456789abcdef0123456789",
                 "dpom.evaluation.replay.nonce-ttl=0s", "INVALID_REPLAY_BOUNDS");
+    }
+
+    @Test
+    void progressAdmissionRequiresKafkaModeAndFixedTopic() {
+        assertStartupFailure("dpom.evaluation.delivery.enabled=true",
+                "dpom.evaluation.delivery.destination=https://evaluation.example/events",
+                "dpom.evaluation.delivery.hmac-secret=0123456789abcdef0123456789abcdef",
+                "dpom.evaluation.delivery.kafka.progress-enabled=true", "PROGRESS_REQUIRES_KAFKA_MODE");
+        assertStartupFailure("dpom.evaluation.delivery.enabled=true",
+                "dpom.evaluation.delivery.mode=KAFKA",
+                "dpom.evaluation.delivery.kafka.bootstrap-servers=localhost:9092",
+                "dpom.evaluation.delivery.kafka.producer-identity=dpom-agent-test",
+                "dpom.evaluation.delivery.kafka.progress-enabled=true",
+                "dpom.evaluation.delivery.kafka.progress-topic=wrong-topic", "INVALID_KAFKA_PROGRESS_CONFIG");
     }
 
     private void assertStartupFailure(String... valuesAndExpectedMessage) {

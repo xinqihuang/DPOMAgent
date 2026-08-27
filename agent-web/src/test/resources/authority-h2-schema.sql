@@ -56,6 +56,44 @@ CREATE TABLE IF NOT EXISTS authority_audit (
     FOREIGN KEY (investigation_id) REFERENCES authority_investigation_head (investigation_id)
 );
 
+CREATE TABLE IF NOT EXISTS authority_progress_intent (
+    progress_id VARCHAR(36) PRIMARY KEY,
+    audit_id VARCHAR(128) NOT NULL UNIQUE,
+    investigation_id VARCHAR(128) NOT NULL,
+    run_id VARCHAR(128),
+    progress_sequence BIGINT NOT NULL,
+    aggregate_version BIGINT NOT NULL,
+    authority_epoch VARCHAR(128) NOT NULL,
+    topic_name VARCHAR(128) NOT NULL,
+    idempotency_key VARCHAR(128) NOT NULL UNIQUE,
+    schema_version VARCHAR(16) NOT NULL,
+    canonical_content CLOB NOT NULL,
+    canonical_sha256 CHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    attempt_count INT NOT NULL DEFAULT 0,
+    eligible_at TIMESTAMP(6) NOT NULL,
+    lease_expires_at TIMESTAMP(6),
+    lease_owner VARCHAR(128),
+    lease_token VARCHAR(64),
+    last_error_code VARCHAR(64),
+    delivered_at TIMESTAMP(6),
+    created_at TIMESTAMP(6) NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL,
+    UNIQUE (investigation_id, progress_sequence),
+    FOREIGN KEY (audit_id) REFERENCES authority_audit (audit_id),
+    FOREIGN KEY (investigation_id) REFERENCES authority_investigation_head (investigation_id)
+);
+
+CREATE TABLE IF NOT EXISTS authority_progress_attempt (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    progress_id VARCHAR(36) NOT NULL,
+    attempt_number INT NOT NULL,
+    outcome VARCHAR(32) NOT NULL,
+    error_code VARCHAR(64),
+    created_at TIMESTAMP(6) NOT NULL,
+    FOREIGN KEY (progress_id) REFERENCES authority_progress_intent (progress_id)
+);
+
 CREATE TABLE IF NOT EXISTS authority_diagnosis_source (
     source_id VARCHAR(128) PRIMARY KEY,
     investigation_id VARCHAR(128) NOT NULL UNIQUE,

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpom.agent.core.persistence.authority.AuthorityProgressDao">
+    <resultMap id="intentResult" type="com.dpom.agent.core.persistence.authority.ProgressPublicationIntentRow">
+        <constructor>
+            <idArg column="progress_id" javaType="java.lang.String"/>
+            <arg column="audit_id" javaType="java.lang.String"/>
+            <arg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="run_id" javaType="java.lang.String"/>
+            <arg column="progress_sequence" javaType="_long"/>
+            <arg column="aggregate_version" javaType="_long"/>
+            <arg column="authority_epoch" javaType="java.lang.String"/>
+            <arg column="topic_name" javaType="java.lang.String"/>
+            <arg column="idempotency_key" javaType="java.lang.String"/>
+            <arg column="schema_version" javaType="java.lang.String"/>
+            <arg column="canonical_content" javaType="java.lang.String"/>
+            <arg column="canonical_sha256" javaType="java.lang.String"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="attempt_count" javaType="_int"/>
+            <arg column="eligible_at" javaType="java.time.LocalDateTime"/>
+            <arg column="lease_expires_at" javaType="java.time.LocalDateTime"/>
+            <arg column="lease_owner" javaType="java.lang.String"/>
+            <arg column="lease_token" javaType="java.lang.String"/>
+            <arg column="last_error_code" javaType="java.lang.String"/>
+            <arg column="delivered_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="columns">
+        progress_id, audit_id, investigation_id, run_id, progress_sequence, aggregate_version,
+        authority_epoch, topic_name, idempotency_key, schema_version, canonical_content,
+        canonical_sha256, status, attempt_count, eligible_at, lease_expires_at, lease_owner,
+        lease_token, last_error_code, delivered_at, created_at, updated_at
+    </sql>
+
+    <insert id="insertIntent">
+        INSERT INTO authority_progress_intent (
+            progress_id, audit_id, investigation_id, run_id, progress_sequence, aggregate_version,
+            authority_epoch, topic_name, idempotency_key, schema_version, canonical_content,
+            canonical_sha256, status, attempt_count, eligible_at, created_at, updated_at
+        ) VALUES (
+            #{progressId}, #{auditId}, #{investigationId}, #{runId}, #{progressSequence}, #{aggregateVersion},
+            #{authorityEpoch}, #{topicName}, #{idempotencyKey}, #{schemaVersion}, #{canonicalContent},
+            #{canonicalSha256}, #{status}, #{attemptCount}, #{eligibleAt}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <select id="hasAdmission" resultType="_boolean">
+        SELECT CASE WHEN COUNT(*) = 1 THEN TRUE ELSE FALSE END
+        FROM authority_progress_intent
+        WHERE investigation_id=#{investigationId} AND progress_sequence=1
+    </select>
+
+    <select id="findIntent" resultMap="intentResult">
+        SELECT <include refid="columns"/> FROM authority_progress_intent WHERE progress_id=#{progressId}
+    </select>
+
+    <select id="findReadyIntentIds" resultType="java.lang.String">
+        SELECT candidate.progress_id
+        FROM authority_progress_intent candidate
+        WHERE candidate.status='PENDING' AND candidate.eligible_at &lt;= #{now}
+          AND NOT EXISTS (
+            SELECT 1 FROM authority_progress_intent earlier
+            WHERE earlier.investigation_id=candidate.investigation_id
+              AND earlier.progress_sequence &lt; candidate.progress_sequence
+              AND earlier.status &lt;&gt; 'DELIVERED'
+          )
+        ORDER BY candidate.investigation_id, candidate.progress_sequence
+        LIMIT #{limit}
+    </select>
+
+    <update id="acquireIntentLease">
+        UPDATE authority_progress_intent
+        SET status='IN_FLIGHT', attempt_count=attempt_count+1, lease_owner=#{owner}, lease_token=#{token},
+            lease_expires_at=#{expiresAt}, updated_at=#{now}
+        WHERE progress_id=#{progressId} AND status='PENDING' AND eligible_at &lt;= #{now}
+    </update>
+
+    <update id="recoverExpiredIntents">
+        UPDATE authority_progress_intent
+        SET status='PENDING', eligible_at=#{now}, lease_owner=NULL, lease_token=NULL, lease_expires_at=NULL,
+            last_error_code='LEASE_EXPIRED', updated_at=#{now}
+        WHERE status='IN_FLIGHT' AND lease_expires_at &lt;= #{now}
+    </update>
+
+    <update id="markIntentDelivered">
+        UPDATE authority_progress_intent
+        SET status='DELIVERED', delivered_at=#{now}, lease_owner=NULL, lease_token=NULL,
+            lease_expires_at=NULL, last_error_code=NULL, updated_at=#{now}
+        WHERE progress_id=#{progressId} AND status='IN_FLIGHT' AND lease_token=#{token}
+          AND lease_expires_at &gt; #{now}
+    </update>
+
+    <update id="retryIntent">
+        UPDATE authority_progress_intent
+        SET status='PENDING', eligible_at=#{eligibleAt}, lease_owner=NULL, lease_token=NULL,
+            lease_expires_at=NULL, last_error_code=#{errorCode}, updated_at=#{now}
+        WHERE progress_id=#{progressId} AND status='IN_FLIGHT' AND lease_token=#{token}
+          AND lease_expires_at &gt; #{now}
+    </update>
+
+    <update id="deadIntent">
+        UPDATE authority_progress_intent
+        SET status='DEAD', lease_owner=NULL, lease_token=NULL, lease_expires_at=NULL,
+            last_error_code=#{errorCode}, updated_at=#{now}
+        WHERE progress_id=#{progressId} AND status='IN_FLIGHT' AND lease_token=#{token}
+          AND lease_expires_at &gt; #{now}
+    </update>
+
+    <update id="replayDeadIntent">
+        UPDATE authority_progress_intent
+        SET status='PENDING', attempt_count=0, eligible_at=#{now}, lease_owner=NULL, lease_token=NULL,
+            lease_expires_at=NULL, last_error_code=NULL, delivered_at=NULL, updated_at=#{now}
+        WHERE progress_id=#{progressId} AND status='DEAD'
+    </update>
+
+    <insert id="appendIntentAttempt">
+        INSERT INTO authority_progress_attempt
+            (progress_id, attempt_number, outcome, error_code, created_at)
+        VALUES (#{progressId}, #{attemptNumber}, #{outcome}, #{errorCode}, #{createdAt})
+    </insert>
+
+    <select id="countIntentsByStatus" resultType="_int">
+        SELECT COUNT(*) FROM authority_progress_intent WHERE status=#{status}
+    </select>
+</mapper>

@@ -4,6 +4,7 @@ import com.dpom.agent.core.authority.AuthorityId;
 import com.dpom.agent.core.authority.InvestigationAuthority;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.dpom.agent.core.diagnosisprogress.AuthorityProgressIntentFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,13 +26,16 @@ import static org.mockito.Mockito.when;
 class MyBatisInvestigationAuthorityStoreTest {
 
     private InvestigationAuthorityDao dao;
+    private AuthorityProgressDao progressDao;
     private MyBatisInvestigationAuthorityStore store;
 
     @BeforeEach
     void setUp() {
         dao = mock(InvestigationAuthorityDao.class);
+        progressDao = mock(AuthorityProgressDao.class);
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-        store = new MyBatisInvestigationAuthorityStore(dao, objectMapper);
+        store = new MyBatisInvestigationAuthorityStore(dao, progressDao,
+                new AuthorityProgressIntentFactory(objectMapper, "phase1b-test"), objectMapper);
     }
 
     @Test
@@ -40,6 +44,8 @@ class MyBatisInvestigationAuthorityStoreTest {
         when(dao.insertHead(any())).thenReturn(1);
         when(dao.insertRevision(any())).thenReturn(1);
         when(dao.insertAudit(any())).thenReturn(1);
+        when(progressDao.insertIntent(any())).thenReturn(1);
+        when(progressDao.hasAdmission(any())).thenReturn(true);
 
         store.create(authority);
 
@@ -61,6 +67,8 @@ class MyBatisInvestigationAuthorityStoreTest {
         when(dao.insertHead(any())).thenReturn(1);
         when(dao.insertRevision(any())).thenReturn(1);
         when(dao.insertAudit(any())).thenReturn(1);
+        when(progressDao.insertIntent(any())).thenReturn(1);
+        when(progressDao.hasAdmission(any())).thenReturn(true);
         store.create(authority);
         ArgumentCaptor<AuthorityHeadRow> captor = ArgumentCaptor.forClass(AuthorityHeadRow.class);
         verify(dao).insertHead(captor.capture());
