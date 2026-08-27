@@ -13,6 +13,31 @@
             <arg column="committed_at" javaType="java.time.LocalDateTime"/>
         </constructor>
     </resultMap>
+    <resultMap id="intentResult" type="com.dpom.agent.core.persistence.authority.PublicationIntentRow">
+        <constructor>
+            <idArg column="intent_id" javaType="java.lang.String"/>
+            <arg column="investigation_id" javaType="java.lang.String"/>
+            <arg column="aggregate_sequence" javaType="_long"/>
+            <arg column="event_type" javaType="java.lang.String"/>
+            <arg column="source_id" javaType="java.lang.String"/>
+            <arg column="source_sha256" javaType="java.lang.String"/>
+            <arg column="topic_name" javaType="java.lang.String"/>
+            <arg column="idempotency_key" javaType="java.lang.String"/>
+            <arg column="schema_version" javaType="java.lang.String"/>
+            <arg column="canonical_content" javaType="java.lang.String"/>
+            <arg column="canonical_sha256" javaType="java.lang.String"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="attempt_count" javaType="_int"/>
+            <arg column="eligible_at" javaType="java.time.LocalDateTime"/>
+            <arg column="lease_expires_at" javaType="java.time.LocalDateTime"/>
+            <arg column="lease_owner" javaType="java.lang.String"/>
+            <arg column="lease_token" javaType="java.lang.String"/>
+            <arg column="last_error_code" javaType="java.lang.String"/>
+            <arg column="delivered_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
 
     <insert id="insertSource">
         INSERT INTO authority_diagnosis_source (
@@ -27,10 +52,12 @@
     <insert id="insertIntent">
         INSERT INTO authority_publication_intent (
             intent_id, investigation_id, aggregate_sequence, event_type, source_id,
-            source_sha256, status, eligible_at, created_at
+            source_sha256, topic_name, idempotency_key, schema_version, canonical_content,
+            canonical_sha256, status, attempt_count, eligible_at, created_at, updated_at
         ) VALUES (
             #{intentId}, #{investigationId}, #{aggregateSequence}, #{eventType}, #{sourceId},
-            #{sourceSha256}, #{status}, #{eligibleAt}, #{createdAt}
+            #{sourceSha256}, #{topicName}, #{idempotencyKey}, #{schemaVersion}, #{canonicalContent},
+            #{canonicalSha256}, #{status}, #{attemptCount}, #{eligibleAt}, #{createdAt}, #{updatedAt}
         )
     </insert>
 
@@ -39,6 +66,84 @@
                source_json, source_sha256, document_sha256, committed_at
         FROM authority_diagnosis_source
         WHERE investigation_id = #{investigationId}
+    </select>
+
+    <select id="findIntent" resultMap="intentResult">
+        SELECT intent_id, investigation_id, aggregate_sequence, event_type, source_id, source_sha256,
+               topic_name, idempotency_key, schema_version, canonical_content, canonical_sha256,
+               status, attempt_count, eligible_at, lease_expires_at, lease_owner, lease_token,
+               last_error_code, delivered_at, created_at, updated_at
+        FROM authority_publication_intent
+        WHERE investigation_id = #{investigationId}
+    </select>
+
+    <select id="findReadyIntentIds" resultType="java.lang.String">
+        SELECT intent_id FROM authority_publication_intent
+        WHERE status = 'PENDING' AND eligible_at &lt;= #{now}
+        ORDER BY investigation_id, aggregate_sequence, created_at LIMIT #{limit}
+    </select>
+
+    <select id="findIntentById" resultMap="intentResult">
+        SELECT intent_id, investigation_id, aggregate_sequence, event_type, source_id, source_sha256,
+               topic_name, idempotency_key, schema_version, canonical_content, canonical_sha256,
+               status, attempt_count, eligible_at, lease_expires_at, lease_owner, lease_token,
+               last_error_code, delivered_at, created_at, updated_at
+        FROM authority_publication_intent WHERE intent_id = #{intentId}
+    </select>
+
+    <update id="acquireIntentLease">
+        UPDATE authority_publication_intent
+        SET status='IN_FLIGHT', attempt_count=attempt_count+1, lease_owner=#{owner}, lease_token=#{token},
+            lease_expires_at=#{expiresAt}, updated_at=#{now}
+        WHERE intent_id=#{intentId} AND status='PENDING' AND eligible_at &lt;= #{now}
+    </update>
+
+    <update id="recoverExpiredIntents">
+        UPDATE authority_publication_intent
+        SET status='PENDING', eligible_at=#{now}, lease_owner=NULL, lease_token=NULL, lease_expires_at=NULL,
+            last_error_code='LEASE_EXPIRED', updated_at=#{now}
+        WHERE status='IN_FLIGHT' AND lease_expires_at &lt;= #{now}
+    </update>
+
+    <update id="markIntentDelivered">
+        UPDATE authority_publication_intent
+        SET status='DELIVERED', delivered_at=#{now}, lease_owner=NULL, lease_token=NULL,
+            lease_expires_at=NULL, last_error_code=NULL, updated_at=#{now}
+        WHERE intent_id=#{intentId} AND status='IN_FLIGHT' AND lease_token=#{token}
+              AND lease_expires_at &gt; #{now}
+    </update>
+
+    <update id="retryIntent">
+        UPDATE authority_publication_intent
+        SET status='PENDING', eligible_at=#{eligibleAt}, lease_owner=NULL, lease_token=NULL,
+            lease_expires_at=NULL, last_error_code=#{errorCode}, updated_at=#{now}
+        WHERE intent_id=#{intentId} AND status='IN_FLIGHT' AND lease_token=#{token}
+              AND lease_expires_at &gt; #{now}
+    </update>
+
+    <update id="deadIntent">
+        UPDATE authority_publication_intent
+        SET status='DEAD', lease_owner=NULL, lease_token=NULL, lease_expires_at=NULL,
+            last_error_code=#{errorCode}, updated_at=#{now}
+        WHERE intent_id=#{intentId} AND status='IN_FLIGHT' AND lease_token=#{token}
+              AND lease_expires_at &gt; #{now}
+    </update>
+
+    <update id="replayDeadIntent">
+        UPDATE authority_publication_intent
+        SET status='PENDING', attempt_count=0, eligible_at=#{now}, lease_owner=NULL, lease_token=NULL,
+            lease_expires_at=NULL, last_error_code=NULL, delivered_at=NULL, updated_at=#{now}
+        WHERE intent_id=#{intentId} AND status='DEAD'
+    </update>
+
+    <insert id="appendIntentAttempt">
+        INSERT INTO authority_publication_attempt
+            (intent_id, attempt_number, transport, outcome, error_code, created_at)
+        VALUES (#{intentId}, #{attemptNumber}, #{transport}, #{outcome}, #{errorCode}, #{createdAt})
+    </insert>
+
+    <select id="countIntentsByStatus" resultType="_int">
+        SELECT COUNT(*) FROM authority_publication_intent WHERE status = #{status}
     </select>
 
     <select id="countPendingIntents" resultType="_int">

@@ -23,19 +23,45 @@ public class DiagnosisEventProperties {
         if (!delivery.enabled) {
             return;
         }
-        URI uri = delivery.destination;
-        if (uri == null || !"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null
-                || uri.getRawUserInfo() != null || uri.getRawQuery() != null || uri.getRawFragment() != null) {
-            throw new IllegalStateException("INVALID_HTTPS_DESTINATION");
+        if (delivery.mode == null) {
+            throw new IllegalStateException("MISSING_DELIVERY_MODE");
         }
-        requireStrongSecret(delivery.hmacSecret, "WEAK_DELIVERY_HMAC_SECRET");
+        if (delivery.mode == DeliveryMode.KAFKA) {
+            validateKafkaDelivery();
+        } else {
+            validateHttpDelivery();
+        }
         if (delivery.maxAttempts < 1 || delivery.batchSize < 1 || delivery.maxAcknowledgementBytes < 1
+                || delivery.maxBacklog < delivery.batchSize || delivery.maxBacklog > 1_000_000
                 || !positive(delivery.maxEventAge) || !positive(delivery.baseDelay) || !positive(delivery.maxDelay)
                 || !positive(delivery.leaseDuration) || !positive(delivery.connectTimeout)
                 || !positive(delivery.readTimeout) || !positive(delivery.pollDelay)
                 || delivery.baseDelay.compareTo(delivery.maxDelay) > 0) {
             throw new IllegalStateException("INVALID_DELIVERY_BOUNDS");
         }
+    }
+
+    private void validateHttpDelivery() {
+        URI uri = delivery.destination;
+        if (uri == null || !"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null
+                || uri.getRawUserInfo() != null || uri.getRawQuery() != null || uri.getRawFragment() != null) {
+            throw new IllegalStateException("INVALID_HTTPS_DESTINATION");
+        }
+        requireStrongSecret(delivery.hmacSecret, "WEAK_DELIVERY_HMAC_SECRET");
+    }
+
+    private void validateKafkaDelivery() {
+        Kafka kafka = delivery.kafka;
+        if (kafka.bootstrapServers == null || kafka.bootstrapServers.isEmpty()
+                || !"dpom.diagnosis-event.v2".equals(kafka.topic)
+                || !identifier(kafka.producerIdentity) || !positive(kafka.acknowledgementTimeout)) {
+            throw new IllegalStateException("INVALID_KAFKA_DELIVERY_CONFIG");
+        }
+    }
+
+    private boolean identifier(String value) {
+        return value != null && value.length() <= 128
+                && value.matches("[A-Za-z0-9][A-Za-z0-9._:-]*");
     }
 
     /** 校验启用的重放认证配置。 */
@@ -63,8 +89,10 @@ public class DiagnosisEventProperties {
     /** 外部投递配置，默认关闭。 */
     public static class Delivery {
         private boolean enabled;
+        private DeliveryMode mode = DeliveryMode.HTTP;
         private URI destination;
         private String hmacSecret = "";
+        private final Kafka kafka = new Kafka();
         private int maxAttempts = 5;
         private Duration maxEventAge = Duration.ofDays(1);
         private Duration baseDelay = Duration.ofSeconds(1);
@@ -75,9 +103,12 @@ public class DiagnosisEventProperties {
         private Duration pollDelay = Duration.ofSeconds(1);
         private int batchSize = 20;
         private int maxAcknowledgementBytes = 4096;
+        private int maxBacklog = 10_000;
 
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public DeliveryMode getMode() { return mode; }
+        public void setMode(DeliveryMode mode) { this.mode = mode; }
         public URI getDestination() { return destination; }
         public void setDestination(URI destination) { this.destination = destination; }
         public String getHmacSecret() { return hmacSecret; }
@@ -102,6 +133,31 @@ public class DiagnosisEventProperties {
         public void setBatchSize(int batchSize) { this.batchSize = batchSize; }
         public int getMaxAcknowledgementBytes() { return maxAcknowledgementBytes; }
         public void setMaxAcknowledgementBytes(int value) { this.maxAcknowledgementBytes = value; }
+        public int getMaxBacklog() { return maxBacklog; }
+        public void setMaxBacklog(int value) { maxBacklog = value; }
+        public Kafka getKafka() { return kafka; }
+    }
+
+    /** 单一活动传输，切换不会改变冻结事件。 */
+    public enum DeliveryMode { HTTP, KAFKA }
+
+    /** Kafka v2 生产者边界，默认没有 broker 地址且不可装配。 */
+    public static class Kafka {
+        private java.util.List<String> bootstrapServers = java.util.List.of();
+        private String topic = "dpom.diagnosis-event.v2";
+        private String producerIdentity = "";
+        private Duration acknowledgementTimeout = Duration.ofSeconds(5);
+
+        public java.util.List<String> getBootstrapServers() { return java.util.List.copyOf(bootstrapServers); }
+        public void setBootstrapServers(java.util.List<String> value) {
+            bootstrapServers = value == null ? java.util.List.of() : java.util.List.copyOf(value);
+        }
+        public String getTopic() { return topic; }
+        public void setTopic(String topic) { this.topic = topic; }
+        public String getProducerIdentity() { return producerIdentity; }
+        public void setProducerIdentity(String value) { producerIdentity = value; }
+        public Duration getAcknowledgementTimeout() { return acknowledgementTimeout; }
+        public void setAcknowledgementTimeout(Duration value) { acknowledgementTimeout = value; }
     }
 
     /** 内部重放认证配置，默认关闭。 */

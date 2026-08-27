@@ -115,11 +115,24 @@ CREATE TABLE IF NOT EXISTS authority_publication_intent (
     event_type VARCHAR(64) NOT NULL,
     source_id VARCHAR(128) NOT NULL,
     source_sha256 CHAR(64) NOT NULL,
+    topic_name VARCHAR(128) NOT NULL,
+    idempotency_key VARCHAR(200) NOT NULL,
+    schema_version VARCHAR(16) NOT NULL,
+    canonical_content MEDIUMTEXT NOT NULL,
+    canonical_sha256 CHAR(64) NOT NULL,
     status VARCHAR(32) NOT NULL,
+    attempt_count INT NOT NULL DEFAULT 0,
     eligible_at DATETIME(6) NOT NULL,
+    lease_expires_at DATETIME(6) NULL,
+    lease_owner VARCHAR(128) NULL,
+    lease_token VARCHAR(64) NULL,
+    last_error_code VARCHAR(64) NULL,
+    delivered_at DATETIME(6) NULL,
     created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
     PRIMARY KEY (intent_id),
     UNIQUE KEY uk_authority_intent_source_event (source_id, event_type),
+    UNIQUE KEY uk_authority_intent_idempotency (idempotency_key),
     KEY idx_authority_intent_ready (status, eligible_at),
     CONSTRAINT fk_authority_intent_head FOREIGN KEY (investigation_id)
         REFERENCES authority_investigation_head (investigation_id),
@@ -128,5 +141,19 @@ CREATE TABLE IF NOT EXISTS authority_publication_intent (
     CONSTRAINT chk_authority_intent_sequence CHECK (aggregate_sequence >= 0),
     CONSTRAINT chk_authority_intent_digest CHECK (
         source_sha256 REGEXP '^[0-9a-f]{64}$'
+        AND canonical_sha256 REGEXP '^[0-9a-f]{64}$'
     )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS authority_publication_attempt (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    intent_id VARCHAR(128) NOT NULL,
+    attempt_number INT NOT NULL,
+    transport VARCHAR(16) NOT NULL,
+    outcome VARCHAR(32) NOT NULL,
+    error_code VARCHAR(64) NULL,
+    created_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_authority_attempt_intent FOREIGN KEY (intent_id)
+        REFERENCES authority_publication_intent (intent_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

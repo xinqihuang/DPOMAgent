@@ -30,6 +30,7 @@ class AuthorityRealMysqlPersistenceContractTest extends AbstractAuthorityPersist
 
     @Override
     void beforeSchema() {
+        jdbcTemplate.execute("DROP TABLE IF EXISTS authority_publication_attempt");
         jdbcTemplate.execute("DROP TABLE IF EXISTS authority_publication_intent");
         jdbcTemplate.execute("DROP TABLE IF EXISTS authority_diagnosis_source");
         jdbcTemplate.execute("DROP TABLE IF EXISTS authority_audit");

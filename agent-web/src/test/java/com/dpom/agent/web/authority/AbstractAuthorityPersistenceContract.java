@@ -1,14 +1,19 @@
 package com.dpom.agent.web.authority;
 
+import com.dpom.agent.common.diagnosisevent.DeliveryAcknowledgement;
+import com.dpom.agent.common.diagnosisevent.DeliveryOutcome;
 import com.dpom.agent.core.authority.AuthorityId;
 import com.dpom.agent.core.authority.InvestigationAuthority;
 import com.dpom.agent.core.authority.InvestigationAuthorityStore;
+import com.dpom.agent.core.diagnosisevent.AuthorityPublicationDeliveryService;
+import com.dpom.agent.core.diagnosisevent.DiagnosisDeliveryPolicy;
 import com.dpom.agent.core.diagnosissource.DiagnosisTerminalCommitService;
 import com.dpom.agent.core.investigation.InvestigationStatus;
 import com.dpom.agent.core.persistence.authority.AuthorityTerminalDao;
 import com.dpom.agent.core.persistence.authority.AuthorityRevisionRow;
 import com.dpom.agent.core.persistence.authority.DiagnosisSourceRow;
 import com.dpom.agent.core.persistence.authority.InvestigationAuthorityDao;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +21,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -34,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 abstract class AbstractAuthorityPersistenceContract {
 
     private static final List<String> TABLES = List.of(
-            "authority_publication_intent", "authority_diagnosis_source",
+            "authority_publication_attempt", "authority_publication_intent", "authority_diagnosis_source",
             "authority_audit", "authority_tool_use", "authority_investigation_revision",
             "authority_investigation_head");
 
@@ -52,6 +59,12 @@ abstract class AbstractAuthorityPersistenceContract {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    PlatformTransactionManager transactionManager;
 
     /** 返回当前数据库方言的受控建表脚本。 */
     abstract Resource schemaResource();
@@ -169,7 +182,7 @@ abstract class AbstractAuthorityPersistenceContract {
     }
 
     @Test
-    void atomicallyCommitsTerminalSourceAndPublicationIntent() {
+    void atomicallyCommitsTerminalSourceAndPublicationIntent() throws Exception {
         InvestigationAuthority authority = terminalAuthority();
         AuthorityId id = authority.snapshot().investigationId();
         InvestigationAuthority initial = newAuthority(id, authority.snapshot().incident());
@@ -180,6 +193,16 @@ abstract class AbstractAuthorityPersistenceContract {
         assertThat(source.sourceDigest()).matches("[0-9a-f]{64}");
         assertThat(terminalDao.findSource(id.value())).isPresent();
         assertThat(terminalDao.countPendingIntents(id.value())).isOne();
+        var intent = terminalDao.findIntent(id.value()).orElseThrow();
+        assertThat(intent.topicName()).isEqualTo("dpom.diagnosis-event.v2");
+        assertThat(intent.schemaVersion()).isEqualTo("2.0");
+        assertThat(intent.attemptCount()).isZero();
+        assertThat(intent.canonicalSha256()).matches("[0-9a-f]{64}");
+        assertThat(intent.canonicalContent()).contains("\"sourceAuthority\"")
+                .contains("\"publicationIntentId\":\"" + intent.intentId() + "\"")
+                .doesNotContain("password");
+        assertThat(objectMapper.readTree(intent.canonicalContent()).path("investigationId").asText())
+                .isEqualTo(id.value());
         assertThat(store.find(id).orElseThrow().snapshot()).isEqualTo(authority.snapshot());
     }
 
@@ -197,6 +220,67 @@ abstract class AbstractAuthorityPersistenceContract {
         assertThat(store.find(id).orElseThrow().version()).isZero();
         assertThat(terminalDao.findSource(id.value())).isEmpty();
         assertThat(terminalDao.countPendingIntents(id.value())).isZero();
+    }
+
+    @Test
+    void authorityOutboxSurvivesRetryAndWorkerRestartWithoutChangingFrozenContent() {
+        InvestigationAuthority authority = terminalAuthority();
+        AuthorityId id = authority.snapshot().investigationId();
+        store.create(newAuthority(id, authority.snapshot().incident()));
+        terminalCommitService.commit(authority, 0L);
+        var original = terminalDao.findIntent(id.value()).orElseThrow();
+        var policy = new DiagnosisDeliveryPolicy(3, Duration.ofHours(1), Duration.ofSeconds(1),
+                Duration.ofSeconds(4), Duration.ofSeconds(10), 10);
+        Clock firstClock = Clock.fixed(Instant.parse("2026-08-27T01:01:00Z"), java.time.ZoneOffset.UTC);
+        var failing = new AuthorityPublicationDeliveryService(terminalDao, request -> {
+            throw new IllegalStateException("broker unavailable");
+        }, policy, firstClock, objectMapper, transactionManager, "KAFKA");
+
+        failing.deliverReady("worker-before-restart");
+
+        var pending = terminalDao.findIntent(id.value()).orElseThrow();
+        assertThat(pending.status()).isEqualTo("PENDING");
+        assertThat(pending.attemptCount()).isOne();
+        assertThat(pending.canonicalContent()).isEqualTo(original.canonicalContent());
+        Clock restartedClock = Clock.fixed(Instant.parse("2026-08-27T01:01:02Z"), java.time.ZoneOffset.UTC);
+        var restarted = new AuthorityPublicationDeliveryService(terminalDao,
+                request -> new DeliveryAcknowledgement(DeliveryOutcome.ACCEPTED, null),
+                policy, restartedClock, objectMapper, transactionManager, "KAFKA");
+        restarted.deliverReady("worker-after-restart");
+
+        var delivered = terminalDao.findIntent(id.value()).orElseThrow();
+        assertThat(delivered.status()).isEqualTo("DELIVERED");
+        assertThat(delivered.attemptCount()).isEqualTo(2);
+        assertThat(delivered.canonicalContent()).isEqualTo(original.canonicalContent());
+        assertThat(delivered.canonicalSha256()).isEqualTo(original.canonicalSha256());
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM authority_publication_attempt WHERE intent_id=?", Integer.class,
+                delivered.intentId())).isEqualTo(2);
+    }
+
+    @Test
+    void deadAuthorityOutboxCanBeReplayedWithoutRegeneratingCanonicalEvent() {
+        InvestigationAuthority authority = terminalAuthority();
+        AuthorityId id = authority.snapshot().investigationId();
+        store.create(newAuthority(id, authority.snapshot().incident()));
+        terminalCommitService.commit(authority, 0L);
+        var original = terminalDao.findIntent(id.value()).orElseThrow();
+        var policy = new DiagnosisDeliveryPolicy(1, Duration.ofHours(1), Duration.ofSeconds(1),
+                Duration.ofSeconds(1), Duration.ofSeconds(10), 10);
+        Clock clock = Clock.fixed(Instant.parse("2026-08-27T01:01:00Z"), java.time.ZoneOffset.UTC);
+        var service = new AuthorityPublicationDeliveryService(terminalDao,
+                request -> new DeliveryAcknowledgement(DeliveryOutcome.PERMANENT_REJECTION, "REMOTE_REJECTED"),
+                policy, clock, objectMapper, transactionManager, "HTTP");
+        service.deliverReady("worker-dead");
+        assertThat(terminalDao.findIntent(id.value()).orElseThrow().status()).isEqualTo("DEAD");
+
+        assertThat(service.replay(original.intentId())).isTrue();
+
+        var replayed = terminalDao.findIntent(id.value()).orElseThrow();
+        assertThat(replayed.status()).isEqualTo("PENDING");
+        assertThat(replayed.attemptCount()).isZero();
+        assertThat(replayed.canonicalContent()).isEqualTo(original.canonicalContent());
+        assertThat(replayed.canonicalSha256()).isEqualTo(original.canonicalSha256());
     }
 
     @Test

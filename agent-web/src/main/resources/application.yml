@@ -63,12 +63,24 @@ dpom:
     api:
       enabled: ${DPOM_AUTHORITY_API_ENABLED:false}
     read-token: ${DPOM_AUTHORITY_READ_TOKEN:}
+    publication:
+      # SRE authority registry 必须显式允许相同 epoch 与 producer identity；传输默认仍关闭。
+      epoch: ${DPOM_AUTHORITY_EPOCH:phase1b-local}
+      producer-identity: ${DPOM_KAFKA_PRODUCER_IDENTITY:dpom-agent-local}
   investigation:
     # Phase 1B 切换与回滚演练已通过；默认停止新建。兼容窗口内回滚可显式设为 true，历史查询保持可用。
     legacy-admission-enabled: ${DPOM_AGENT_LEGACY_ADMISSION_ENABLED:false}
   evaluation:
     delivery:
       enabled: ${DPOM_EVALUATION_DELIVERY_ENABLED:false}
+      # HTTP 保留为回滚兼容路径；KAFKA 只接受冻结的 Diagnosis Event v2。
+      mode: ${DPOM_EVALUATION_DELIVERY_MODE:HTTP}
+      max-backlog: ${DPOM_EVALUATION_MAX_BACKLOG:10000}
+      kafka:
+        bootstrap-servers: ${DPOM_KAFKA_BOOTSTRAP_SERVERS:}
+        topic: ${DPOM_KAFKA_DIAGNOSIS_TOPIC:dpom.diagnosis-event.v2}
+        producer-identity: ${DPOM_KAFKA_PRODUCER_IDENTITY:}
+        acknowledgement-timeout: ${DPOM_KAFKA_ACK_TIMEOUT:5s}
     replay:
       enabled: ${DPOM_EVALUATION_REPLAY_ENABLED:false}
   flyway:

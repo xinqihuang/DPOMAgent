@@ -7,6 +7,7 @@ FROM (
     UNION ALL SELECT 'authority_audit'
     UNION ALL SELECT 'authority_diagnosis_source'
     UNION ALL SELECT 'authority_publication_intent'
+    UNION ALL SELECT 'authority_publication_attempt'
 ) required_table
 LEFT JOIN information_schema.tables actual
     ON actual.table_schema = DATABASE()
@@ -47,3 +48,9 @@ SELECT source.investigation_id, source.source_id
 FROM authority_diagnosis_source source
 LEFT JOIN authority_publication_intent intent ON intent.source_id = source.source_id
 WHERE intent.intent_id IS NULL OR intent.status <> 'PENDING';
+
+SELECT intent_id, canonical_sha256, topic_name, schema_version
+FROM authority_publication_intent
+WHERE canonical_sha256 NOT REGEXP '^[0-9a-f]{64}$'
+   OR topic_name <> 'dpom.diagnosis-event.v2'
+   OR schema_version NOT REGEXP '^2\\.[0-9]+$';

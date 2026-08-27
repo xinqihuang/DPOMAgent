@@ -76,10 +76,33 @@ CREATE TABLE IF NOT EXISTS authority_publication_intent (
     event_type VARCHAR(64) NOT NULL,
     source_id VARCHAR(128) NOT NULL,
     source_sha256 CHAR(64) NOT NULL,
+    topic_name VARCHAR(128) NOT NULL,
+    idempotency_key VARCHAR(200) NOT NULL UNIQUE,
+    schema_version VARCHAR(16) NOT NULL,
+    canonical_content CLOB NOT NULL,
+    canonical_sha256 CHAR(64) NOT NULL,
     status VARCHAR(32) NOT NULL,
+    attempt_count INT NOT NULL DEFAULT 0,
     eligible_at TIMESTAMP(6) NOT NULL,
+    lease_expires_at TIMESTAMP(6),
+    lease_owner VARCHAR(128),
+    lease_token VARCHAR(64),
+    last_error_code VARCHAR(64),
+    delivered_at TIMESTAMP(6),
     created_at TIMESTAMP(6) NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL,
     UNIQUE (source_id, event_type),
     FOREIGN KEY (investigation_id) REFERENCES authority_investigation_head (investigation_id),
     FOREIGN KEY (source_id) REFERENCES authority_diagnosis_source (source_id)
+);
+
+CREATE TABLE IF NOT EXISTS authority_publication_attempt (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    intent_id VARCHAR(128) NOT NULL,
+    attempt_number INT NOT NULL,
+    transport VARCHAR(16) NOT NULL,
+    outcome VARCHAR(32) NOT NULL,
+    error_code VARCHAR(64),
+    created_at TIMESTAMP(6) NOT NULL,
+    FOREIGN KEY (intent_id) REFERENCES authority_publication_intent (intent_id)
 );
