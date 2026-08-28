@@ -74,3 +74,18 @@ Date: 2026-08-28 (Asia/Shanghai)
   canonical replay, authorization/redaction and JSON/Markdown/Portal/HTML/PDF semantic equivalence.
 - The exact-commit clean-clone reactor builds reran those suites with zero failures. The cross-service gate is
   therefore complete without reading another repository's source or database at runtime.
+
+## Final remote-head verification (2026-08-28)
+
+| Repository / head | Verification | Result |
+|---|---|---|
+| DPOMAgent `9cd6b9d` | fresh GitHub clone, full Maven `verify` including Spring Boot repackage | PASS: 536 tests, 0 failures/errors, 50 gated skips; executable JAR produced |
+| DPOMBaseMCPServer `fd08e6d` | full Maven `verify` | PASS: 431 tests, 0 failures/errors, 1 gated skip |
+| SREIntelligenceService `9b8c242` | full Maven `verify` | PASS: 367 tests, 0 failures/errors, 6 gated skips |
+| HuaweiCloudAlarmChangeGuard `a8bbef4` | full Maven `verify` (the head-only delta is `.idea/` exclusion) | PASS: 96 tests, 0 failures/errors, 7 gated live skips |
+| DeepEvalService `fc57486` | Ruff, strict mypy over `src/deepeval_service`, pytest | PASS: lint/type checks and 68 tests |
+
+Strict validation of this OpenSpec change and the five-service workspace boundary verifier both passed. Final
+diff review found no credential literal. The active DPOMAgent development process on port 8090 held the workspace
+Spring Boot JAR, so the full repackage proof was intentionally obtained from the fresh clone without stopping that
+operator-owned process.
