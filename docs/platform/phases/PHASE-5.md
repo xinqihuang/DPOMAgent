@@ -6,6 +6,10 @@
 - Prerequisite: Phase 1 authoritative diagnosis lineage and Phase 2–4 versioned evaluation, governance and improvement artifacts are stable enough to project without inventing missing facts.
 - Goal: replace hand-authored diagnostic reports with a versioned, machine-verifiable canonical report and deterministic human-readable projections.
 
+Phase 5 implementation and cross-service report acceptance are complete. Its published platform status remains
+In Progress until the enclosing realignment change closes the deferred APM rule disable/readback/restore gate; that
+external mutation gate is not being relabeled as Phase 5 evidence or as a successful check.
+
 ## Scope
 
 ### Canonical Diagnostic Report Contract

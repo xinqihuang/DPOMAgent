@@ -1,13 +1,13 @@
 # Phase 7 Runtime Contract Evidence
 
-Date: 2026-08-27 (Asia/Shanghai)
+Date: 2026-08-28 (Asia/Shanghai)
 
 ## Exact component commits
 
-- DPOMAgent diagnosis authority and producer: `91f6efd1e66b82126c0ba1beee75f5eb913eca10`.
-- SRE evaluated-report consumer: `bf040fc`.
+- DPOMAgent diagnosis authority and producer: `f867f95`.
+- SRE evaluated-report consumer: `9b8c242`.
 - DPOMBase evidence-only tool service: `fd08e6d`.
-- HuaweiCloudAlarmChangeGuard mutation service: `2b4d9cb`.
+- HuaweiCloudAlarmChangeGuard mutation service: `1250ed6`.
 - DeepEval semantic-Judge service and repository-local contract: `fc57486`.
 - Full clean-clone results and test totals are recorded in `isolated-contract-builds.md`.
 

@@ -6,6 +6,12 @@
 - Goal: deliver DPOMAgent diagnosis authority, DPOMBase evidence tools, SRE evaluation control and stateless DeepEval
   with a bounded, rollback-safe HTTP-to-Kafka compatibility window.
 
+The Phase 1 implementation and local Kafka/MySQL acceptance criteria below are complete. Final platform status
+publication remains open because the encompassing realignment change still has one deferred external service-boundary
+gate: the authorized APM rule disable/readback/restore check. The 2026-08-28 token-authenticated precheck failed with
+`apm2.00000004` before any PUT was sent; this does not invalidate the Phase 1 runtime evidence and is not a PASS for
+the remaining cross-service gate.
+
 ## Milestone 1A — Delivered compatibility baseline
 
 - Versioned Diagnosis Event contract with correlation IDs, component provenance, canonical digest, and evidence references.

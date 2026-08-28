@@ -24,7 +24,10 @@
 | Phase 3 | 失败归因、能力缺口、建议和 Release Gate |
 | Phase 4 | 受人工治理的 Improvement Agent |
 
-Phase 1A/1B 只是里程碑标签，不是新增长期架构层级。Phase 1 整体在 Phase 1B 验收完成前保持 In Progress。
+Phase 1A/1B 只是里程碑标签，不是新增长期架构层级。Phase 1B 的本地实现与验收已完成；
+Phase 1/5 的最终状态发布仍受当前 realignment change 的跨服务门禁约束。2026-08-28 的唯一未执行
+外部门禁是 APM 告警规则真实停用/恢复，因目标 IAM 身份返回 `apm2.00000004` 而由操作者延期，
+因此当前状态继续保持 In Progress，不能将延期写成 PASS。
 
 ## 四个核心服务目标
 
