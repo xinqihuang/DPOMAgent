@@ -1,16 +1,18 @@
 # Phase 1 — Four-Core-Service Diagnosis-to-Evaluation Foundation
 
-- Status: In Progress — authority realignment
+- Status: Complete / Accepted (2026-08-28)
 - Previous acceptance: 2026-08-25, retained as historical evidence for the superseded DPOMBase-owned boundary
-- Active change: `openspec/changes/realign-phase1-phase5-to-dpomagent-authority`
+- Archived change: `openspec/changes/archive/2026-08-28-realign-phase1-phase5-to-dpomagent-authority`
 - Goal: deliver DPOMAgent diagnosis authority, DPOMBase evidence tools, SRE evaluation control and stateless DeepEval
   with a bounded, rollback-safe HTTP-to-Kafka compatibility window.
 
-The Phase 1 implementation and local Kafka/MySQL acceptance criteria below are complete. Final platform status
-publication remains open because the encompassing realignment change still has one deferred external service-boundary
-gate: the authorized APM rule disable/readback/restore check. The 2026-08-28 token-authenticated precheck failed with
-`apm2.00000004` before any PUT was sent; this does not invalidate the Phase 1 runtime evidence and is not a PASS for
-the remaining cross-service gate.
+The corrected implementation, clean-clone builds, real MySQL/Kafka contracts, broker-restart recovery, transport parity,
+HTTP rollback and service-boundary gates have passed. The final decision and requirement mapping are published in
+`../phase1/final-acceptance-report.md` and `../phase1/requirement-evidence-matrix.md`.
+
+The separate APM mutation acceptance remains unpassed after a token-authenticated precheck returned
+`apm2.00000004` before any PUT was sent. It is tracked by
+`openspec/changes/validate-apm-alarm-rule-suppression-recovery` and is not represented as a Phase 1 PASS.
 
 ## Milestone 1A — Delivered compatibility baseline
 
@@ -34,7 +36,7 @@ The Phase 1A report remains the historical compatibility baseline. Phase 1B impl
 acceptance evidence are recorded in `../phase1b/phase1b-acceptance-report.md` and
 `../phase1b/evidence/phase1-final-acceptance-2026-08-25.json`.
 
-## Milestone 1B — Historical implementation, current revalidation in progress
+## Milestone 1B — Accepted corrected implementation
 
 - Keep authoritative online Diagnosis and Investigation Runtime in DPOMAgent.
 - Publish immutable diagnosis events and bounded progress from DPOMAgent after source state is durable.

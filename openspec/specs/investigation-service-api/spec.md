@@ -1,7 +1,7 @@
 # investigation-service-api Specification
 
 ## Purpose
-TBD - created by archiving change add-investigation-service-api. Update Purpose after archive.
+Define the bounded, idempotent, auditable HTTP contract through which clients submit investigations and query their execution state, evidence, steps, and conclusions.
 
 ## Requirements
 
@@ -37,7 +37,7 @@ WHEN 并发同 key 提交
 THEN DB 唯一约束 SHALL 作为最终仲裁：同 payload 返回同一 id，异 payload 稳定返回 409。
 
 ### Requirement: Status and Error Semantics
-非法 400；不存在 404；幂等冲突 409；容量拒绝 429/503；内部失败落 FAILED/INCONCLUSIVE。
+系统 MUST 使用稳定状态语义：非法请求返回 400；不存在返回 404；幂等冲突返回 409；容量拒绝返回 429/503；内部失败落 FAILED/INCONCLUSIVE。
 #### Scenario: Conclusion not ready
 WHEN 查询尚未生成的结论
 THEN SHALL NOT 返回 404，而返回 200 + availability/status 或 409/425。

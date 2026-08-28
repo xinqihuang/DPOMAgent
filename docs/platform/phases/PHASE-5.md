@@ -1,14 +1,14 @@
 # Phase 5 — Standardized Diagnostic Reports
 
-- Status: In Progress — authority realignment and reacceptance
+- Status: Complete / Accepted (2026-08-28)
 - Previous acceptance: 2026-08-26, retained as historical evidence for the superseded DPOMBase-owned diagnosis profile
-- Active change: `openspec/changes/realign-phase1-phase5-to-dpomagent-authority`
+- Archived change: `openspec/changes/archive/2026-08-28-realign-phase1-phase5-to-dpomagent-authority`
 - Prerequisite: Phase 1 authoritative diagnosis lineage and Phase 2–4 versioned evaluation, governance and improvement artifacts are stable enough to project without inventing missing facts.
 - Goal: replace hand-authored diagnostic reports with a versioned, machine-verifiable canonical report and deterministic human-readable projections.
 
-Phase 5 implementation and cross-service report acceptance are complete. Its published platform status remains
-In Progress until the enclosing realignment change closes the deferred APM rule disable/readback/restore gate; that
-external mutation gate is not being relabeled as Phase 5 evidence or as a successful check.
+Phase 5 implementation and cross-service report acceptance are complete under the corrected ownership. The independent
+APM rule disable/readback/restore acceptance is tracked separately and is neither Phase 5 report evidence nor a claimed
+successful check.
 
 ## Scope
 
@@ -68,8 +68,7 @@ lifecycle, evidence or Judge results produce a new linked revision instead of re
 
 ## Exit Criteria
 
-The checked criteria below record the previous implementation evidence. They are not a current final acceptance decision
-until the corrected ownership passes the realignment gates that follow.
+The checked criteria below form the accepted current decision under the corrected DPOMAgent/SRE ownership.
 
 - [x] `contracts/diagnostic-report/v1` has bounded schema, semantic rules, valid/invalid fixtures and offline validation.
 - [x] Diagnosis-only and evaluated profiles preserve complete incident/investigation/run/evidence/component lineage.

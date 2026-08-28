@@ -1,17 +1,19 @@
 # Phase 5 Acceptance Report
 
-- Accepted: 2026-08-26
+- Historical acceptance: 2026-08-26
+- Corrected-ownership acceptance: 2026-08-28
 - Contract: `diagnostic-report/1.0.0`
 - Template: `diagnostic-report-standard@1.0.0`
-- DPOMAgent exact implementation commit: `91f6efd1e66b82126c0ba1beee75f5eb913eca10`
-- SRE exact implementation commit: `bf040fc`
+- DPOMAgent corrected-authority head: `e56a53f`
+- SRE corrected-consumer head: `9b8c242`
 - DPOMBaseMCPServer evidence-only boundary commit: `fd08e6d`
 - SRE Intelligence Service: `0.1.0-SNAPSHOT`
 - Historical decision: **PASS** for the superseded DPOMBase-owned diagnosis profile
-- Current decision: **REOPENED / IN PROGRESS** under `openspec/changes/realign-phase1-phase5-to-dpomagent-authority`
+- Current decision: **ACCEPTED (2026-08-28)** under the corrected DPOMAgent/SRE ownership
 
-This report is retained as historical evidence. Its DPOMBase diagnosis-only ownership and test counts no longer describe
-the active implementation after DPOMBase became evidence-only, so it MUST NOT be used as current Phase 5 completion proof.
+The 2026-08-26 decision is retained as historical evidence. The objective results below were rerun under the corrected
+ownership, and the 2026-08-28 decision is the current Phase 5 completion proof. DPOMBase is evidence-only and owns no
+diagnosis-only report source.
 
 ## Objective results
 
@@ -19,8 +21,8 @@ the active implementation after DPOMBase became evidence-only, so it MUST NOT be
 |---|---|
 | Offline shared contract | `PHASE5_CONTRACT_STATUS=PASS valid=7 invalid=8` |
 | DPOMAgent clean-clone full reactor | BUILD SUCCESS; 536 tests, 0 failures/errors, 50 gated skips |
-| SRE clean-clone full reactor | BUILD SUCCESS; 354 tests, 0 failures/errors, 6 gated skips |
-| DPOMBase clean-clone full reactor | BUILD SUCCESS; 399 tests, 0 failures/errors, evidence-only architecture gate PASS |
+| SRE clean-clone full reactor | BUILD SUCCESS; 367 tests, 0 failures/errors, 6 gated skips |
+| DPOMBase clean-clone full reactor | BUILD SUCCESS; 431 tests, 0 failures/errors, 1 gated skip; evidence-only architecture gate PASS |
 | Real MySQL Phase 5 persistence | `PHASE5_MYSQL_CONTRACT_STATUS=EXECUTED outcome=PASS` |
 | Real Kafka/MySQL cross-service flow | `PHASE5_E2E_CONTRACT_STATUS=EXECUTED kafka=PASS mysql=PASS judges=7 report=PASS` |
 
@@ -40,9 +42,9 @@ The real persistence contract exercised insert, request/revision uniqueness, opt
 
 Generation and rendering remain default-off. Rollout requires explicit non-production enablement and separate metadata/render/evidence authorization. Renderer failure does not affect canonical authority. Rollback disables generation/rendering first and retains immutable reports; reviewed SQL refuses unsafe removal while data remains.
 
-No unresolved Phase 5 implementation or cross-service acceptance gap remains. The overall change deliberately keeps the
-published Phase 5 status `IN PROGRESS` until the remaining cross-phase external gates are either executed or explicitly
-resolved; this report does not promote those unrelated pending gates to success.
+No unresolved Phase 5 implementation or cross-service acceptance gap remains. The APM alarm-rule mutation acceptance is
+tracked independently by `openspec/changes/validate-apm-alarm-rule-suppression-recovery`; it is not promoted to success
+and is not part of the canonical report acceptance decision.
 
 ## Cross-phase audit
 

@@ -34,9 +34,10 @@ Date: 2026-08-28
 - The final token-authenticated prechecks used both `cn-north-9` and `cn-north-4` project scopes and stopped
   before mutation with HTTP 403 `apm2.00000004` (`has no privilege`). The corresponding Huawei Cloud request
   IDs are `768c82aea3ac86e33d546f406611e554` and `bc404e1c87499c70bfe641fa87f9a642`.
-- Task 6.3 remains open only for APM and was explicitly deferred by the operator on 2026-08-28. No blind APM
-  mutation was attempted, rule `8469` was not changed, and no credential was written to evidence or Git.
-  CES and AOM were restored to their exact enabled pre-test state.
+- The APM portion of task 6.3 was explicitly transferred on 2026-08-28 to independent active change
+  `validate-apm-alarm-rule-suppression-recovery`. No blind APM mutation was attempted, rule `8469` was not changed,
+  and no credential was written to evidence or Git. This transfer is not an APM PASS or waiver.
+  CES and AOM were restored to their exact enabled pre-test state, completing the realignment-owned mutation-boundary evidence.
 
 ## Workspace verifier
 

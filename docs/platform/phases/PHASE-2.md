@@ -43,13 +43,15 @@ Spring Batch jobs perform bounded ODS-to-DWD normalization, DWD-to-DWS case cons
 
 ## Exit criteria
 
-- [ ] One incident produces two immutable case versions with visible lineage.
-- [ ] Bronze-to-Silver-to-Gold review is authenticated, audited, and stale-write safe.
-- [ ] The six required semantic judges execute through the fixed DeepEval contract.
-- [ ] Judge-human agreement is reproducible for a frozen sample and rubric version.
-- [ ] An approved Dataset Version has immutable membership and digest.
-- [ ] A replay over that Dataset Version is restartable and produces authoritative per-case results.
-- [ ] Retention, redaction, capacity, and rollback procedures are documented and tested.
+- [x] One incident produces two immutable case versions with visible lineage.
+- [x] Bronze-to-Silver-to-Gold review is authenticated, audited, and stale-write safe.
+- [x] The six required semantic judges execute through the fixed DeepEval contract, including the approved-model gate accepted on 2026-08-27.
+- [x] Judge-human agreement is reproducible for a frozen sample and rubric version.
+- [x] An approved Dataset Version has immutable membership and digest.
+- [x] A replay over that Dataset Version is restartable and produces authoritative per-case results.
+- [x] Retention, redaction, capacity, and rollback procedures are documented and tested.
+
+Acceptance evidence: `../phase2/phase2-final-acceptance-report.md`, `../phase2/requirement-evidence-matrix.md`, and `../phase2/operations-runbook.md`.
 
 ## Not in scope
 

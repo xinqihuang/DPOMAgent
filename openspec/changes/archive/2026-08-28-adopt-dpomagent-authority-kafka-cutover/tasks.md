@@ -1,3 +1,5 @@
+> **Status: SUPERSEDED / NOT APPLIED.** The unchecked checklist is retained as historical planning evidence. Do not execute it; use the completed `realign-phase1-phase5-to-dpomagent-authority` record instead.
+
 ## 1. Governance and Repository Consolidation
 
 - [ ] 1.1 Inventory the outer repository and DPOMAgent worktree by tracked/untracked path and hash; record exclusions for Kafka runtime PID/log files, credentials and machine-local configuration.

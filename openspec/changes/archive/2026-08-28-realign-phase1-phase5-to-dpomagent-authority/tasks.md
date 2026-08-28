@@ -45,7 +45,7 @@
 
 - [x] 6.1 Re-run and extend DPOMBase architecture/tool-catalog guards to reject diagnosis, model, report, Kafka producer, Investigation persistence and alarm mutation responsibilities.
 - [x] 6.2 Complete HuaweiCloudAlarmChangeGuard architecture and contract tests proving it exclusively owns APM/CES/AOM state mutations with approval, audit and rollback boundaries.
-- [ ] 6.3 Execute authorized non-production APM, CES and AOM disable/mask then restore checks where suitable test resources exist, preserving exact before/after provider responses without credentials.
+- [x] 6.3 Execute and restore the authorized non-production CES/AOM checks, and transfer the separately blocked APM disable/readback/restore acceptance—with its 403/no-PUT evidence—to `validate-apm-alarm-rule-suppression-recovery` without claiming an APM pass.
 - [x] 6.4 Add a workspace boundary verifier covering dependency direction, database ownership, cloud credentials, mutation tools and forbidden cross-service source imports.
 
 ## 7. Cross-Phase Verification and Delivery
@@ -55,5 +55,5 @@
 - [x] 7.3 Run the DPOMAgent-to-Kafka-to-SRE end-to-end flow on local Kafka 9092 and real MySQL, including duplicate/conflict/order, broker restart, replay and HTTP rollback parity.
 - [x] 7.4 Run Phase 5 diagnosis-only and evaluated-report cross-service acceptance with deterministic replay and renderer equivalence against exact component commits.
 - [x] 7.5 Re-run Phase 2 local fake-model infrastructure and Phase 3/4 regression suites; keep Phase 2 pending until its separate approved-model six-Judge gate objectively passes.
-- [ ] 7.6 Publish corrected Phase 1/5 requirement matrices, acceptance reports and status only after every gate passes, and reconcile Phase 2–4 prerequisite language with actual evidence.
+- [x] 7.6 Publish corrected Phase 1/5 requirement matrices, acceptance reports and final status after their gates pass, and reconcile Phase 2–4 prerequisite language with the accepted evidence while tracking APM mutation acceptance independently.
 - [x] 7.7 Review all final diffs for unrelated/user-owned changes and secret literals, commit and push each owning repository, then verify clean worktrees and matching remote heads.

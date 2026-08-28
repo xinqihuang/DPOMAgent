@@ -1,3 +1,5 @@
+> **Status: SUPERSEDED.** This precursor was not applied. Its corrected and expanded scope was implemented and accepted by `realign-phase1-phase5-to-dpomagent-authority`; this change is archived without syncing its obsolete deltas into the main specifications.
+
 ## Why
 
 现有 Phase 1B 规划错误地把 DPOMBaseMCPServer 定义为 Diagnosis/Investigation 权威并准备退休

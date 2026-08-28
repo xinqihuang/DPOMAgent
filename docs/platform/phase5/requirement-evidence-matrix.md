@@ -1,7 +1,8 @@
 # Phase 5 Requirement-to-Evidence Matrix
 
 Acceptance baseline: contract `diagnostic-report/1.0.0`, template `diagnostic-report-standard@1.0.0`,
-DPOMAgent commit `91f6efd1e66b82126c0ba1beee75f5eb913eca10`, and SRE Intelligence Service commit `bf040fc`.
+DPOMAgent corrected-authority head `e56a53f`, SRE Intelligence Service head `9b8c242`, and the
+2026-08-28 clean-clone/real-MySQL/Kafka evidence retained by the archived realignment change.
 
 | Task | Objective repository evidence |
 |---|---|
@@ -44,7 +45,7 @@ DPOMAgent commit `91f6efd1e66b82126c0ba1beee75f5eb913eca10`, and SRE Intelligenc
 | 7.3 | Real Kafka/MySQL cross-service acceptance with seven Judge results |
 | 7.4 | Replay, revision, renderer, version, redaction, bounds and default-off tests |
 | 7.5 | This matrix and `docs/phase5/acceptance-report.md` |
-| 7.6 | Phase 5 exit criteria and strict OpenSpec validation |
+| 7.6 | Accepted `docs/phases/PHASE-5.md`; corrected `docs/phase5/acceptance-report.md`; strict OpenSpec validation |
 
 The schema suite covers bounded structure, independent outcome axes, evidence linkage and unavailable-Judge failure closure.
 DPOMAgent covers authoritative diagnosis-only projection and immutable revisions. DPOMBaseMCPServer is evidence-only and

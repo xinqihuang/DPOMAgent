@@ -1,3 +1,5 @@
+> **Status: SUPERSEDED.** This design was replaced before apply by `realign-phase1-phase5-to-dpomagent-authority` and is retained only for decision history.
+
 ## Context
 
 See `proposal.md` for motivation. DPOMAgent already contains the LLM adapter, ToolUse loop, Investigation state machine,
