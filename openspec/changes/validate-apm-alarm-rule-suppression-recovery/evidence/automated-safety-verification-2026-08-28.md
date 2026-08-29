@@ -18,6 +18,8 @@
 - `LiveHuaweiCloudApmCesAomAcceptanceTest` is default-off and contains the required `try/finally` restoration path plus final provider readback; it was skipped because the destructive opt-in phrase was intentionally absent.
 - `SensitiveDataRedactorTest`, `HuaweiSdkExceptionMapperTest`, and `JdbcPersistenceTest` prove credential removal from mapped provider errors, attempts, audit events, and outbox payloads.
 
-## Remaining automated gap
+## Bounded response closure (2026-08-29)
 
-Task 2.2 is not complete. Credential redaction is tested, but the current `SensitiveDataRedactor` and `HuaweiSdkExceptionMapper` do not impose or test a maximum retained provider-response/error-message length. Therefore the "bounded response capture" part of task 2.2 is not yet proven. Fixing it belongs to HuaweiCloudAlarmChangeGuard, which is outside this repo-local change's allowed edit root; no cross-repository implementation was made implicitly.
+With explicit cross-repository authorization, HuaweiCloudAlarmChangeGuard commit `ab4b4fc` now redacts provider/audit text before retaining it and caps the result at exactly 4096 characters with a visible `[TRUNCATED]` suffix. `SensitiveDataRedactorTest` proves redaction occurs before truncation, and `HuaweiSdkExceptionMapperTest` proves an oversized provider error preserves the request ID while excluding the credential and bounding the retained message.
+
+The focused safety suite passed 34 tests with zero failures/errors/skips after the implementation. The final full `mvn verify` passed 98 tests with zero failures/errors and 7 explicitly gated live tests skipped. Task 2.2 is therefore complete; the remaining change tasks require IAM authorization, an approved disposable non-production rule, and the live provider sequence.

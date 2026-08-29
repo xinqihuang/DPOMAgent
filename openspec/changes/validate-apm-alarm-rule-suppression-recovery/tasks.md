@@ -7,7 +7,7 @@
 ## 2. Automated Safety Verification
 
 - [x] 2.1 Run the HuaweiCloudAlarmChangeGuard unit and architecture suites and verify that DPOMAgent and DPOMBaseMCPServer contain no APM alarm-rule mutation path.
-- [ ] 2.2 Verify tests for project-scoped token headers, required business context, exact-target matching, approval/deadline rejection, bounded response capture, and credential redaction.
+- [x] 2.2 Verify tests for project-scoped token headers, required business context, exact-target matching, approval/deadline rejection, bounded response capture, and credential redaction.
 - [x] 2.3 Verify ambiguous-write, `finally` restoration, persisted incomplete-operation recovery, and final-provider-state failure tests before enabling the live profile.
 
 ## 3. Read-Only Live Preflight
